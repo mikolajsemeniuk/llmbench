@@ -46,12 +46,12 @@ type OllamaResponse struct {
 // ---------------------------------------------------------------------------
 
 type BenchmarkReport struct {
-	Metadata  ReportMetadata          `json:"metadata"`
-	Aggregate AggregateMetrics        `json:"aggregate"`
-	PerLevel  map[string]LevelMetrics `json:"per_level"`
-	RAG       RAGQualityMetrics       `json:"rag_quality"`
-	PerTask   []TaskSummary           `json:"per_task"`
-	Runs      []RunRecord             `json:"runs"`
+	Metadata  ReportMetadata    `json:"metadata"`
+	Aggregate AggregateMetrics  `json:"aggregate"`
+	PerLevel  []LevelMetrics    `json:"per_level"`
+	RAG       RAGQualityMetrics `json:"rag_quality"`
+	PerTask   []TaskSummary     `json:"per_task"`
+	Runs      []RunRecord       `json:"runs"`
 }
 
 type ReportMetadata struct {
@@ -78,6 +78,7 @@ type AggregateMetrics struct {
 }
 
 type LevelMetrics struct {
+	Name string  `json:"name"`
 	ESR  float64 `json:"esr"`
 	TSA  float64 `json:"tsa"`
 	CHR  float64 `json:"chr"`
@@ -232,10 +233,6 @@ func main() {
 	saveReport(report)
 }
 
-// ---------------------------------------------------------------------------
-// Ollama HTTP client
-// ---------------------------------------------------------------------------
-
 func callOllama(url, model, prompt string) (OllamaResponse, error) {
 	reqBody := OllamaRequest{Model: model, Prompt: prompt, Stream: false}
 	bodyBytes, err := json.Marshal(reqBody)
@@ -349,7 +346,7 @@ type levelAccum struct {
 	success, actionCorrect, hallucinated, entities, total int
 }
 
-func computePerLevel(tasks []llmbench.Task, results []llmbench.TaskResult) map[string]LevelMetrics {
+func computePerLevel(tasks []llmbench.Task, results []llmbench.TaskResult) []LevelMetrics {
 	taskLevel := make(map[string]llmbench.TaskLevel, len(tasks))
 	for _, t := range tasks {
 		taskLevel[t.ID] = t.Level
@@ -374,16 +371,31 @@ func computePerLevel(tasks []llmbench.Task, results []llmbench.TaskResult) map[s
 		a.entities += r.TotalArgs
 	}
 
-	result := make(map[string]LevelMetrics, len(accum))
-	for level, a := range accum {
-		result[level] = LevelMetrics{
-			ESR:  llmbench.ExecutionSuccessRate(a.success, a.total),
-			TSA:  llmbench.ToolSelectionAccuracy(a.actionCorrect, a.total),
-			CHR:  llmbench.ContextHallucinationRate(a.hallucinated, a.entities),
-			Runs: a.total,
-		}
+	order := []string{
+		string(llmbench.LevelDiagnostic),
+		string(llmbench.LevelRepair),
+		string(llmbench.LevelMultiStep),
 	}
-	return result
+
+	var out []LevelMetrics
+	for _, level := range order {
+		v, ok := accum[level]
+		if !ok {
+			continue
+		}
+
+		lm := LevelMetrics{
+			Name: level,
+			ESR:  llmbench.ExecutionSuccessRate(v.success, v.total),
+			TSA:  llmbench.ToolSelectionAccuracy(v.actionCorrect, v.total),
+			CHR:  llmbench.ContextHallucinationRate(v.hallucinated, v.entities),
+			Runs: v.total,
+		}
+
+		out = append(out, lm)
+	}
+
+	return out
 }
 
 func computeRAGMetrics(tasks []llmbench.Task) RAGQualityMetrics {
@@ -472,15 +484,9 @@ func printReport(r BenchmarkReport) {
 	fmt.Printf("MTTR (successful runs): %.2fs\n", a.MTTR)
 
 	fmt.Println("\n--- PER-LEVEL BREAKDOWN ---")
-	for _, level := range []string{
-		string(llmbench.LevelDiagnostic),
-		string(llmbench.LevelRepair),
-		string(llmbench.LevelMultiStep),
-	} {
-		if m, ok := r.PerLevel[level]; ok {
-			fmt.Printf("  %-18s  ESR=%.3f  TSA=%.3f  CHR=%.3f  (n=%d)\n",
-				level, m.ESR, m.TSA, m.CHR, m.Runs)
-		}
+	for _, m := range r.PerLevel {
+		fmt.Printf("  %-18s  ESR=%.3f  TSA=%.3f  CHR=%.3f  (n=%d)\n",
+			m.Name, m.ESR, m.TSA, m.CHR, m.Runs)
 	}
 
 	fmt.Println("\n--- RAG QUALITY (task design validation) ---")

@@ -14,7 +14,7 @@ import (
 type Report struct {
 	Metadata  Metadata         `json:"metadata"`
 	Aggregate Aggregate        `json:"aggregate"`
-	PerLevel  map[string]Level `json:"per_level"`
+	PerLevel  []Level          `json:"per_level"`
 	RAG       RAGQuality       `json:"rag_quality"`
 	PerTask   []TaskSummary    `json:"per_task"`
 	Runs      []Run            `json:"runs"`
@@ -44,6 +44,7 @@ type Aggregate struct {
 }
 
 type Level struct {
+	Name string  `json:"name"`
 	ESR  float64 `json:"esr"`
 	TSA  float64 `json:"tsa"`
 	CHR  float64 `json:"chr"`
@@ -82,16 +83,7 @@ type Run struct {
 	Error            string  `json:"error,omitempty"`
 }
 
-// Ordered levels for template iteration.
-type LevelEntry struct {
-	Name string
-	Level
-}
-
-type TemplateData struct {
-	Report
-	Levels []LevelEntry
-}
+type TemplateData = Report
 
 var (
 	//go:embed index.html
@@ -115,14 +107,6 @@ func main() {
 		log.Fatalf("Cannot parse JSON: %v", err)
 	}
 
-	order := []string{"L1-diagnostic", "L2-repair", "L3-multi-step"}
-	var levels []LevelEntry
-	for _, name := range order {
-		if l, ok := report.PerLevel[name]; ok {
-			levels = append(levels, LevelEntry{Name: name, Level: l})
-		}
-	}
-
 	set := template.FuncMap{
 		"pct": func(v float64) string { return fmt.Sprintf("%.1f%%", v*100) },
 		"f3":  func(v float64) string { return fmt.Sprintf("%.3f", v) },
@@ -140,7 +124,7 @@ func main() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
-		arg := TemplateData{Report: report, Levels: levels}
+		arg := TemplateData(report)
 		if err := tmp.Execute(w, arg); err != nil {
 			http.Error(w, err.Error(), 500)
 		}
