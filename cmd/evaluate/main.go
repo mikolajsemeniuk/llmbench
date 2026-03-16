@@ -45,16 +45,16 @@ type OllamaResponse struct {
 // Report types — structured output for reproducibility
 // ---------------------------------------------------------------------------
 
-type BenchmarkReport struct {
-	Metadata  ReportMetadata    `json:"metadata"`
-	Aggregate AggregateMetrics  `json:"aggregate"`
+type Report struct {
+	Metadata  Metadata          `json:"metadata"`
+	Metrics   Metrics           `json:"aggregate"`
 	PerLevel  []LevelMetrics    `json:"per_level"`
 	RAG       RAGQualityMetrics `json:"rag_quality"`
-	PerTask   []TaskSummary     `json:"per_task"`
-	Runs      []RunRecord       `json:"runs"`
+	Summaries []Summary         `json:"per_task"`
+	Records   []Record          `json:"runs"`
 }
 
-type ReportMetadata struct {
+type Metadata struct {
 	Model       string `json:"model"`
 	Timestamp   string `json:"timestamp"`
 	TotalTasks  int    `json:"total_tasks"`
@@ -63,7 +63,7 @@ type ReportMetadata struct {
 	Seed        int64  `json:"random_seed"`
 }
 
-type AggregateMetrics struct {
+type Metrics struct {
 	ESR        float64    `json:"esr"`
 	ESRCI      [2]float64 `json:"esr_ci_95"`
 	TSA        float64    `json:"tsa"`
@@ -93,7 +93,7 @@ type RAGQualityMetrics struct {
 	MeanFScoreAtK    float64 `json:"mean_f1_at_k"`
 }
 
-type TaskSummary struct {
+type Summary struct {
 	TaskID     string  `json:"task_id"`
 	Level      string  `json:"level"`
 	ESR        float64 `json:"esr"`
@@ -102,7 +102,7 @@ type TaskSummary struct {
 	MeanLatSec float64 `json:"mean_latency_sec"`
 }
 
-type RunRecord struct {
+type Record struct {
 	TaskID           string  `json:"task_id"`
 	RunIndex         int     `json:"run_index"`
 	LatencySec       float64 `json:"latency_sec"`
@@ -161,7 +161,7 @@ func main() {
 
 	var (
 		results []llmbench.TaskResult
-		runs    []RunRecord
+		runs    []Record
 	)
 
 	for _, task := range tasks {
@@ -182,7 +182,7 @@ func main() {
 					TotalArgs:        len(task.GroundTruth.ContextEntities),
 					HallucinatedArgs: len(task.GroundTruth.ContextEntities),
 				})
-				runs = append(runs, RunRecord{
+				runs = append(runs, Record{
 					TaskID:         task.ID,
 					RunIndex:       run,
 					LatencySec:     latency,
@@ -205,7 +205,7 @@ func main() {
 			if ollamaResp.EvalDuration > 0 {
 				tokPerSec = float64(ollamaResp.EvalCount) / (float64(ollamaResp.EvalDuration) / 1e9)
 			}
-			runs = append(runs, RunRecord{
+			runs = append(runs, Record{
 				TaskID:           task.ID,
 				RunIndex:         run,
 				LatencySec:       latency,
@@ -228,7 +228,7 @@ func main() {
 		}
 	}
 
-	report := computeReport(tasks, results, runs)
+	report := newReport(tasks, results, runs)
 	printReport(report)
 	saveReport(report)
 }
@@ -262,7 +262,7 @@ func callOllama(url, model, prompt string) (OllamaResponse, error) {
 // Metrics computation
 // ---------------------------------------------------------------------------
 
-func computeReport(tasks []llmbench.Task, results []llmbench.TaskResult, runs []RunRecord) BenchmarkReport {
+func newReport(tasks []llmbench.Task, results []llmbench.TaskResult, runs []Record) Report {
 	totalRuns := len(results)
 
 	var (
@@ -320,8 +320,8 @@ func computeReport(tasks []llmbench.Task, results []llmbench.TaskResult, runs []
 	rng := rand.New(rand.NewSource(flagSeed))
 	ci := llmbench.BootstrapConfidenceInterval(successCount, totalRuns, 10000, 0.05, rng.Float64)
 
-	return BenchmarkReport{
-		Metadata: ReportMetadata{
+	return Report{
+		Metadata: Metadata{
 			Model:       flagModel,
 			Timestamp:   time.Now().UTC().Format(time.RFC3339),
 			TotalTasks:  len(tasks),
@@ -329,16 +329,16 @@ func computeReport(tasks []llmbench.Task, results []llmbench.TaskResult, runs []
 			TotalRuns:   totalRuns,
 			Seed:        flagSeed,
 		},
-		Aggregate: AggregateMetrics{
+		Metrics: Metrics{
 			ESR: esr, ESRCI: ci,
 			TSA: tsa, CHR: chr, DAAR: daar,
 			FCSR: fcsr, LAE: lae, MTTR: mttr,
 			LatencyP50: p50, LatencyP95: p95, LatencyP99: p99,
 		},
-		PerLevel: computePerLevel(tasks, results),
-		RAG:      computeRAGMetrics(tasks),
-		PerTask:  computePerTask(tasks, results),
-		Runs:     runs,
+		PerLevel:  computePerLevel(tasks, results),
+		RAG:       computeRAGMetrics(tasks),
+		Summaries: computePerTask(tasks, results),
+		Records:   runs,
 	}
 }
 
@@ -419,8 +419,8 @@ func computeRAGMetrics(tasks []llmbench.Task) RAGQualityMetrics {
 	}
 }
 
-func computePerTask(tasks []llmbench.Task, results []llmbench.TaskResult) []TaskSummary {
-	summaries := make([]TaskSummary, 0, len(tasks))
+func computePerTask(tasks []llmbench.Task, results []llmbench.TaskResult) []Summary {
+	summaries := make([]Summary, 0, len(tasks))
 	for _, t := range tasks {
 		var success, actionCorrect, hallucinated, entities, total int
 		var totalLat float64
@@ -443,7 +443,7 @@ func computePerTask(tasks []llmbench.Task, results []llmbench.TaskResult) []Task
 		if total > 0 {
 			meanLat = totalLat / float64(total)
 		}
-		summaries = append(summaries, TaskSummary{
+		summaries = append(summaries, Summary{
 			TaskID:     t.ID,
 			Level:      string(t.Level),
 			ESR:        llmbench.ExecutionSuccessRate(success, total),
@@ -459,7 +459,7 @@ func computePerTask(tasks []llmbench.Task, results []llmbench.TaskResult) []Task
 // Output
 // ---------------------------------------------------------------------------
 
-func printReport(r BenchmarkReport) {
+func printReport(r Report) {
 	sep := strings.Repeat("=", 60)
 	fmt.Printf("\n%s\n", sep)
 	fmt.Println("BENCHMARK REPORT")
@@ -470,7 +470,7 @@ func printReport(r BenchmarkReport) {
 	fmt.Printf("Total runs:  %d\n", r.Metadata.TotalRuns)
 	fmt.Printf("Timestamp:   %s\n", r.Metadata.Timestamp)
 
-	a := r.Aggregate
+	a := r.Metrics
 	fmt.Println("\n--- AGGREGATE METRICS ---")
 	fmt.Printf("ESR  (Execution Success Rate):     %.3f  [95%% CI: %.3f, %.3f]\n", a.ESR, a.ESRCI[0], a.ESRCI[1])
 	fmt.Printf("TSA  (Tool Selection Accuracy):    %.3f\n", a.TSA)
@@ -495,7 +495,7 @@ func printReport(r BenchmarkReport) {
 		r.RAG.MeanFScoreAtK, r.RAG.MeanMRR, r.RAG.MeanNDCGAtK)
 
 	fmt.Println("\n--- PER-TASK SUMMARY ---")
-	for _, ts := range r.PerTask {
+	for _, ts := range r.Summaries {
 		fmt.Printf("  %-14s %-18s ESR=%.2f  TSA=%.2f  CHR=%.2f  lat=%.1fs\n",
 			ts.TaskID, ts.Level, ts.ESR, ts.TSA, ts.CHR, ts.MeanLatSec)
 	}
@@ -503,12 +503,13 @@ func printReport(r BenchmarkReport) {
 	fmt.Printf("\nResults saved to: %s\n", flagOutput)
 }
 
-func saveReport(r BenchmarkReport) {
+func saveReport(r Report) {
 	data, err := json.MarshalIndent(r, "", "  ")
 	if err != nil {
 		log.Printf("Error marshaling report: %v", err)
 		return
 	}
+
 	if err := os.WriteFile(flagOutput, data, 0644); err != nil {
 		log.Printf("Error writing %s: %v", flagOutput, err)
 		return

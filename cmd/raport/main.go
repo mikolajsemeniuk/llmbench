@@ -12,12 +12,12 @@ import (
 )
 
 type Report struct {
-	Metadata  Metadata         `json:"metadata"`
-	Aggregate Aggregate        `json:"aggregate"`
-	PerLevel  []Level          `json:"per_level"`
-	RAG       RAGQuality       `json:"rag_quality"`
-	PerTask   []TaskSummary    `json:"per_task"`
-	Runs      []Run            `json:"runs"`
+	Metadata  Metadata      `json:"metadata"`
+	Aggregate Aggregate     `json:"aggregate"`
+	PerLevel  []Level       `json:"per_level"`
+	RAG       RAGQuality    `json:"rag_quality"`
+	PerTask   []TaskSummary `json:"per_task"`
+	Runs      []Run         `json:"runs"`
 }
 
 type Metadata struct {
@@ -124,8 +124,7 @@ func main() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
-		arg := TemplateData(report)
-		if err := tmp.Execute(w, arg); err != nil {
+		if err := tmp.Execute(w, report); err != nil {
 			http.Error(w, err.Error(), 500)
 		}
 	})
