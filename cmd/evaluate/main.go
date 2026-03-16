@@ -26,18 +26,6 @@ import (
 	"github.com/mikolajsemeniuk/llmbench"
 )
 
-var (
-	flagModel  = flag.String("model", "qwen2.5:3b-instruct", "Ollama model name")
-	flagURL    = flag.String("url", "http://localhost:11434/api/generate", "Ollama API URL")
-	flagRuns   = flag.Int("runs", 5, "Number of independent runs per task")
-	flagOutput = flag.String("output", "results.json", "Output JSON file path")
-	flagSeed   = flag.Int64("seed", 42, "Random seed for bootstrap CI (reproducibility)")
-)
-
-// ---------------------------------------------------------------------------
-// Ollama API types
-// ---------------------------------------------------------------------------
-
 type OllamaRequest struct {
 	Model  string `json:"model"`
 	Prompt string `json:"prompt"`
@@ -132,26 +120,40 @@ type RunRecord struct {
 // Main benchmark loop
 // ---------------------------------------------------------------------------
 
+var (
+	flagModel  string
+	flagURL    string
+	flagRuns   int
+	flagOutput string
+	flagSeed   int64
+)
+
 func main() {
+	flag.StringVar(&flagModel, "model", "qwen2.5:3b-instruct", "Ollama model name")
+	flag.StringVar(&flagURL, "url", "http://localhost:11434/api/generate", "Ollama API URL")
+	flag.IntVar(&flagRuns, "runs", 5, "Number of independent runs per task")
+	flag.StringVar(&flagOutput, "output", "results.json", "Output JSON file path")
+	flag.Int64Var(&flagSeed, "seed", 42, "Random seed for bootstrap CI (reproducibility)")
 	flag.Parse()
+
 	tasks := llmbench.BenchmarkTasks()
-	totalRuns := len(tasks) * *flagRuns
+	totalRuns := len(tasks) * flagRuns
 
 	fmt.Println("=== LLMBench: K8s MCP Benchmark ===")
-	fmt.Printf("Model:       %s\n", *flagModel)
+	fmt.Printf("Model:       %s\n", flagModel)
 	fmt.Printf("Tasks:       %d (L1=%d, L2=%d, L3=%d)\n",
 		len(tasks), countLevel(tasks, llmbench.LevelDiagnostic),
 		countLevel(tasks, llmbench.LevelRepair), countLevel(tasks, llmbench.LevelMultiStep))
-	fmt.Printf("Runs/task:   %d\n", *flagRuns)
+	fmt.Printf("Runs/task:   %d\n", flagRuns)
 	fmt.Printf("Total runs:  %d\n", totalRuns)
-	fmt.Printf("Seed:        %d\n", *flagSeed)
+	fmt.Printf("Seed:        %d\n", flagSeed)
 	fmt.Println()
 
 	// Pre-flight: verify Ollama connectivity
 	fmt.Print("Checking Ollama connectivity... ")
-	if _, err := callOllama(*flagURL, *flagModel, "ping"); err != nil {
+	if _, err := callOllama(flagURL, flagModel, "ping"); err != nil {
 		log.Fatalf("FAILED\n\nCannot reach Ollama at %s: %v\n\nEnsure Ollama is running:\n  ollama serve\n  ollama pull %s\n",
-			*flagURL, err, *flagModel)
+			flagURL, err, flagModel)
 	}
 	fmt.Println("OK")
 	fmt.Println()
@@ -165,27 +167,27 @@ func main() {
 		fmt.Printf("[%s] %s\n", task.ID, task.Description)
 		prompt := llmbench.BuildPrompt(task)
 
-		for run := 0; run < *flagRuns; run++ {
+		for run := 0; run < flagRuns; run++ {
 			start := time.Now()
-			ollamaResp, err := callOllama(*flagURL, *flagModel, prompt)
+			ollamaResp, err := callOllama(flagURL, flagModel, prompt)
 			latency := time.Since(start).Seconds()
 
 			if err != nil {
-				fmt.Printf("  Run %d/%d: ERROR (%v)\n", run+1, *flagRuns, err)
+				fmt.Printf("  Run %d/%d: ERROR (%v)\n", run+1, flagRuns, err)
 				results = append(results, llmbench.TaskResult{
-					TaskID:       task.ID,
-					RunIndex:     run,
-					LatencySec:   latency,
-					TotalArgs:    len(task.GroundTruth.ContextEntities),
+					TaskID:           task.ID,
+					RunIndex:         run,
+					LatencySec:       latency,
+					TotalArgs:        len(task.GroundTruth.ContextEntities),
 					HallucinatedArgs: len(task.GroundTruth.ContextEntities),
 				})
 				runs = append(runs, RunRecord{
-					TaskID:        task.ID,
-					RunIndex:      run,
-					LatencySec:    latency,
-					TotalEntities: len(task.GroundTruth.ContextEntities),
+					TaskID:         task.ID,
+					RunIndex:       run,
+					LatencySec:     latency,
+					TotalEntities:  len(task.GroundTruth.ContextEntities),
 					Hallucinations: len(task.GroundTruth.ContextEntities),
-					Error:         err.Error(),
+					Error:          err.Error(),
 				})
 				continue
 			}
@@ -221,7 +223,7 @@ func main() {
 				status = "PASS"
 			}
 			fmt.Printf("  Run %d/%d: %s (%.1fs, %d tok)\n",
-				run+1, *flagRuns, status, latency, ollamaResp.EvalCount)
+				run+1, flagRuns, status, latency, ollamaResp.EvalCount)
 		}
 	}
 
@@ -318,17 +320,17 @@ func computeReport(tasks []llmbench.Task, results []llmbench.TaskResult, runs []
 	lae := llmbench.LatencyToActionEfficiency(esr, p50)
 	mttr := llmbench.MeanTimeToRecovery(successLatencies)
 
-	rng := rand.New(rand.NewSource(*flagSeed))
+	rng := rand.New(rand.NewSource(flagSeed))
 	ci := llmbench.BootstrapConfidenceInterval(successCount, totalRuns, 10000, 0.05, rng.Float64)
 
 	return BenchmarkReport{
 		Metadata: ReportMetadata{
-			Model:       *flagModel,
+			Model:       flagModel,
 			Timestamp:   time.Now().UTC().Format(time.RFC3339),
 			TotalTasks:  len(tasks),
-			RunsPerTask: *flagRuns,
+			RunsPerTask: flagRuns,
 			TotalRuns:   totalRuns,
-			Seed:        *flagSeed,
+			Seed:        flagSeed,
 		},
 		Aggregate: AggregateMetrics{
 			ESR: esr, ESRCI: ci,
@@ -492,7 +494,7 @@ func printReport(r BenchmarkReport) {
 			ts.TaskID, ts.Level, ts.ESR, ts.TSA, ts.CHR, ts.MeanLatSec)
 	}
 
-	fmt.Printf("\nResults saved to: %s\n", *flagOutput)
+	fmt.Printf("\nResults saved to: %s\n", flagOutput)
 }
 
 func saveReport(r BenchmarkReport) {
@@ -501,8 +503,8 @@ func saveReport(r BenchmarkReport) {
 		log.Printf("Error marshaling report: %v", err)
 		return
 	}
-	if err := os.WriteFile(*flagOutput, data, 0644); err != nil {
-		log.Printf("Error writing %s: %v", *flagOutput, err)
+	if err := os.WriteFile(flagOutput, data, 0644); err != nil {
+		log.Printf("Error writing %s: %v", flagOutput, err)
 		return
 	}
 }
