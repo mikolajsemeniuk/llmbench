@@ -399,6 +399,431 @@ status:
     reason: FailedGetScale
     message: 'deployments/scale.apps "api-v1" not found'`
 
+// =============================================================================
+// PODY — dodatkowe scenariusze błędów (rozszerzenie dla N≥20/level)
+// =============================================================================
+
+// ManifestPodProbeFailure to Pod restartowany przez failing liveness probe.
+const ManifestPodProbeFailure = `apiVersion: v1
+kind: Pod
+metadata:
+  name: payment-api
+  namespace: production
+  labels:
+    app: payment-api
+status:
+  phase: Running
+  containerStatuses:
+  - name: payment-api
+    ready: false
+    restartCount: 12
+    state:
+      running:
+        startedAt: "2024-11-15T10:00:00Z"
+    lastState:
+      terminated:
+        exitCode: 0
+        reason: Completed
+  conditions:
+  - type: Ready
+    status: "False"
+    reason: ContainersNotReady
+    message: "Liveness probe failed: HTTP probe failed with statuscode: 503"
+spec:
+  containers:
+  - name: payment-api
+    image: myrepo/payment-api:3.2
+    ports:
+    - containerPort: 8080
+    livenessProbe:
+      httpGet:
+        path: /healthz
+        port: 8080
+      initialDelaySeconds: 5
+      periodSeconds: 10
+    resources:
+      limits:
+        memory: "256Mi"
+        cpu: "500m"`
+
+// ManifestPodWrongCommand to Pod z błędnym entrypoint — CrashLoopBackOff.
+const ManifestPodWrongCommand = `apiVersion: v1
+kind: Pod
+metadata:
+  name: data-processor
+  namespace: batch
+  labels:
+    app: data-processor
+status:
+  phase: Running
+  containerStatuses:
+  - name: data-processor
+    ready: false
+    restartCount: 5
+    state:
+      waiting:
+        reason: CrashLoopBackOff
+    lastState:
+      terminated:
+        exitCode: 127
+        reason: ContainerCannotRun
+        message: 'exec: "process-data.sh": executable file not found in $PATH'
+spec:
+  containers:
+  - name: data-processor
+    image: python:3.11-slim
+    command: ["process-data.sh"]
+    args: ["--input", "/data/raw"]`
+
+// ManifestPodMissingSecretRef to Pod który nie startuje bo referencuje nieistniejący Secret.
+const ManifestPodMissingSecretRef = `apiVersion: v1
+kind: Pod
+metadata:
+  name: auth-service
+  namespace: production
+  labels:
+    app: auth-service
+status:
+  phase: Pending
+  containerStatuses:
+  - name: auth-service
+    ready: false
+    restartCount: 0
+    state:
+      waiting:
+        reason: CreateContainerConfigError
+        message: 'secret "jwt-signing-key" not found'
+spec:
+  containers:
+  - name: auth-service
+    image: myrepo/auth-service:1.5
+    env:
+    - name: JWT_SECRET
+      valueFrom:
+        secretKeyRef:
+          name: jwt-signing-key
+          key: private-key`
+
+// ManifestPodNodeAffinity to Pod Pending przez brak noda z wymaganym labelem.
+const ManifestPodNodeAffinity = `apiVersion: v1
+kind: Pod
+metadata:
+  name: gpu-inference
+  namespace: ml-jobs
+  labels:
+    app: gpu-inference
+status:
+  phase: Pending
+  conditions:
+  - type: PodScheduled
+    status: "False"
+    reason: Unschedulable
+    message: '0/3 nodes are available: 3 node(s) did not match Pod''s node affinity/selector.'
+spec:
+  containers:
+  - name: inference
+    image: pytorch/pytorch:2.0-cuda11.8
+    resources:
+      limits:
+        nvidia.com/gpu: "1"
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: accelerator
+            operator: In
+            values: ["nvidia-a100"]`
+
+// ManifestPodEvicted to Pod wyeksmitowany z noda przez DiskPressure.
+const ManifestPodEvicted = `apiVersion: v1
+kind: Pod
+metadata:
+  name: log-aggregator
+  namespace: monitoring
+  labels:
+    app: log-aggregator
+status:
+  phase: Failed
+  reason: Evicted
+  message: 'The node was low on resource: ephemeral-storage. Threshold quantity: 1Gi, available: 512Mi.'
+  containerStatuses:
+  - name: log-aggregator
+    ready: false
+    restartCount: 0
+    state:
+      terminated:
+        exitCode: 137
+        reason: OOMKilled
+spec:
+  containers:
+  - name: log-aggregator
+    image: fluentd:v1.16
+    volumeMounts:
+    - name: log-volume
+      mountPath: /var/log`
+
+// ManifestPodInitContainerFail to Pod z failing init containerem.
+const ManifestPodInitContainerFail = `apiVersion: v1
+kind: Pod
+metadata:
+  name: web-app
+  namespace: default
+  labels:
+    app: web-app
+status:
+  phase: Pending
+  initContainerStatuses:
+  - name: wait-for-db
+    ready: false
+    restartCount: 6
+    state:
+      waiting:
+        reason: CrashLoopBackOff
+    lastState:
+      terminated:
+        exitCode: 1
+        reason: Error
+        message: 'Connection refused: tcp://db-service:5432'
+  containerStatuses:
+  - name: web-app
+    ready: false
+    state:
+      waiting:
+        reason: PodInitializing
+spec:
+  initContainers:
+  - name: wait-for-db
+    image: busybox:1.36
+    command: ["sh", "-c", "until nc -z db-service 5432; do sleep 2; done"]
+  containers:
+  - name: web-app
+    image: myrepo/web-app:4.0`
+
+// ManifestPodDNSError to Pod z błędem DNS resolution.
+const ManifestPodDNSError = `apiVersion: v1
+kind: Pod
+metadata:
+  name: cache-client
+  namespace: production
+  labels:
+    app: cache-client
+status:
+  phase: Running
+  containerStatuses:
+  - name: cache-client
+    ready: false
+    restartCount: 3
+    state:
+      waiting:
+        reason: CrashLoopBackOff
+    lastState:
+      terminated:
+        exitCode: 1
+        reason: Error
+        message: 'dial tcp: lookup redis-master.cache.svc.cluster.local: no such host'
+spec:
+  containers:
+  - name: cache-client
+    image: myrepo/cache-client:2.0
+    env:
+    - name: REDIS_HOST
+      value: "redis-master.cache.svc.cluster.local"`
+
+// =============================================================================
+// DEPLOYMENTY — dodatkowe scenariusze
+// =============================================================================
+
+// ManifestDeploymentRolloutStuck to Deployment zablokowany w trakcie rollout.
+const ManifestDeploymentRolloutStuck = `apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: production
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+      - name: frontend
+        image: myrepo/frontend:5.0-broken
+        ports:
+        - containerPort: 3000
+status:
+  replicas: 3
+  updatedReplicas: 1
+  readyReplicas: 2
+  availableReplicas: 2
+  conditions:
+  - type: Progressing
+    status: "False"
+    reason: ProgressDeadlineExceeded
+    message: 'ReplicaSet "frontend-7d4f8b" has timed out progressing.'
+  - type: Available
+    status: "True"`
+
+// ManifestDeploymentQuotaExceeded to Deployment który nie może skalować przez ResourceQuota.
+const ManifestDeploymentQuotaExceeded = `apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: worker-pool
+  namespace: batch
+spec:
+  replicas: 10
+  selector:
+    matchLabels:
+      app: worker-pool
+  template:
+    metadata:
+      labels:
+        app: worker-pool
+    spec:
+      containers:
+      - name: worker
+        image: myrepo/worker:1.0
+        resources:
+          requests:
+            cpu: "500m"
+            memory: "512Mi"
+status:
+  replicas: 3
+  readyReplicas: 3
+  availableReplicas: 3
+  conditions:
+  - type: ReplicaFailure
+    status: "True"
+    reason: FailedCreate
+    message: 'pods "worker-pool-xxxxx" is forbidden: exceeded quota: compute-quota, requested: cpu=500m,memory=512Mi, limited: cpu=4,memory=4Gi'`
+
+// =============================================================================
+// SERWISY I SIEĆ — dodatkowe scenariusze
+// =============================================================================
+
+// ManifestServiceWrongTargetPort to Service z błędnym targetPort.
+const ManifestServiceWrongTargetPort = `apiVersion: v1
+kind: Service
+metadata:
+  name: api-gateway
+  namespace: production
+spec:
+  selector:
+    app: api-server
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 9090
+  type: ClusterIP`
+
+// ManifestIngressWrongBackend to Ingress wskazujący na nieistniejący service.
+const ManifestIngressWrongBackend = `apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: app-ingress
+  namespace: production
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+  - host: app.example.com
+    http:
+      paths:
+      - path: /api
+        pathType: Prefix
+        backend:
+          service:
+            name: api-gateway-old
+            port:
+              number: 80
+status:
+  loadBalancer:
+    ingress:
+    - ip: 10.0.0.1`
+
+// ManifestNetworkPolicyDenyAll to NetworkPolicy blokująca cały ingress.
+const ManifestNetworkPolicyDenyAll = `apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: deny-all-ingress
+  namespace: production
+spec:
+  podSelector:
+    matchLabels:
+      app: api-server
+  policyTypes:
+  - Ingress
+  ingress: []`
+
+// =============================================================================
+// JOBS / CRON JOBS
+// =============================================================================
+
+// ManifestJobFailed to Job który przekroczył backoffLimit.
+const ManifestJobFailed = `apiVersion: batch/v1
+kind: Job
+metadata:
+  name: db-migration
+  namespace: production
+spec:
+  backoffLimit: 3
+  template:
+    spec:
+      containers:
+      - name: migrate
+        image: myrepo/migrate:1.0
+        command: ["./migrate", "--target", "v42"]
+      restartPolicy: Never
+status:
+  conditions:
+  - type: Failed
+    status: "True"
+    reason: BackoffLimitExceeded
+    message: Job has reached the specified backoff limit
+  failed: 4
+  startTime: "2024-11-15T08:00:00Z"
+  completionTime: null`
+
+// ManifestCronJobSuspended to CronJob który jest suspended ale nie powinien być.
+const ManifestCronJobSuspended = `apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: report-generator
+  namespace: production
+spec:
+  schedule: "0 6 * * *"
+  suspend: true
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: report
+            image: myrepo/report-gen:2.0
+          restartPolicy: OnFailure
+status:
+  lastScheduleTime: "2024-11-01T06:00:00Z"
+  lastSuccessfulTime: "2024-11-01T06:05:00Z"`
+
+// =============================================================================
+// DODATKOWY SZUM RAG
+// =============================================================================
+
+// NoiseManifestNamespace to drugi szumowy manifest — prosty Namespace.
+const NoiseManifestNamespace = `apiVersion: v1
+kind: Namespace
+metadata:
+  name: testing
+  labels:
+    env: testing
+    team: qa
+status:
+  phase: Active`
+
 // NoiseManifestUnrelated to manifest niezwiązany z żadnym taskiem — czysty szum RAG.
 // Używany jako dokument o relevance=0 w każdym tasku.
 // Testuje czy model ignoruje nieistotny kontekst (wpływa na CHR i NDCG).

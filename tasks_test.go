@@ -324,14 +324,14 @@ func TestBenchmarkTasks(t *testing.T) {
 
 	tasks := BenchmarkTasks()
 
-	t.Run("returns_eight_tasks", func(t *testing.T) {
+	t.Run("returns_sixty_tasks", func(t *testing.T) {
 		t.Parallel()
-		if len(tasks) != 8 {
-			t.Errorf("got %d tasks, want 8", len(tasks))
+		if len(tasks) != 60 {
+			t.Errorf("got %d tasks, want 60", len(tasks))
 		}
 	})
 
-	t.Run("three_l1_tasks", func(t *testing.T) {
+	t.Run("twenty_l1_tasks", func(t *testing.T) {
 		t.Parallel()
 		count := 0
 		for _, task := range tasks {
@@ -339,12 +339,12 @@ func TestBenchmarkTasks(t *testing.T) {
 				count++
 			}
 		}
-		if count != 3 {
-			t.Errorf("got %d L1 tasks, want 3", count)
+		if count != 20 {
+			t.Errorf("got %d L1 tasks, want 20", count)
 		}
 	})
 
-	t.Run("three_l2_tasks", func(t *testing.T) {
+	t.Run("twenty_l2_tasks", func(t *testing.T) {
 		t.Parallel()
 		count := 0
 		for _, task := range tasks {
@@ -352,12 +352,12 @@ func TestBenchmarkTasks(t *testing.T) {
 				count++
 			}
 		}
-		if count != 3 {
-			t.Errorf("got %d L2 tasks, want 3", count)
+		if count != 20 {
+			t.Errorf("got %d L2 tasks, want 20", count)
 		}
 	})
 
-	t.Run("two_l3_tasks", func(t *testing.T) {
+	t.Run("twenty_l3_tasks", func(t *testing.T) {
 		t.Parallel()
 		count := 0
 		for _, task := range tasks {
@@ -365,8 +365,8 @@ func TestBenchmarkTasks(t *testing.T) {
 				count++
 			}
 		}
-		if count != 2 {
-			t.Errorf("got %d L3 tasks, want 2", count)
+		if count != 20 {
+			t.Errorf("got %d L3 tasks, want 20", count)
 		}
 	})
 

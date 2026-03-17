@@ -27,9 +27,15 @@ import (
 )
 
 type OllamaRequest struct {
-	Model  string `json:"model"`
-	Prompt string `json:"prompt"`
-	Stream bool   `json:"stream"`
+	Model   string        `json:"model"`
+	Prompt  string        `json:"prompt"`
+	Stream  bool          `json:"stream"`
+	Options OllamaOptions `json:"options"`
+}
+
+type OllamaOptions struct {
+	Temperature float64 `json:"temperature"`
+	Seed        int64   `json:"seed"`
 }
 
 type OllamaResponse struct {
@@ -39,6 +45,20 @@ type OllamaResponse struct {
 	PromptEvalCount int    `json:"prompt_eval_count"`
 	EvalCount       int    `json:"eval_count"`
 	EvalDuration    int64  `json:"eval_duration"`
+}
+
+type OllamaShowRequest struct {
+	Name string `json:"name"`
+}
+
+type OllamaShowResponse struct {
+	Digest  string `json:"digest"`
+	Details struct {
+		Format            string `json:"format"`
+		Family            string `json:"family"`
+		ParameterSize     string `json:"parameter_size"`
+		QuantizationLevel string `json:"quantization_level"`
+	} `json:"details"`
 }
 
 // ---------------------------------------------------------------------------
@@ -56,6 +76,9 @@ type Report struct {
 
 type Metadata struct {
 	Model       string `json:"model"`
+	ModelDigest string `json:"model_digest"`
+	ModelFamily string `json:"model_family"`
+	ModelQuant  string `json:"model_quantization"`
 	Timestamp   string `json:"timestamp"`
 	TotalTasks  int    `json:"total_tasks"`
 	RunsPerTask int    `json:"runs_per_task"`
@@ -122,45 +145,44 @@ type Record struct {
 // ---------------------------------------------------------------------------
 
 var (
-	flagModel  string
-	flagURL    string
-	flagRuns   int
-	flagOutput string
-	flagSeed   int64
+	model    string
+	flagURL  string
+	flagRuns int
+	output   string
+	seed     int64
 )
 
 func main() {
-	flag.StringVar(&flagModel, "model", "qwen2.5:3b-instruct", "Ollama model name")
+	flag.StringVar(&model, "model", "qwen2.5:3b-instruct", "Ollama model name")
 	flag.StringVar(&flagURL, "url", "http://localhost:11434/api/generate", "Ollama API URL")
 	flag.IntVar(&flagRuns, "runs", 5, "Number of independent runs per task")
-	flag.StringVar(&flagOutput, "output", "results.json", "Output JSON file path")
-	flag.Int64Var(&flagSeed, "seed", 42, "Random seed for bootstrap CI (reproducibility)")
+	flag.StringVar(&output, "output", "results.json", "Output JSON file path")
+	flag.Int64Var(&seed, "seed", 42, "Random seed for bootstrap CI (reproducibility)")
 	flag.Parse()
 
 	tasks := llmbench.BenchmarkTasks()
 	totalRuns := len(tasks) * flagRuns
 
 	fmt.Println("=== LLMBench: K8s MCP Benchmark ===")
-	fmt.Printf("Model:       %s\n", flagModel)
+	fmt.Printf("Model:       %s\n", model)
 	fmt.Printf("Tasks:       %d (L1=%d, L2=%d, L3=%d)\n",
 		len(tasks), countLevel(tasks, llmbench.LevelDiagnostic),
 		countLevel(tasks, llmbench.LevelRepair), countLevel(tasks, llmbench.LevelMultiStep))
 	fmt.Printf("Runs/task:   %d\n", flagRuns)
 	fmt.Printf("Total runs:  %d\n", totalRuns)
-	fmt.Printf("Seed:        %d\n", flagSeed)
+	fmt.Printf("Seed:        %d\n", seed)
 	fmt.Println()
 
-	// Pre-flight: verify Ollama connectivity
-	fmt.Print("Checking Ollama connectivity... ")
-	if _, err := callOllama(flagURL, flagModel, "ping"); err != nil {
-		log.Fatalf("FAILED\n\nCannot reach Ollama at %s: %v\n\nEnsure Ollama is running:\n  ollama serve\n  ollama pull %s\n",
-			flagURL, err, flagModel)
+	modelInfo := fetchModelInfo(flagURL, model)
+	if modelInfo.Digest != "" {
+		fmt.Printf("Digest:      %s\n", modelInfo.Digest[:12])
+		fmt.Printf("Family:      %s\n", modelInfo.Details.Family)
+		fmt.Printf("Quant:       %s\n", modelInfo.Details.QuantizationLevel)
 	}
-	fmt.Println("OK")
 	fmt.Println()
 
 	var (
-		results []llmbench.TaskResult
+		results []llmbench.Result
 		runs    []Record
 	)
 
@@ -170,26 +192,30 @@ func main() {
 
 		for run := 0; run < flagRuns; run++ {
 			start := time.Now()
-			ollamaResp, err := callOllama(flagURL, flagModel, prompt)
+			ollamaResp, err := callOllama(flagURL, model, prompt)
 			latency := time.Since(start).Seconds()
 
 			if err != nil {
 				fmt.Printf("  Run %d/%d: ERROR (%v)\n", run+1, flagRuns, err)
-				results = append(results, llmbench.TaskResult{
+				result := llmbench.Result{
 					TaskID:           task.ID,
 					RunIndex:         run,
 					LatencySec:       latency,
 					TotalArgs:        len(task.GroundTruth.ContextEntities),
 					HallucinatedArgs: len(task.GroundTruth.ContextEntities),
-				})
-				runs = append(runs, Record{
+				}
+				results = append(results, result)
+
+				record := Record{
 					TaskID:         task.ID,
 					RunIndex:       run,
 					LatencySec:     latency,
 					TotalEntities:  len(task.GroundTruth.ContextEntities),
 					Hallucinations: len(task.GroundTruth.ContextEntities),
 					Error:          err.Error(),
-				})
+				}
+				runs = append(runs, record)
+
 				continue
 			}
 
@@ -205,7 +231,8 @@ func main() {
 			if ollamaResp.EvalDuration > 0 {
 				tokPerSec = float64(ollamaResp.EvalCount) / (float64(ollamaResp.EvalDuration) / 1e9)
 			}
-			runs = append(runs, Record{
+
+			record := Record{
 				TaskID:           task.ID,
 				RunIndex:         run,
 				LatencySec:       latency,
@@ -217,52 +244,78 @@ func main() {
 				PromptTokens:     ollamaResp.PromptEvalCount,
 				CompletionTokens: ollamaResp.EvalCount,
 				TokensPerSec:     tokPerSec,
-			})
+			}
+			runs = append(runs, record)
 
 			status := "FAIL"
 			if eval.DiagnosisCorrect && eval.ActionCorrect {
 				status = "PASS"
 			}
-			fmt.Printf("  Run %d/%d: %s (%.1fs, %d tok)\n",
-				run+1, flagRuns, status, latency, ollamaResp.EvalCount)
+
+			fmt.Printf("  Run %d/%d: %s (%.1fs, %d tok)\n", run+1, flagRuns, status, latency, ollamaResp.EvalCount)
 		}
 	}
 
-	report := newReport(tasks, results, runs)
+	report := newReport(tasks, results, runs, modelInfo)
 	printReport(report)
 	saveReport(report)
 }
 
 func callOllama(url, model, prompt string) (OllamaResponse, error) {
-	reqBody := OllamaRequest{Model: model, Prompt: prompt, Stream: false}
-	bodyBytes, err := json.Marshal(reqBody)
+	in := OllamaRequest{
+		Model:  model,
+		Prompt: prompt,
+		Stream: false,
+		Options: OllamaOptions{
+			Temperature: 0,
+			Seed:        int64(seed),
+		},
+	}
+
+	body, err := json.Marshal(in)
 	if err != nil {
 		return OllamaResponse{}, fmt.Errorf("marshal: %w", err)
 	}
 
-	resp, err := http.Post(url, "application/json", bytes.NewReader(bodyBytes))
+	res, err := http.Post(url, "application/json", bytes.NewReader(body))
 	if err != nil {
 		return OllamaResponse{}, fmt.Errorf("http: %w", err)
 	}
-	defer resp.Body.Close()
+	defer res.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(resp.Body)
-		return OllamaResponse{}, fmt.Errorf("status %d: %s", resp.StatusCode, string(body))
+	if res.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(res.Body)
+		return OllamaResponse{}, fmt.Errorf("status %d: %s", res.StatusCode, string(body))
 	}
 
-	var ollamaResp OllamaResponse
-	if err := json.NewDecoder(resp.Body).Decode(&ollamaResp); err != nil {
+	var out OllamaResponse
+	if err := json.NewDecoder(res.Body).Decode(&out); err != nil {
 		return OllamaResponse{}, fmt.Errorf("decode: %w", err)
 	}
-	return ollamaResp, nil
+
+	return out, nil
+}
+
+func fetchModelInfo(url, model string) OllamaShowResponse {
+	showURL := strings.TrimSuffix(url, "/api/generate") + "/api/show"
+	body, _ := json.Marshal(OllamaShowRequest{Name: model})
+	res, err := http.Post(showURL, "application/json", bytes.NewReader(body))
+	if err != nil {
+		log.Printf("Warning: cannot fetch model info: %v", err)
+		return OllamaShowResponse{}
+	}
+	defer res.Body.Close()
+
+	var out OllamaShowResponse
+	json.NewDecoder(res.Body).Decode(&out)
+	return out
 }
 
 // ---------------------------------------------------------------------------
 // Metrics computation
 // ---------------------------------------------------------------------------
 
-func newReport(tasks []llmbench.Task, results []llmbench.TaskResult, runs []Record) Report {
+func newReport(tasks []llmbench.Task, results []llmbench.Result, runs []Record, modelInfo OllamaShowResponse) Report {
 	totalRuns := len(results)
 
 	var (
@@ -317,17 +370,20 @@ func newReport(tasks []llmbench.Task, results []llmbench.TaskResult, runs []Reco
 	lae := llmbench.LatencyToActionEfficiency(esr, p50)
 	mttr := llmbench.MeanTimeToRecovery(successLatencies)
 
-	rng := rand.New(rand.NewSource(flagSeed))
+	rng := rand.New(rand.NewSource(seed))
 	ci := llmbench.BootstrapConfidenceInterval(successCount, totalRuns, 10000, 0.05, rng.Float64)
 
 	return Report{
 		Metadata: Metadata{
-			Model:       flagModel,
+			Model:       model,
+			ModelDigest: modelInfo.Digest,
+			ModelFamily: modelInfo.Details.Family,
+			ModelQuant:  modelInfo.Details.QuantizationLevel,
 			Timestamp:   time.Now().UTC().Format(time.RFC3339),
 			TotalTasks:  len(tasks),
 			RunsPerTask: flagRuns,
 			TotalRuns:   totalRuns,
-			Seed:        flagSeed,
+			Seed:        seed,
 		},
 		Metrics: Metrics{
 			ESR: esr, ESRCI: ci,
@@ -346,7 +402,7 @@ type levelAccum struct {
 	success, actionCorrect, hallucinated, entities, total int
 }
 
-func computePerLevel(tasks []llmbench.Task, results []llmbench.TaskResult) []LevelMetrics {
+func computePerLevel(tasks []llmbench.Task, results []llmbench.Result) []LevelMetrics {
 	taskLevel := make(map[string]llmbench.TaskLevel, len(tasks))
 	for _, t := range tasks {
 		taskLevel[t.ID] = t.Level
@@ -419,7 +475,7 @@ func computeRAGMetrics(tasks []llmbench.Task) RAGQualityMetrics {
 	}
 }
 
-func computePerTask(tasks []llmbench.Task, results []llmbench.TaskResult) []Summary {
+func computePerTask(tasks []llmbench.Task, results []llmbench.Result) []Summary {
 	summaries := make([]Summary, 0, len(tasks))
 	for _, t := range tasks {
 		var success, actionCorrect, hallucinated, entities, total int
@@ -500,7 +556,7 @@ func printReport(r Report) {
 			ts.TaskID, ts.Level, ts.ESR, ts.TSA, ts.CHR, ts.MeanLatSec)
 	}
 
-	fmt.Printf("\nResults saved to: %s\n", flagOutput)
+	fmt.Printf("\nResults saved to: %s\n", output)
 }
 
 func saveReport(r Report) {
@@ -510,8 +566,8 @@ func saveReport(r Report) {
 		return
 	}
 
-	if err := os.WriteFile(flagOutput, data, 0644); err != nil {
-		log.Printf("Error writing %s: %v", flagOutput, err)
+	if err := os.WriteFile(output, data, 0644); err != nil {
+		log.Printf("Error writing %s: %v", output, err)
 		return
 	}
 }
