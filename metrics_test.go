@@ -845,6 +845,122 @@ func TestCliffsEffectSizeLabel(t *testing.T) {
 }
 
 // ---------------------------------------------------------------------------
+// WilcoxonRankSum — Mann-Whitney U test
+// ---------------------------------------------------------------------------
+
+func TestWilcoxonRankSum(t *testing.T) {
+	t.Parallel()
+
+	t.Run("clearly_different_groups", func(t *testing.T) {
+		t.Parallel()
+		a := []float64{10, 11, 12, 13, 14, 15, 16, 17, 18, 19}
+		b := []float64{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
+		_, p := WilcoxonRankSum(a, b)
+		if p >= 0.05 {
+			t.Errorf("p=%f, expected p < 0.05 for non-overlapping groups", p)
+		}
+	})
+
+	t.Run("identical_groups_not_significant", func(t *testing.T) {
+		t.Parallel()
+		a := []float64{1, 2, 3, 4, 5}
+		b := []float64{1, 2, 3, 4, 5}
+		_, p := WilcoxonRankSum(a, b)
+		if p < 0.05 {
+			t.Errorf("p=%f, expected p >= 0.05 for identical groups", p)
+		}
+	})
+
+	t.Run("u_stat_is_zero_for_full_separation", func(t *testing.T) {
+		t.Parallel()
+		a := []float64{1, 2, 3}
+		b := []float64{4, 5, 6}
+		u, _ := WilcoxonRankSum(a, b)
+		if !approxEqual(u, 0.0, floatTolerance) {
+			t.Errorf("U=%f, want 0.0 (group A fully below group B)", u)
+		}
+	})
+
+	t.Run("symmetric_u", func(t *testing.T) {
+		t.Parallel()
+		a := []float64{4, 5, 6}
+		b := []float64{1, 2, 3}
+		u, _ := WilcoxonRankSum(a, b)
+		if !approxEqual(u, 0.0, floatTolerance) {
+			t.Errorf("U=%f, want 0.0 (min of U_A, U_B)", u)
+		}
+	})
+
+	t.Run("overlapping_groups", func(t *testing.T) {
+		t.Parallel()
+		a := []float64{1, 3, 5, 7, 9}
+		b := []float64{2, 4, 6, 8, 10}
+		_, p := WilcoxonRankSum(a, b)
+		if p < 0.05 {
+			t.Errorf("p=%f, expected p >= 0.05 for interleaved groups", p)
+		}
+	})
+
+	t.Run("empty_group_a", func(t *testing.T) {
+		t.Parallel()
+		_, p := WilcoxonRankSum(nil, []float64{1, 2, 3})
+		if p != 1.0 {
+			t.Errorf("p=%f, want 1.0 for empty group", p)
+		}
+	})
+
+	t.Run("empty_group_b", func(t *testing.T) {
+		t.Parallel()
+		_, p := WilcoxonRankSum([]float64{1, 2, 3}, nil)
+		if p != 1.0 {
+			t.Errorf("p=%f, want 1.0 for empty group", p)
+		}
+	})
+
+	t.Run("tied_values_handled", func(t *testing.T) {
+		t.Parallel()
+		a := []float64{1, 1, 1, 1, 1}
+		b := []float64{1, 1, 1, 1, 1}
+		_, p := WilcoxonRankSum(a, b)
+		if p < 0.05 {
+			t.Errorf("p=%f, expected p >= 0.05 for all tied values", p)
+		}
+	})
+}
+
+func TestWilcoxonSignificanceLabel(t *testing.T) {
+	t.Parallel()
+
+	t.Run("highly_significant", func(t *testing.T) {
+		t.Parallel()
+		if got := WilcoxonSignificanceLabel(0.0005); got != "***" {
+			t.Errorf("got %q, want ***", got)
+		}
+	})
+
+	t.Run("very_significant", func(t *testing.T) {
+		t.Parallel()
+		if got := WilcoxonSignificanceLabel(0.005); got != "**" {
+			t.Errorf("got %q, want **", got)
+		}
+	})
+
+	t.Run("significant", func(t *testing.T) {
+		t.Parallel()
+		if got := WilcoxonSignificanceLabel(0.03); got != "*" {
+			t.Errorf("got %q, want *", got)
+		}
+	})
+
+	t.Run("not_significant", func(t *testing.T) {
+		t.Parallel()
+		if got := WilcoxonSignificanceLabel(0.1); got != "n.s." {
+			t.Errorf("got %q, want n.s.", got)
+		}
+	})
+}
+
+// ---------------------------------------------------------------------------
 // Token Efficiency + Payload extraction
 // ---------------------------------------------------------------------------
 

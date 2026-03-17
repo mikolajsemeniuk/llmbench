@@ -5,17 +5,14 @@ import (
 	"math"
 	"sort"
 	"strings"
+
+	"gonum.org/v1/gonum/stat/distuv"
 )
 
-// ExecutionSuccessRate oblicza wskaźnik sukcesu wykonania zadań w środowisku (np. K8s).
+// ExecutionSuccessRate (ESR) measures the fraction of LLM-generated MCP tool
+// calls that achieved the expected end-state in the Kubernetes cluster.
 //
-// Opis: Określa, jaki ułamek wygenerowanych przez model poleceń MCP
-// faktycznie doprowadził do oczekiwanego stanu końcowego.
-//
-// Formuła:
 // $$\text{ESR} = \frac{E_{success}}{E_{total}}$$
-// Gdzie $E_{success}$ to liczba zadań, które zmieniły stan klastra zgodnie z intencją,
-// a $E_{total}$ to całkowita liczba przeprowadzonych eksperymentów.
 func ExecutionSuccessRate(successfulExecutions, totalExecutions int) float64 {
 	if totalExecutions == 0 {
 		return 0.0
@@ -23,15 +20,10 @@ func ExecutionSuccessRate(successfulExecutions, totalExecutions int) float64 {
 	return float64(successfulExecutions) / float64(totalExecutions)
 }
 
-// SyntaxValidationRate oblicza odsetek poprawnych składniowo odpowiedzi.
+// SyntaxValidationRate (SVR) measures the fraction of model responses that
+// parse without error as valid JSON or YAML, independent of semantic correctness.
 //
-// Opis: Mierzy, jak często model potrafi wygenerować poprawny format danych
-// (np. JSON dla argumentów MCP lub YAML dla manifestu K8s), który
-// przechodzi przez parser bez błędu rzutowania (unmarshal error).
-//
-// Formuła:
 // $$\text{SVR} = \frac{V_{valid}}{V_{total}}$$
-// Gdzie $V_{valid}$ to liczba odpowiedzi z poprawną składnią, a $V_{total}$ to liczba wszystkich odpowiedzi.
 func SyntaxValidationRate(validResponses, totalResponses int) float64 {
 	if totalResponses == 0 {
 		return 0.0
@@ -39,13 +31,9 @@ func SyntaxValidationRate(validResponses, totalResponses int) float64 {
 	return float64(validResponses) / float64(totalResponses)
 }
 
-// ToolSelectionAccuracy oblicza dokładność wyboru odpowiedniego narzędzia MCP.
+// ToolSelectionAccuracy (TSA) measures the model's ability to choose the
+// correct MCP tool from the available set, regardless of argument correctness.
 //
-// Opis: Ocenia zdolność modelu do wybrania właściwej funkcji (narzędzia) z dostępnej puli.
-// Nawet jeśli argumenty są błędne, weryfikujemy tu sam fakt podjęcia właściwej decyzji
-// (np. użycie `get_pod_logs` zamiast `delete_pod`).
-//
-// Formuła:
 // $$\text{TSA} = \frac{T_{correct}}{T_{total}}$$
 func ToolSelectionAccuracy(correctSelections, totalSelections int) float64 {
 	if totalSelections == 0 {
@@ -54,61 +42,39 @@ func ToolSelectionAccuracy(correctSelections, totalSelections int) float64 {
 	return float64(correctSelections) / float64(totalSelections)
 }
 
-// Tokenizer reprezentuje funkcję do zliczania tokenów (np. owrapowaną bibliotekę tiktoken lub model HF).
+// Tokenizer is a function that counts the number of tokens in a string
+// using a model-native tokenizer (e.g., tiktoken, HuggingFace tokenizers).
 type Tokenizer func(text string) int
 
-// CalculateTokenEfficiency kompleksowo oblicza TE (Token Efficiency) na podstawie surowej odpowiedzi modelu.
+// CalculateTokenEfficiency (TE) quantifies model verbosity by comparing the
+// machine-actionable JSON payload to the total completion length. The payload
+// is structurally minified to establish the theoretical minimum information
+// entropy before re-tokenization. A TE of 0 is assigned when the model fails
+// to produce valid JSON, penalizing non-actionable text generation.
 //
-// Opis: Ważna metryka przy porównywaniu gadatliwości modeli. Automatyzuje ona
-// proces ekstrakcji, minifikacji JSON-a oraz ponownej tokenizacji zminifikowanego
-// ładunku (payload), minimalizując w ten sposób szum i formatowanie.
-//
-// Formuła:
 // $$\text{TE} = \frac{\text{Tokens}_{payload}}{\text{Tokens}_{total}}$$
-//
-// Academic Methodology:
-// To eliminate subjective bias in evaluating model verbosity, the Token Efficiency (TE) metric was calculated deterministically.
-// We define the 'useful payload' strictly as the machine-actionable JSON parameters required by the Model Context Protocol (MCP).
-// For each successful tool call, the extracted JSON object was structurally minified (stripping whitespace and line breaks) to establish the theoretical minimum information entropy.
-// This minified string was then re-tokenized using the native tokenizer of the respective model (e.g., tiktoken for OpenAI models, HuggingFace tokenizers for Qwen).
-// The TE is the ratio of these payload tokens to the total completion tokens reported by the API.
-// If a model failed to produce valid, parsable JSON, its TE for that task was recorded as 0, penalizing the generation of non-actionable text.
 func CalculateTokenEfficiency(rawJSON string, totalCompletionTokens int, tokenize Tokenizer) float64 {
 	if totalCompletionTokens == 0 {
 		return 0.0
 	}
-
-	// 1. Ekstrakcja i minifikacja do postaci "Machine-Actionable Payload"
 	minifiedPayload, err := ExtractMachineActionablePayload(rawJSON)
 	if err != nil {
-		// Jeśli JSON nie jest poprawny (np. model zhalucynował zły format), TE wynosi 0.
 		return 0.0
 	}
-
-	// 2. Re-tokenizacja zminifikowanego tekstu natywnym tokenizerem
 	payloadTokens := tokenize(minifiedPayload)
-
-	// 3. Obliczenie efektywności
 	return float64(payloadTokens) / float64(totalCompletionTokens)
 }
 
-// ExtractMachineActionablePayload wyciąga i minifikuje parametry JSON niezbędne dla MCP.
+// ExtractMachineActionablePayload parses and re-serializes a JSON string to
+// its compact (whitespace-free) canonical form, establishing the theoretical
+// minimum information entropy of the payload.
 //
-// Opis: Realizuje założenie minimalnej entropii informacji (theoretical minimum information entropy).
-// Pomyślne zminifikowanie JSON-a gwarantuje brak sztucznego zawyżania użytecznych tokenów
-// przez formatowanie (spacje, taby, znaki nowej linii).
-//
-// Formuła minimalizacji szumu:
-// $$ P_{minified} = \min_{whitespace} \text{JSON}(P_{raw}) $$
+// $$P_{minified} = \min_{whitespace}\;\text{JSON}(P_{raw})$$
 func ExtractMachineActionablePayload(rawJSON string) (string, error) {
 	var parsed interface{}
-	// json.Unmarshal używa wbudowanego parsera do zdekodowania JSON-a
-	err := json.Unmarshal([]byte(rawJSON), &parsed)
-	if err != nil {
-		// Zgodnie z metodologią, jeśli nie jest poprawnym JSON-em, traktujemy to jako błąd (TE = 0)
+	if err := json.Unmarshal([]byte(rawJSON), &parsed); err != nil {
 		return "", err
 	}
-	// json.Marshal domyślnie minifikuje strukturę (usuwa spacje i taby)
 	minified, err := json.Marshal(parsed)
 	if err != nil {
 		return "", err
@@ -116,17 +82,11 @@ func ExtractMachineActionablePayload(rawJSON string) (string, error) {
 	return string(minified), nil
 }
 
-// ContextHallucinationRate oblicza wskaźnik halucynacji argumentów.
+// ContextHallucinationRate (CHR) measures the fraction of tool-call arguments
+// that do not appear in the provided RAG context, indicating fabrication from
+// model weights rather than grounding in the retrieved documents.
 //
-// Opis: W kontekście dużego szumu informacyjnego i optymalizacji K8s MCP kluczowe
-// jest, aby model nie zmyślał parametrów, które nie istnieją w kontekście
-// (np. nieistniejąca nazwa Poda wyciągnięta z wag zamiast z RAG-a).
-// Metryka ta sprawdza jaki ułamek argumentów narzędzia nie występował w dokumencie.
-//
-// Formuła:
 // $$\text{CHR} = \frac{A_{hallucinated}}{A_{total}}$$
-// Gdzie $A_{hallucinated}$ to liczba argumentów nieistniejących w kontekście,
-// a $A_{total}$ to całkowita liczba wygenerowanych argumentów.
 func ContextHallucinationRate(hallucinatedArgs, totalArgs int) float64 {
 	if totalArgs == 0 {
 		return 0.0
@@ -134,14 +94,11 @@ func ContextHallucinationRate(hallucinatedArgs, totalArgs int) float64 {
 	return float64(hallucinatedArgs) / float64(totalArgs)
 }
 
-// SchemaComplianceRate oblicza wskaźnik pełnej zgodności ze schematem narzędzia.
+// SchemaComplianceRate (SCR) measures the fraction of responses whose JSON
+// payload fully conforms to the expected MCP tool schema, including all
+// required fields, correct types, and no extraneous properties. Unlike SVR
+// which only checks syntactic validity, SCR enforces full schema adherence.
 //
-// Opis: SVR mierzy tylko poprawność składniową JSON-a (czy to w ogóle JSON).
-// SCR (Schema Compliance Rate) określa odsetek odpowiedzi, w których
-// payload w 100% pasuje do oczekiwanego schematu JSON narzędzia MCP (JSON Schema),
-// posiadając wszystkie wymagane pola i poprawne typy bez dodatkowych halucynacji.
-//
-// Formuła:
 // $$\text{SCR} = \frac{C_{schema\_valid}}{C_{total}}$$
 func SchemaComplianceRate(schemaValidResponses, totalResponses int) float64 {
 	if totalResponses == 0 {
@@ -150,15 +107,12 @@ func SchemaComplianceRate(schemaValidResponses, totalResponses int) float64 {
 	return float64(schemaValidResponses) / float64(totalResponses)
 }
 
-// ContextDensityScore (CDS) mierzy stopień wykorzystania dostarczonego kontekstu RAG.
+// ContextDensityScore (CDS) measures how effectively the model utilizes the
+// provided RAG context by computing the ratio of context-derived tokens that
+// appear in the generated MCP call to the total context window size.
+// A high CDS with low CHR indicates strong analytical extraction capability.
 //
-// Opis: Weryfikuje, czy model potrafi wyekstrahować kluczowe informacje z dużych manifestów K8s.
-// Wysoki CDS przy niskim CHR (Hallucination) dowodzi wyższej inteligencji analitycznej modelu.
-//
-// Formuła:
-// $$ \text{CDS} = \frac{T_{relevant}}{T_{context}} $$
-// Gdzie $T_{relevant}$ to liczba tokenów z kontekstu (np. nazwy podów, selektory)
-// faktycznie użytych w poprawnym wywołaniu MCP, a $T_{context}$ to całkowita długość okna kontekstowego.
+// $$\text{CDS} = \frac{T_{relevant}}{T_{context}}$$
 func ContextDensityScore(relevantTokens, contextWindowTokens int) float64 {
 	if contextWindowTokens == 0 {
 		return 0.0
@@ -166,15 +120,12 @@ func ContextDensityScore(relevantTokens, contextWindowTokens int) float64 {
 	return float64(relevantTokens) / float64(contextWindowTokens)
 }
 
-// LatencyToActionEfficiency (LAE) definiuje sprawność operacyjną modelu.
+// LatencyToActionEfficiency (LAE) captures operational efficiency by relating
+// execution success to response time. It enables comparison of low-latency
+// models (Qwen, DeepSeek) against high-latency models (Anthropic, Vertex)
+// in real-time DevOps scenarios where time-to-action is critical.
 //
-// Opis: Kluczowa metryka dla IEEE Access. Pokazuje relację sukcesu wykonania (ESR)
-// do czasu odpowiedzi. Pozwala wykazać przewagę modeli Qwen/DeepSeek (niski latency)
-// nad modelami takimi jak Anthropic/Vertex w zadaniach Real-time DevOps.
-//
-// Formuła:
-// $$ \text{LAE} = \frac{\text{ESR}}{L_{avg}} $$
-// Gdzie $L_{avg}$ to średni czas do wykonania akcji (Latency) wyrażony w sekundach.
+// $$\text{LAE} = \frac{\text{ESR}}{L_{avg}}$$
 func LatencyToActionEfficiency(esr float64, avgLatencySeconds float64) float64 {
 	if avgLatencySeconds <= 0 {
 		return 0.0
@@ -182,20 +133,11 @@ func LatencyToActionEfficiency(esr float64, avgLatencySeconds float64) float64 {
 	return esr / avgLatencySeconds
 }
 
-// =============================================================================
-// NOWE METRYKI — wymagane przez recenzentów IEEE/ACM/Elsevier
-// =============================================================================
-
-// FirstCallSuccessRate (FCSR) mierzy zdolność modelu do rozwiązania zadania
-// bez żadnego retry ani follow-up wywołania.
+// FirstCallSuccessRate (FCSR) measures the model's ability to solve a task on
+// the first attempt without any retry or follow-up call. In production K8s
+// environments, retries incur real operational cost and latency.
 //
-// Opis: Kluczowa metryka dla Real-Time DevOps. Odpowiada na pytanie:
-// "Czy model rozwiązał problem za PIERWSZYM razem?" — co jest fundamentalne
-// w środowiskach produkcyjnych K8s gdzie retry ma realny koszt operacyjny.
-// Recenzenci IEEE zawsze pytają o tę metrykę przy porównaniach LLM.
-//
-// Formuła:
-// $$\text{FCSR} = \frac{T_{solved\_in\_1\_call}}{T_{total}}$$
+// $$\text{FCSR} = \frac{T_{solved\_in\_1}}{T_{total}}$$
 func FirstCallSuccessRate(solvedInFirstCall, totalTasks int) float64 {
 	if totalTasks == 0 {
 		return 0.0
@@ -203,17 +145,11 @@ func FirstCallSuccessRate(solvedInFirstCall, totalTasks int) float64 {
 	return float64(solvedInFirstCall) / float64(totalTasks)
 }
 
-// MeanTimeToRecovery (MTTR) mierzy średni czas od wykrycia błędu przez LLM
-// do przywrócenia poprawnego stanu klastra K8s.
+// MeanTimeToRecovery (MTTR) adapts the classic SRE metric to LLM evaluation,
+// measuring the average wall-clock time from fault detection to successful
+// cluster state restoration across all recovery attempts.
 //
-// Opis: Adaptacja klasycznej metryki SRE (Site Reliability Engineering) do ewaluacji LLM.
-// Jest to innowacyjna kontrybucja — mapowanie metryki operacyjnej na zdolność modelu.
-// Niskie MTTR przy zachowanym ESR jest dowodem przewagi małych modeli (Qwen/DeepSeek)
-// w zadaniach edge DevOps nad dużymi modelami z wysoką latencją (Anthropic/Vertex).
-//
-// Formuła:
-// $$\text{MTTR} = \frac{1}{N} \sum_{i=1}^{N} (t_{resolved,i} - t_{detected,i})$$
-// Gdzie czasy są wyrażone w sekundach.
+// $$\text{MTTR} = \frac{1}{N}\sum_{i=1}^{N}(t_{resolved,i} - t_{detected,i})$$
 func MeanTimeToRecovery(recoveryDurationsSeconds []float64) float64 {
 	if len(recoveryDurationsSeconds) == 0 {
 		return 0.0
@@ -225,14 +161,13 @@ func MeanTimeToRecovery(recoveryDurationsSeconds []float64) float64 {
 	return sum / float64(len(recoveryDurationsSeconds))
 }
 
-// LatencyPercentile oblicza percentyl latencji (p50, p95, p99) z próbki pomiarów.
+// LatencyPercentile computes the p-th percentile of a latency sample using
+// linear interpolation consistent with NumPy's default method. Percentile
+// reporting (p50, p95, p99) is required over mean latency because the mean
+// is sensitive to outliers such as cold starts and API throttling.
 //
-// Opis: Zastępuje lub uzupełnia średnią latencję w LAE. Średnia jest wrażliwa na
-// outliers (np. cold start modelu, throttling API). Recenzenci IEEE Access
-// wymagają raportowania p95/p99 przy porównaniu modeli w warunkach produkcyjnych.
-// p50 = mediana (typowy przypadek), p95 = ogon rozkładu (SLA), p99 = worst-case.
-//
-// Użycie: percentile = 95.0 dla p95, 99.0 dla p99, 50.0 dla mediany.
+// $$L_{p} = (1 - f)\,x_{\lfloor i \rfloor} + f\,x_{\lceil i \rceil},
+// \quad i = \frac{p}{100}(n-1)$$
 func LatencyPercentile(latenciesSec []float64, percentile float64) float64 {
 	if len(latenciesSec) == 0 || percentile < 0 || percentile > 100 {
 		return 0.0
@@ -241,7 +176,6 @@ func LatencyPercentile(latenciesSec []float64, percentile float64) float64 {
 	copy(sorted, latenciesSec)
 	sort.Float64s(sorted)
 
-	// Interpolacja liniowa (metoda zgodna z numpy percentile)
 	idx := (percentile / 100.0) * float64(len(sorted)-1)
 	lower := int(math.Floor(idx))
 	upper := int(math.Ceil(idx))
@@ -252,15 +186,10 @@ func LatencyPercentile(latenciesSec []float64, percentile float64) float64 {
 	return sorted[lower]*(1-frac) + sorted[upper]*frac
 }
 
-// RAGPrecisionAtK oblicza precyzję retrievalu RAG dla top-K zwróconych dokumentów.
+// RAGPrecisionAtK (P@K) measures the fraction of the top-K retrieved
+// documents that are ground-truth relevant. It quantifies retriever quality
+// independently of the downstream LLM generation quality.
 //
-// Opis: KRYTYCZNA metryka dla artykułów o RAG w ACM TOIS i IP&M.
-// Mierzy jakość retrievera niezależnie od jakości generacji modelu LLM.
-// Bez tej metryki nie można odróżnić czy błędy LLM wynikają ze złego
-// rozumienia czy ze złego dostarczenia kontekstu przez retriever.
-// retrievedRelevant = liczba dokumentów w top-K które są ground-truth istotne.
-//
-// Formuła:
 // $$\text{P@K} = \frac{|\text{relevant} \cap \text{retrieved@K}|}{K}$$
 func RAGPrecisionAtK(retrievedRelevantCount, k int) float64 {
 	if k == 0 {
@@ -269,15 +198,11 @@ func RAGPrecisionAtK(retrievedRelevantCount, k int) float64 {
 	return float64(retrievedRelevantCount) / float64(k)
 }
 
-// RAGRecallAtK oblicza recall retrievalu RAG dla top-K zwróconych dokumentów.
+// RAGRecallAtK (R@K) measures the fraction of all corpus-relevant documents
+// that appear in the top-K retrieval results. High recall is critical when
+// omitting a key manifest (e.g., a ConfigMap with credentials) directly
+// causes MCP call failure.
 //
-// Opis: Uzupełnienie RAGPrecisionAtK. Razem tworzą pełny obraz jakości
-// retrieval pipeline dla manifestów K8s w RAG-u. Recall jest szczególnie
-// ważny gdy pominięcie kluczowego manifestu (np. ConfigMap z credentials)
-// bezpośrednio powoduje błąd MCP call.
-// totalRelevant = całkowita liczba istotnych dokumentów w korpusie.
-//
-// Formuła:
 // $$\text{R@K} = \frac{|\text{relevant} \cap \text{retrieved@K}|}{|\text{relevant}|}$$
 func RAGRecallAtK(retrievedRelevantCount, totalRelevantInCorpus int) float64 {
 	if totalRelevantInCorpus == 0 {
@@ -286,13 +211,12 @@ func RAGRecallAtK(retrievedRelevantCount, totalRelevantInCorpus int) float64 {
 	return float64(retrievedRelevantCount) / float64(totalRelevantInCorpus)
 }
 
-// RAGFScoreAtK oblicza harmoniczną średnią P@K i R@K (F1@K).
+// RAGFScoreAtK computes the weighted harmonic mean of P@K and R@K.
+// Beta=1.0 yields the standard F1 (equal weight). Beta<1 favors precision
+// (less noise in context); beta>1 favors recall (do not miss key manifests).
 //
-// Opis: Syntetyczna metryka RAG łącząca precyzję i recall w jedną liczbę.
-// Przydatna do porównań tabelarycznych w artykule gdy miejsce jest ograniczone.
-// Beta=1.0 daje klasyczne F1 (równa waga precyzji i recallu).
-// Beta=0.5 faworyzuje precyzję (mniej szumu w kontekście).
-// Beta=2.0 faworyzuje recall (nie pomijaj kluczowych manifestów).
+// $$F_{\beta}\text{@K} = (1+\beta^2)\,\frac{P\text{@K}\cdot R\text{@K}}
+// {\beta^2\,P\text{@K} + R\text{@K}}$$
 func RAGFScoreAtK(precisionAtK, recallAtK, beta float64) float64 {
 	if precisionAtK+recallAtK == 0 {
 		return 0.0
@@ -301,26 +225,23 @@ func RAGFScoreAtK(precisionAtK, recallAtK, beta float64) float64 {
 	return (1 + betaSq) * (precisionAtK * recallAtK) / (betaSq*precisionAtK + recallAtK)
 }
 
-// RecoveryPlanRationality (RPR) ocenia optymalność planu naprawczego zaproponowanego przez model.
+// RecoveryPlanRationality (RPR) evaluates the optimality of the model's
+// proposed MCP tool-call sequence against the ground-truth optimal sequence
+// using normalized Levenshtein edit distance over tool names.
+// RPR=1.0 indicates an identical plan; RPR=0.0 indicates complete mismatch.
 //
-// Opis: Mierzy podobieństwo sekwencji narzędzi MCP zaproponowanej przez model
-// do optymalnej sekwencji narzędzi (ground-truth). Używa znormalizowanej
-// odległości edycji (Levenshtein) na sekwencjach nazw narzędzi.
-// RPR=1.0 oznacza idealny plan, RPR=0.0 oznacza całkowicie błędny plan.
-//
-// Formuła:
-// $$\text{RPR} = 1 - \frac{\text{EditDist}(S_{model}, S_{optimal})}{\max(|S_{model}|, |S_{optimal}|)}$$
+// $$\text{RPR} = 1 - \frac{\text{EditDist}(S_{model},\,S_{optimal})}
+// {\max(|S_{model}|,\,|S_{optimal}|)}$$
 func RecoveryPlanRationality(modelToolSequence, optimalToolSequence []string) float64 {
 	dist := levenshteinDistance(modelToolSequence, optimalToolSequence)
 	maxLen := math.Max(float64(len(modelToolSequence)), float64(len(optimalToolSequence)))
 	if maxLen == 0 {
-		return 1.0 // Oba puste = idealny plan trywialny
+		return 1.0
 	}
 	return 1.0 - float64(dist)/maxLen
 }
 
-// levenshteinDistance oblicza odległość edycji między dwoma sekwencjami stringów.
-// Używana wewnętrznie przez RecoveryPlanRationality.
+// levenshteinDistance computes the edit distance between two string sequences.
 func levenshteinDistance(a, b []string) int {
 	la, lb := len(a), len(b)
 	dp := make([][]int, la+1)
@@ -345,16 +266,12 @@ func levenshteinDistance(a, b []string) int {
 	return dp[la][lb]
 }
 
-// MultiStepFaithfulnessScore (MFS) mierzy, czy każdy krok agenta bazuje
-// na faktycznym wyniku poprzedniego kroku, a nie na "zgadywaniu".
+// MultiStepFaithfulnessScore (MFS) measures whether each agent step is
+// grounded in the actual output of the preceding step, rather than
+// hallucinated. Adapted from the RAGAS Faithfulness metric for agentic
+// MCP environments where multi-step K8s tasks (diagnose, patch, verify)
+// require chained tool calls with data dependencies.
 //
-// Opis: Adaptacja metryki RAGAS Faithfulness do środowisk agentycznych MCP.
-// W wielokrokowych taskach K8s (np. diagnoza → patch → weryfikacja) model
-// może "halucynować" wynik kroku N i użyć go w kroku N+1, mimo że
-// faktyczny wynik MCP był inny. MFS wykrywa takie odsprzężenie.
-// groundedSteps = kroki gdzie argumenty kroku N+1 wynikają z odpowiedzi kroku N.
-//
-// Formuła:
 // $$\text{MFS} = \frac{S_{grounded}}{S_{total}}$$
 func MultiStepFaithfulnessScore(groundedSteps, totalSteps int) float64 {
 	if totalSteps == 0 {
@@ -363,15 +280,11 @@ func MultiStepFaithfulnessScore(groundedSteps, totalSteps int) float64 {
 	return float64(groundedSteps) / float64(totalSteps)
 }
 
-// ErrorRecoveryRate (ERR) mierzy zdolność modelu do samodzielnej korekty błędu MCP.
+// ErrorRecoveryRate (ERR) measures the model's self-correction capability:
+// after receiving an error response from the MCP server (e.g., "pod not
+// found"), can the model autonomously generate a corrected call without
+// additional user intervention?
 //
-// Opis: Mierzy self-correction — czy model po otrzymaniu error response
-// (np. "pod not found", "invalid namespace") potrafi samodzielnie
-// wygenerować poprawne wywołanie bez dodatkowej interwencji użytkownika.
-// Jest to advantage mniejszych modeli (Qwen/DeepSeek) przy dobrze
-// zbudowanym RAG-u, który dostarcza kontekst naprawczy.
-//
-// Formuła:
 // $$\text{ERR} = \frac{T_{self\_corrected}}{T_{with\_initial\_error}}$$
 func ErrorRecoveryRate(selfCorrectedTasks, tasksWithInitialError int) float64 {
 	if tasksWithInitialError == 0 {
@@ -380,15 +293,11 @@ func ErrorRecoveryRate(selfCorrectedTasks, tasksWithInitialError int) float64 {
 	return float64(selfCorrectedTasks) / float64(tasksWithInitialError)
 }
 
-// ContextTruncationRate (CTR) mierzy, jak często manifest K8s nie mieści się
-// w oknie kontekstowym i musi być obcinany przed wysłaniem do modelu.
+// ContextTruncationRate (CTR) measures how often a K8s manifest exceeds the
+// model's context window and must be truncated before submission. High CTR
+// for small-context models (e.g., 8K tokens) demonstrates a limitation that
+// RAG-based selective retrieval can compensate for.
 //
-// Opis: Krytyczna metryka dla porównania małych modeli (krótsze okno kontekstowe,
-// np. 8k tokenów) vs gigantów (128k+ tokenów). Wysokie CTR u małego modelu
-// pokazuje ograniczenie które RAG może kompensować przez selektywny retrieval.
-// Jest to kluczowy argument dla Twojej tezy o RAG-assisted small models.
-//
-// Formuła:
 // $$\text{CTR} = \frac{T_{truncated}}{T_{total}}$$
 func ContextTruncationRate(truncatedTasks, totalTasks int) float64 {
 	if totalTasks == 0 {
@@ -397,23 +306,14 @@ func ContextTruncationRate(truncatedTasks, totalTasks int) float64 {
 	return float64(truncatedTasks) / float64(totalTasks)
 }
 
-// =============================================================================
-// STATYSTYKI — wymóg recenzentów, nie opcja
-// =============================================================================
-
-// BootstrapConfidenceInterval oblicza 95% przedział ufności metodą bootstrap
-// dla dowolnej metryki wyrażonej jako stosunek sukcesów do prób.
+// BootstrapConfidenceInterval computes a (1-alpha) confidence interval for a
+// proportion metric using parametric bootstrap on a Binomial distribution.
+// For each of nBootstrap iterations, successes are resampled from
+// Bernoulli(p_observed) and the resulting proportion is recorded.
+// The CI bounds are taken at the alpha/2 and 1-alpha/2 quantiles of the
+// bootstrap distribution. nBootstrap=10000 is the academic standard.
 //
-// Opis: WYMÓG recenzentów ACM TOIS, IP&M i IEEE Access przy porównaniu modeli.
-// Bez CI nie można twierdzić że model A jest lepszy od modelu B —
-// różnica może być przypadkowa przy małej próbce (n<100 eksperymentów).
-// Zwraca [dolna_granica, górna_granica] dla poziomu ufności 1-alpha (domyślnie 0.05 → 95% CI).
-//
-// Metodologia: Parametryczny bootstrap na rozkładzie Binomialnym.
-// Dla każdej próbki losujemy successes ~ Binomial(n, p_observed).
-// nBootstrap=10000 jest standardem akademickim.
-//
-// Zwraca: [lowerBound, upperBound]
+// Returns [lower, upper] bounds.
 func BootstrapConfidenceInterval(successes, total, nBootstrap int, alpha float64, rng func() float64) [2]float64 {
 	if total == 0 || nBootstrap == 0 {
 		return [2]float64{0.0, 0.0}
@@ -422,7 +322,6 @@ func BootstrapConfidenceInterval(successes, total, nBootstrap int, alpha float64
 	samples := make([]float64, nBootstrap)
 
 	for i := range samples {
-		// Symulacja próbki bootstrap: losujemy n obserwacji z rozkładu Bernoulli(p_obs)
 		bootstrapSuccesses := 0
 		for j := 0; j < total; j++ {
 			if rng() < pObs {
@@ -442,20 +341,16 @@ func BootstrapConfidenceInterval(successes, total, nBootstrap int, alpha float64
 	return [2]float64{samples[lowerIdx], samples[upperIdx]}
 }
 
-// CliffsDelta oblicza efekt wielkości Cliff's δ między dwoma próbkami wyników.
+// CliffsData computes Cliff's delta (δ) effect size between two independent
+// samples. Unlike Cohen's d, Cliff's δ is non-parametric and appropriate for
+// ordinal or non-continuous data such as ESR and FCSR. δ ∈ [-1, 1] where
+// δ > 0 indicates stochastic dominance of groupA over groupB. Effect size
+// thresholds follow Romano et al. (2006):
+//   - |δ| < 0.147: negligible
+//   - |δ| < 0.330: small
+//   - |δ| < 0.474: medium
+//   - |δ| ≥ 0.474: large
 //
-// Opis: WYMÓG dla IEEE Access i ACM TOIS przy porównaniach LLM.
-// Testy statystyczne (t-test, Wilcoxon) informują czy różnica jest istotna,
-// ale nie mówią jak DUŻA jest różnica. Cliff's δ ∈ [-1, 1]:
-//   - |δ| < 0.147 → efekt znikomy (negligible)
-//   - |δ| < 0.330 → efekt mały (small)
-//   - |δ| < 0.474 → efekt średni (medium)
-//   - |δ| ≥ 0.474 → efekt duży (large)
-//
-// Interpretacja dla artykułu: δ > 0 oznacza że modelA stochastycznie dominuje modelB.
-// Preferowany nad Cohen's d dla danych nieciągłych (jak ESR, FCSR).
-//
-// Formuła:
 // $$\delta = \frac{|\{(i,j): a_i > b_j\}| - |\{(i,j): a_i < b_j\}|}{n_a \cdot n_b}$$
 func CliffsData(groupA, groupB []float64) float64 {
 	na, nb := len(groupA), len(groupB)
@@ -475,7 +370,8 @@ func CliffsData(groupA, groupB []float64) float64 {
 	return float64(dominates-dominated) / float64(na*nb)
 }
 
-// CliffsEffectSizeLabel zwraca tekstowy label wielkości efektu wg standardu Romano et al.
+// CliffsEffectSizeLabel returns a human-readable effect size label for a
+// given Cliff's δ value following the Romano et al. (2006) thresholds.
 func CliffsEffectSizeLabel(delta float64) string {
 	abs := math.Abs(delta)
 	switch {
@@ -490,20 +386,107 @@ func CliffsEffectSizeLabel(delta float64) string {
 	}
 }
 
-// =============================================================================
-// POMOCNICZE — ekstrakcja tokenów z kontekstu RAG
-// =============================================================================
-
-// CountRelevantTokensFromContext liczy tokeny z payload MCP które faktycznie
-// pochodzą z dostarczonego kontekstu RAG (token overlap).
+// WilcoxonRankSum performs the Wilcoxon rank-sum test (equivalent to the
+// Mann-Whitney U test) on two independent samples. This non-parametric test
+// determines whether two populations differ without assuming normality,
+// which is critical for LLM metrics where distributions are often discrete
+// or heavily skewed. The implementation includes the tied-rank variance
+// correction following Conover (1999).
 //
-// Opis: Operacyjna implementacja T_relevant dla metryki CDS.
-// Używa prostego token overlap (split by whitespace) między
-// zminifikowanym payloadem MCP a surowym tekstem kontekstu RAG.
-// W artykule można tę metodę rozszerzyć o BM25 lub cosine similarity
-// dla bardziej zaawansowanej wersji.
+// Returns the U statistic (min of U_A, U_B) and a two-tailed p-value
+// derived from the normal approximation.
+//
+// $$U_A = R_A - \frac{n_a(n_a+1)}{2},\quad
+// z = \frac{U_A - \mu_U}{\sigma_U},\quad
+// p = 2\,\Phi(-|z|)$$
+//
+// where $\sigma_U$ includes the tied-rank correction:
+//
+// $$\sigma_U = \sqrt{\frac{n_a n_b}{12}
+// \left(N+1 - \frac{\sum(t_k^3 - t_k)}{N(N-1)}\right)}$$
+func WilcoxonRankSum(groupA, groupB []float64) (uStat float64, pValue float64) {
+	na, nb := len(groupA), len(groupB)
+	if na == 0 || nb == 0 {
+		return 0, 1.0
+	}
+
+	type entry struct {
+		value float64
+		group int
+	}
+
+	n := na + nb
+	combined := make([]entry, 0, n)
+	for _, v := range groupA {
+		combined = append(combined, entry{v, 0})
+	}
+	for _, v := range groupB {
+		combined = append(combined, entry{v, 1})
+	}
+	sort.Slice(combined, func(i, j int) bool {
+		return combined[i].value < combined[j].value
+	})
+
+	ranks := make([]float64, n)
+	var tieCorrection float64
+	for i := 0; i < n; {
+		j := i
+		for j < n && combined[j].value == combined[i].value {
+			j++
+		}
+		avg := float64(i+j+1) / 2.0
+		t := float64(j - i)
+		tieCorrection += t*t*t - t
+		for k := i; k < j; k++ {
+			ranks[k] = avg
+		}
+		i = j
+	}
+
+	var rankSumA float64
+	for i, e := range combined {
+		if e.group == 0 {
+			rankSumA += ranks[i]
+		}
+	}
+
+	uA := rankSumA - float64(na*(na+1))/2.0
+	uB := float64(na*nb) - uA
+	uStat = math.Min(uA, uB)
+
+	meanU := float64(na*nb) / 2.0
+	nf := float64(n)
+	sigma := math.Sqrt(float64(na*nb) / 12.0 * (nf + 1.0 - tieCorrection/(nf*(nf-1.0))))
+	if sigma == 0 {
+		return uStat, 1.0
+	}
+
+	z := (uA - meanU) / sigma
+	normal := distuv.Normal{Mu: 0, Sigma: 1}
+	pValue = 2.0 * normal.Survival(math.Abs(z))
+
+	return uStat, pValue
+}
+
+// WilcoxonSignificanceLabel returns the conventional significance label for
+// a p-value: "***" (p<0.001), "**" (p<0.01), "*" (p<0.05), "n.s." otherwise.
+func WilcoxonSignificanceLabel(pValue float64) string {
+	switch {
+	case pValue < 0.001:
+		return "***"
+	case pValue < 0.01:
+		return "**"
+	case pValue < 0.05:
+		return "*"
+	default:
+		return "n.s."
+	}
+}
+
+// CountRelevantTokensFromContext counts tokens in the MCP payload JSON that
+// also appear in the RAG context text, implementing the T_relevant numerator
+// for the CDS metric. Uses case-insensitive word-level overlap.
 func CountRelevantTokensFromContext(mcpPayloadJSON, ragContextText string, tokenize Tokenizer) int {
-	// Tokenizacja przez split na słowa (uproszczona wersja dla demonstracji)
 	payloadWords := tokenizeToWords(mcpPayloadJSON)
 	contextWords := tokenizeToWords(ragContextText)
 
@@ -521,38 +504,31 @@ func CountRelevantTokensFromContext(mcpPayloadJSON, ragContextText string, token
 	return relevantCount
 }
 
+// tokenizeToWords splits text on whitespace and JSON structural characters,
+// filtering out single-character tokens.
 func tokenizeToWords(text string) []string {
-	// Prosta tokenizacja — w produkcji zastąp natywnym tokenizerem modelu
 	words := strings.FieldsFunc(text, func(r rune) bool {
 		return r == ' ' || r == '\n' || r == '\t' || r == '"' ||
 			r == '{' || r == '}' || r == ':' || r == ','
 	})
 	result := make([]string, 0, len(words))
 	for _, w := range words {
-		if len(w) > 1 { // Filtruj jednoznakowe tokeny interpunkcyjne
+		if len(w) > 1 {
 			result = append(result, w)
 		}
 	}
 	return result
 }
 
-// =============================================================================
-// UZUPEŁNIENIE DLA ACM TOIS / IP&M: ZAAWANSOWANY INFORMATION RETRIEVAL
-// =============================================================================
-
-// MeanReciprocalRank (MRR) mierzy jak szybko RAG dostarcza pierwszą trafną odpowiedź.
+// MeanReciprocalRank (MRR) measures how quickly the RAG retriever places the
+// first relevant document in the ranking. Unlike P@K and R@K which measure
+// whether the relevant document was retrieved at all, MRR penalizes placing
+// it at a lower rank position. A standard IR metric required by ACM TOIS.
 //
-// Opis: Kluczowa metryka IR uzupełniająca P@K i R@K. O ile P@K i R@K mierzą
-// "czy w ogóle dostarczono właściwy dokument", MRR mierzy "jak wysoko w prompcie
-// ten dokument się znalazł". Małe modele (Qwen/DeepSeek) są bardzo wrażliwe na
-// pozycję kluczowego manifestu K8s w kontekście — jeśli poprawny chunk jest
-// na pozycji 5 zamiast 1, skuteczność spada (patrz: LostInTheMiddleVulnerability).
-// Recenzenci ACM TOIS i IP&M traktują MRR jako standard dla systemów IR.
+// $$\text{MRR} = \frac{1}{|Q|}\sum_{i=1}^{|Q|}\frac{1}{\text{rank}_i}$$
 //
-// Formuła:
-// $$\text{MRR} = \frac{1}{|Q|} \sum_{i=1}^{|Q|} \frac{1}{\text{rank}_i}$$
-// Gdzie rank_i to pozycja (1-indexed) pierwszego trafnego dokumentu w i-tym zapytaniu.
-// Jeśli żaden dokument nie był trafny dla zapytania i, wkład do sumy wynosi 0.
+// where rank_i is the 1-indexed position of the first relevant document for
+// query i. If no relevant document was retrieved, the contribution is 0.
 func MeanReciprocalRank(ranksOfFirstRelevant []int) float64 {
 	if len(ranksOfFirstRelevant) == 0 {
 		return 0.0
@@ -562,29 +538,18 @@ func MeanReciprocalRank(ranksOfFirstRelevant []int) float64 {
 		if rank > 0 {
 			sum += 1.0 / float64(rank)
 		}
-		// rank <= 0 oznacza brak trafnego dokumentu w wynikach — wkład = 0
 	}
 	return sum / float64(len(ranksOfFirstRelevant))
 }
 
-// NDCGAtK (Normalized Discounted Cumulative Gain) ocenia jakość rankingu RAG-a.
+// NDCGAtK (Normalized Discounted Cumulative Gain) evaluates the quality of
+// the RAG retriever's document ranking using graded relevance scores
+// (e.g., 3=primary target, 1=related resource, 0=noise). Unlike P@K, NDCG
+// penalizes placing a highly relevant document at a low rank position through
+// logarithmic discounting. The gold standard ranking metric in ACM TOIS.
 //
-// Opis: Złoty standard oceny rankingu w ACM TOIS. Wymaga przypisania stopni
-// trafności (relevance grades) do każdego zwróconego dokumentu, np.:
-//   - 3 = idealny manifest (zawiera dokładnie szukany Pod/Deployment)
-//   - 1 = powiązany (ten sam namespace, inny zasób)
-//   - 0 = szum (niezwiązany YAML)
-//
-// Przewaga nad P@K: NDCG karze za umieszczenie trafnego dokumentu na niskiej
-// pozycji (discounting przez log2). Udowadnia, że Twój retriever nie tylko
-// znajduje właściwe manifesty K8s, ale układa je optymalnie dla modelu.
-// idealRelevances to posortowana malejąco lista idealnych stopni trafności
-// (teoretyczna najlepsza kolejność — służy do normalizacji przez IDCG).
-//
-// Formuła:
-// $$\text{NDCG@K} = \frac{\text{DCG@K}}{\text{IDCG@K}}, \quad
-//
-//	\text{DCG@K} = \sum_{i=1}^{K} \frac{2^{rel_i} - 1}{\log_2(i+1)}$$
+// $$\text{NDCG@K} = \frac{\text{DCG@K}}{\text{IDCG@K}},\quad
+// \text{DCG@K} = \sum_{i=1}^{K}\frac{2^{rel_i}-1}{\log_2(i+1)}$$
 func NDCGAtK(retrievedRelevances []float64, idealRelevances []float64, k int) float64 {
 	if k == 0 || len(retrievedRelevances) == 0 {
 		return 0.0
@@ -606,101 +571,61 @@ func NDCGAtK(retrievedRelevances []float64, idealRelevances []float64, k int) fl
 	return dcg / idcg
 }
 
-// LostInTheMiddleVulnerability (LMV) mierzy podatność modelu na fenomen
-// "Lost in the Middle" — ignorowanie informacji w środku promptu.
+// LostInTheMiddleVulnerability (LMV) quantifies a model's sensitivity to
+// the position of relevant information within the prompt, based on the
+// "Lost in the Middle" phenomenon (Liu et al., 2023). The metric is computed
+// by running identical tasks with the key manifest placed at edge positions
+// (first or last) versus the middle of the RAG context.
 //
-// Opis: Innowacyjna metryka specyficzna dla ewaluacji LLM w kontekście RAG.
-// Badania (Liu et al., 2023) pokazują że modele językowe (zwłaszcza mniejsze)
-// znacznie gorzej wykorzystują informacje umieszczone w środku długiego promptu
-// niż na jego początku lub końcu. W kontekście K8s: jeśli kluczowy manifest
-// Poda jest na pozycji 3/5 w kontekście RAG, małe modele mogą go pominąć.
+//   - LMV > 0.10: strong positional sensitivity, requires RAG chunk reordering
+//   - LMV ≈ 0:    uniform context processing
+//   - LMV < 0:    paradoxically better middle processing (rare)
 //
-// Interpretacja wyników:
-//   - LMV > 0.10 → model wykazuje silną wrażliwość — wymaga reorderu chunków RAG
-//   - LMV ≈ 0    → model równomiernie przetwarza cały kontekst
-//   - LMV < 0    → model paradoksalnie lepiej radzi sobie ze środkiem (rzadkie)
-//
-// Metodologia eksperymentu: uruchom te same taski K8s trzykrotnie, za każdym
-// razem zmieniając pozycję kluczowego manifestu (początek/środek/koniec promptu).
-// esrEdges = ESR gdy manifest na pozycji 1 lub K (skraje kontekstu).
-// esrMiddle = ESR gdy manifest na pozycji środkowej.
-//
-// Formuła:
 // $$\text{LMV} = \text{ESR}_{edges} - \text{ESR}_{middle}$$
 func LostInTheMiddleVulnerability(esrEdges, esrMiddle float64) float64 {
 	return esrEdges - esrMiddle
 }
 
-// =============================================================================
-// UZUPEŁNIENIE DLA IEEE ACCESS / ESWA: EKONOMIA I BEZPIECZEŃSTWO
-// =============================================================================
-
-// CostEfficiencyScore (CES) mierzy liczbę udanych akcji MCP na jednostkę kosztu.
+// CostEfficiencyScore (CES) measures the number of successful MCP actions
+// per unit of API cost (USD). For locally deployed models (Ollama, vLLM)
+// where per-token cost is zero, CES returns +Inf, which is mathematically
+// correct and represents the key cost advantage of local deployment.
 //
-// Opis: Kluczowy argument w artykułach IEEE Access i ESWA porównujących modele
-// pod kątem production-readiness. Qwen/DeepSeek mogą mieć ESR niższe o 5-10pp
-// od modeli Anthropic/Vertex, ale jeśli ich koszt API jest 50-100x niższy,
-// CES jest gigantycznym argumentem za stosowaniem małych modeli w Edge K8s.
-// Wynik w jednostkach: liczba udanych akcji MCP per 1 USD wydany na API.
-// Dla lokalnych modeli (Ollama, vLLM) totalCostUSD → 0, CES → +Inf,
-// co jest matematycznie poprawne i fabularnie silnym argumentem w artykule.
-//
-// Formuła:
 // $$\text{CES} = \frac{E_{success}}{\text{TotalCost}_{\$}}$$
 func CostEfficiencyScore(successfulExecutions int, totalCostUSD float64) float64 {
 	if totalCostUSD <= 0 {
-		// Lokalny model (np. Qwen na vLLM) = koszt infrastruktury, nie per-token.
-		// Zwracamy +Inf jako sygnał — w artykule opisz to jako "not applicable (local deployment)".
 		return math.Inf(1)
 	}
 	return float64(successfulExecutions) / totalCostUSD
 }
 
-// DestructiveActionAttemptRate (DAAR) mierzy wskaźnik prób wykonania niebezpiecznych akcji K8s.
+// DestructiveActionAttemptRate (DAAR) measures the fraction of MCP tool calls
+// that target a blacklisted destructive operation (e.g., delete_namespace,
+// force-delete without grace period). A DAAR of 0% is a prerequisite for
+// production deployment and demonstrates that RAG-based intent filtering
+// improves operational safety.
 //
-// Opis: Metryka bezpieczeństwa wymagana przez recenzentów ESWA i IEEE Access
-// przy artykułach o autonomicznych agentach w środowiskach produkcyjnych.
-// Mierzy, jak często model (wskutek halucynacji lub złego RAG-a) próbuje użyć
-// narzędzi z czarnej listy bez autoryzacji, np.:
-//   - delete_namespace (usunięcie całego namespace'u)
-//   - delete_pod bez flagi --grace-period
-//   - patch_deployment z image: "latest" (niebezpieczna praktyka)
-//
-// Niskie DAAR (idealnie 0%) jest wymogiem do wdrożenia produkcyjnego i silnym
-// argumentem że RAG z filtrowaniem intencji zwiększa bezpieczeństwo operacyjne.
-// destructiveAttempts = liczba wywołań narzędzi z czarnej listy zaobserwowanych
-// podczas całego eksperymentu, niezależnie od tego czy się powiodły.
-//
-// Formuła:
 // $$\text{DAAR} = \frac{A_{destructive}}{A_{total}}$$
 func DestructiveActionAttemptRate(destructiveAttempts, totalActionAttempts int) float64 {
 	if totalActionAttempts == 0 {
 		return 0.0
 	}
-
 	return float64(destructiveAttempts) / float64(totalActionAttempts)
 }
 
-// ContextCompressionRatio (CCR) mierzy efektywność optymalizacji kontekstu RAG.
+// ContextCompressionRatio (CCR) measures the effectiveness of context
+// optimization techniques (e.g., stripping managedFields, removing empty
+// annotations, YAML-to-JSON compression) by comparing the original and
+// compressed prompt token counts. CCR directly reduces CTR and API cost.
+// A value of 0.5 means the prompt was shortened by 50%.
 //
-// Opis: Jeśli stosujesz innowacyjne metody budowy i minifikacji kontekstu K8s
-// (np. usuwanie pola `managedFields` z manifestów, usuwanie pustych annotacji,
-// kompresja wieloliniowych YAML-i do JSON), CCR pokazuje wymierny zysk:
-// o ile % skróciłeś prompt nie tracąc informacji potrzebnych do wywołania MCP.
-// Bezpośrednio przekłada się na niższy CTR (Context Truncation Rate) i niższy
-// koszt API (mniej tokenów promptu = niższy totalCostUSD w CES).
-// Wartość 0.0 = brak kompresji, 0.5 = prompt o 50% krótszy, 1.0 = niemożliwe.
-//
-// Formuła:
 // $$\text{CCR} = \frac{T_{original} - T_{compressed}}{T_{original}}$$
 func ContextCompressionRatio(originalTokens, compressedTokens int) float64 {
 	if originalTokens == 0 {
 		return 0.0
 	}
-
 	if compressedTokens >= originalTokens {
-		return 0.0 // Kompresja nie może zwiększyć rozmiaru — zwróć 0 zamiast wartości ujemnej
+		return 0.0
 	}
-
 	return float64(originalTokens-compressedTokens) / float64(originalTokens)
 }
