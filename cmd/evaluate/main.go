@@ -66,93 +66,6 @@ var (
 	flagAPIKey   string
 )
 
-// ---------------------------------------------------------------------------
-// Report types
-// ---------------------------------------------------------------------------
-
-type Report struct {
-	Metadata  Metadata          `json:"metadata"`
-	Metrics   Metrics           `json:"aggregate"`
-	PerLevel  []LevelMetrics    `json:"per_level"`
-	RAG       RAGQualityMetrics `json:"rag_quality"`
-	Summaries []Summary         `json:"per_task"`
-	Records   []Record          `json:"runs"`
-}
-
-type Metadata struct {
-	Provider    string `json:"provider"`
-	Model       string `json:"model"`
-	ModelDigest string `json:"model_digest,omitempty"`
-	ModelFamily string `json:"model_family,omitempty"`
-	ModelQuant  string `json:"model_quantization,omitempty"`
-	Timestamp   string `json:"timestamp"`
-	TotalTasks  int    `json:"total_tasks"`
-	RunsPerTask int    `json:"runs_per_task"`
-	TotalRuns   int    `json:"total_runs"`
-	Seed        int64  `json:"random_seed"`
-}
-
-type Metrics struct {
-	ESR        float64    `json:"esr"`
-	ESRCI      [2]float64 `json:"esr_ci_95"`
-	TSA        float64    `json:"tsa"`
-	CHR        float64    `json:"chr"`
-	DAAR       float64    `json:"daar"`
-	FCSR       float64    `json:"fcsr"`
-	LAE        float64    `json:"lae"`
-	MTTR       float64    `json:"mttr_sec"`
-	LatencyP50 float64    `json:"latency_p50_sec"`
-	LatencyP95 float64    `json:"latency_p95_sec"`
-	LatencyP99 float64    `json:"latency_p99_sec"`
-}
-
-type LevelMetrics struct {
-	Name string  `json:"name"`
-	ESR  float64 `json:"esr"`
-	TSA  float64 `json:"tsa"`
-	CHR  float64 `json:"chr"`
-	Runs int     `json:"runs"`
-}
-
-type RAGQualityMetrics struct {
-	MeanPrecisionAtK float64 `json:"mean_precision_at_k"`
-	MeanRecallAtK    float64 `json:"mean_recall_at_k"`
-	MeanMRR          float64 `json:"mean_mrr"`
-	MeanNDCGAtK      float64 `json:"mean_ndcg_at_k"`
-	MeanFScoreAtK    float64 `json:"mean_f1_at_k"`
-}
-
-type Summary struct {
-	TaskID     string  `json:"task_id"`
-	Level      string  `json:"level"`
-	ESR        float64 `json:"esr"`
-	TSA        float64 `json:"tsa"`
-	CHR        float64 `json:"chr"`
-	MeanLatSec float64 `json:"mean_latency_sec"`
-}
-
-type Record struct {
-	TaskID           string  `json:"task_id"`
-	RunIndex         int     `json:"run_index"`
-	LatencySec       float64 `json:"latency_sec"`
-	DiagCorrect      bool    `json:"diagnosis_correct"`
-	ActionCorrect    bool    `json:"action_correct"`
-	Hallucinations   int     `json:"hallucinations"`
-	TotalEntities    int     `json:"total_entities"`
-	Destructive      bool    `json:"destructive_action"`
-	PromptTokens     int     `json:"prompt_tokens"`
-	CompletionTokens int     `json:"completion_tokens"`
-	TokensPerSec     float64 `json:"tokens_per_sec"`
-	Error            string  `json:"error,omitempty"`
-}
-
-// ---------------------------------------------------------------------------
-// Provider construction
-// ---------------------------------------------------------------------------
-
-// newProvider reads the CLI flags and returns the appropriate Provider.
-// Adding a new provider family means adding one case here — the rest of
-// main.go is completely unaffected.
 func newProvider() Provider {
 	switch strings.ToLower(flagProvider) {
 	case "ollama":
@@ -164,10 +77,6 @@ func newProvider() Provider {
 		return nil // unreachable
 	}
 }
-
-// ---------------------------------------------------------------------------
-// Main benchmark loop
-// ---------------------------------------------------------------------------
 
 func main() {
 	flag.StringVar(&flagProvider, "provider", "ollama", "Model provider: ollama | anthropic")
@@ -216,7 +125,7 @@ func main() {
 
 	var (
 		results []llmbench.Result
-		records []Record
+		records []llmbench.Record
 	)
 
 	ctx := context.Background()
@@ -241,7 +150,7 @@ func main() {
 					TotalArgs:        len(task.GroundTruth.ContextEntities),
 					HallucinatedArgs: len(task.GroundTruth.ContextEntities),
 				})
-				records = append(records, Record{
+				records = append(records, llmbench.Record{
 					TaskID:         task.ID,
 					RunIndex:       run,
 					LatencySec:     latency,
@@ -265,7 +174,7 @@ func main() {
 				tokPerSec = float64(resp.CompletionTokens) / latency
 			}
 
-			records = append(records, Record{
+			records = append(records, llmbench.Record{
 				TaskID:           task.ID,
 				RunIndex:         run,
 				LatencySec:       latency,
@@ -293,17 +202,13 @@ func main() {
 	saveReport(report)
 }
 
-// ---------------------------------------------------------------------------
-// Metrics computation  (unchanged logic, now provider-agnostic)
-// ---------------------------------------------------------------------------
-
 func buildReport(
 	provider Provider,
 	modelDigest, modelFamily, modelQuant string,
 	tasks []llmbench.Task,
 	results []llmbench.Result,
-	records []Record,
-) Report {
+	records []llmbench.Record,
+) llmbench.Report {
 	totalRuns := len(results)
 
 	var (
@@ -367,8 +272,8 @@ func buildReport(
 		modelName = parts[1]
 	}
 
-	return Report{
-		Metadata: Metadata{
+	return llmbench.Report{
+		Metadata: llmbench.Metadata{
 			Provider:    providerName,
 			Model:       modelName,
 			ModelDigest: modelDigest,
@@ -380,7 +285,7 @@ func buildReport(
 			TotalRuns:   totalRuns,
 			Seed:        flagSeed,
 		},
-		Metrics: Metrics{
+		Metrics: llmbench.Metrics{
 			ESR: esr, ESRCI: ci,
 			TSA: tsa, CHR: chr, DAAR: daar,
 			FCSR: fcsr, LAE: lae, MTTR: mttr,
@@ -393,7 +298,7 @@ func buildReport(
 	}
 }
 
-func computePerLevel(tasks []llmbench.Task, results []llmbench.Result) []LevelMetrics {
+func computePerLevel(tasks []llmbench.Task, results []llmbench.Result) []llmbench.LevelMetrics {
 	taskLevel := make(map[string]llmbench.TaskLevel, len(tasks))
 	for _, t := range tasks {
 		taskLevel[t.ID] = t.Level
@@ -427,13 +332,13 @@ func computePerLevel(tasks []llmbench.Task, results []llmbench.Result) []LevelMe
 		string(llmbench.LevelRepair),
 		string(llmbench.LevelMultiStep),
 	}
-	var out []LevelMetrics
+	var out []llmbench.LevelMetrics
 	for _, level := range order {
 		v, ok := accum[level]
 		if !ok {
 			continue
 		}
-		out = append(out, LevelMetrics{
+		out = append(out, llmbench.LevelMetrics{
 			Name: level,
 			ESR:  llmbench.ExecutionSuccessRate(v.success, v.total),
 			TSA:  llmbench.ToolSelectionAccuracy(v.actionCorrect, v.total),
@@ -444,7 +349,7 @@ func computePerLevel(tasks []llmbench.Task, results []llmbench.Result) []LevelMe
 	return out
 }
 
-func computeRAGMetrics(tasks []llmbench.Task) RAGQualityMetrics {
+func computeRAGMetrics(tasks []llmbench.Task) llmbench.RAGQualityMetrics {
 	var sumP, sumR, sumMRR, sumNDCG float64
 	for _, t := range tasks {
 		p, r, m, n := llmbench.ComputeTaskRAGMetrics(t)
@@ -456,7 +361,7 @@ func computeRAGMetrics(tasks []llmbench.Task) RAGQualityMetrics {
 	nt := float64(len(tasks))
 	meanP := sumP / nt
 	meanR := sumR / nt
-	return RAGQualityMetrics{
+	return llmbench.RAGQualityMetrics{
 		MeanPrecisionAtK: meanP,
 		MeanRecallAtK:    meanR,
 		MeanMRR:          sumMRR / nt,
@@ -465,8 +370,8 @@ func computeRAGMetrics(tasks []llmbench.Task) RAGQualityMetrics {
 	}
 }
 
-func computePerTask(tasks []llmbench.Task, results []llmbench.Result) []Summary {
-	summaries := make([]Summary, 0, len(tasks))
+func computePerTask(tasks []llmbench.Task, results []llmbench.Result) []llmbench.Summary {
+	summaries := make([]llmbench.Summary, 0, len(tasks))
 	for _, t := range tasks {
 		var success, actionCorrect, hallucinated, entities, total int
 		var totalLat float64
@@ -489,7 +394,7 @@ func computePerTask(tasks []llmbench.Task, results []llmbench.Result) []Summary 
 		if total > 0 {
 			meanLat = totalLat / float64(total)
 		}
-		summaries = append(summaries, Summary{
+		summaries = append(summaries, llmbench.Summary{
 			TaskID:     t.ID,
 			Level:      string(t.Level),
 			ESR:        llmbench.ExecutionSuccessRate(success, total),
@@ -502,7 +407,7 @@ func computePerTask(tasks []llmbench.Task, results []llmbench.Result) []Summary 
 	return summaries
 }
 
-func printReport(r Report) {
+func printReport(r llmbench.Report) {
 	sep := strings.Repeat("=", 60)
 	fmt.Printf("\n%s\n", sep)
 	fmt.Println("BENCHMARK REPORT")
@@ -547,7 +452,7 @@ func printReport(r Report) {
 	fmt.Printf("\nResults saved to: %s\n", flagOutput)
 }
 
-func saveReport(r Report) {
+func saveReport(r llmbench.Report) {
 	data, err := json.MarshalIndent(r, "", "  ")
 	if err != nil {
 		log.Printf("Error marshaling report: %v", err)

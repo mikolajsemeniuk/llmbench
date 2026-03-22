@@ -29,10 +29,6 @@ import (
 	"github.com/mikolajsemeniuk/llmbench"
 )
 
-// ---------------------------------------------------------------------------
-// CLI flags
-// ---------------------------------------------------------------------------
-
 var (
 	flagA      string
 	flagB      string
@@ -44,183 +40,6 @@ func init() {
 	flag.StringVar(&flagB, "b", "", "Path to second benchmark JSON (required)")
 	flag.StringVar(&flagOutput, "output", "compare.json", "Output path for comparison JSON")
 }
-
-// ---------------------------------------------------------------------------
-// Input types — mirror evaluate/main.go Report exactly so json.Unmarshal works
-// ---------------------------------------------------------------------------
-
-type Report struct {
-	Metadata  Metadata          `json:"metadata"`
-	Metrics   Metrics           `json:"aggregate"`
-	PerLevel  []LevelMetrics    `json:"per_level"`
-	RAG       RAGQualityMetrics `json:"rag_quality"`
-	Summaries []Summary         `json:"per_task"`
-	Records   []Record          `json:"runs"`
-}
-
-type Metadata struct {
-	Provider    string `json:"provider"`
-	Model       string `json:"model"`
-	ModelDigest string `json:"model_digest,omitempty"`
-	ModelFamily string `json:"model_family,omitempty"`
-	ModelQuant  string `json:"model_quantization,omitempty"`
-	Timestamp   string `json:"timestamp"`
-	TotalTasks  int    `json:"total_tasks"`
-	RunsPerTask int    `json:"runs_per_task"`
-	TotalRuns   int    `json:"total_runs"`
-	Seed        int64  `json:"random_seed"`
-}
-
-type Metrics struct {
-	ESR        float64    `json:"esr"`
-	ESRCI      [2]float64 `json:"esr_ci_95"`
-	TSA        float64    `json:"tsa"`
-	CHR        float64    `json:"chr"`
-	DAAR       float64    `json:"daar"`
-	FCSR       float64    `json:"fcsr"`
-	LAE        float64    `json:"lae"`
-	MTTR       float64    `json:"mttr_sec"`
-	LatencyP50 float64    `json:"latency_p50_sec"`
-	LatencyP95 float64    `json:"latency_p95_sec"`
-	LatencyP99 float64    `json:"latency_p99_sec"`
-}
-
-type LevelMetrics struct {
-	Name string  `json:"name"`
-	ESR  float64 `json:"esr"`
-	TSA  float64 `json:"tsa"`
-	CHR  float64 `json:"chr"`
-	Runs int     `json:"runs"`
-}
-
-type RAGQualityMetrics struct {
-	MeanPrecisionAtK float64 `json:"mean_precision_at_k"`
-	MeanRecallAtK    float64 `json:"mean_recall_at_k"`
-	MeanMRR          float64 `json:"mean_mrr"`
-	MeanNDCGAtK      float64 `json:"mean_ndcg_at_k"`
-	MeanFScoreAtK    float64 `json:"mean_f1_at_k"`
-}
-
-type Summary struct {
-	TaskID     string  `json:"task_id"`
-	Level      string  `json:"level"`
-	ESR        float64 `json:"esr"`
-	TSA        float64 `json:"tsa"`
-	CHR        float64 `json:"chr"`
-	MeanLatSec float64 `json:"mean_latency_sec"`
-}
-
-type Record struct {
-	TaskID           string  `json:"task_id"`
-	RunIndex         int     `json:"run_index"`
-	LatencySec       float64 `json:"latency_sec"`
-	DiagCorrect      bool    `json:"diagnosis_correct"`
-	ActionCorrect    bool    `json:"action_correct"`
-	Hallucinations   int     `json:"hallucinations"`
-	TotalEntities    int     `json:"total_entities"`
-	Destructive      bool    `json:"destructive_action"`
-	PromptTokens     int     `json:"prompt_tokens"`
-	CompletionTokens int     `json:"completion_tokens"`
-	TokensPerSec     float64 `json:"tokens_per_sec"`
-	Error            string  `json:"error,omitempty"`
-}
-
-// ---------------------------------------------------------------------------
-// Output types — CompareReport
-// ---------------------------------------------------------------------------
-
-// CompareReport is written to compare.json and read by cmd/report.
-type CompareReport struct {
-	// GeneratedAt is the UTC timestamp of this comparison run.
-	GeneratedAt string `json:"generated_at"`
-
-	// ModelA / ModelB are the full provider/model strings, e.g.
-	// "ollama/qwen2.5:3b-instruct".
-	ModelA string `json:"model_a"`
-	ModelB string `json:"model_b"`
-
-	// Aggregate holds the metric values for both models side-by-side
-	// with the statistical test result for each metric.
-	Aggregate []MetricComparison `json:"aggregate"`
-
-	// PerLevel holds level-by-level breakdowns for both models.
-	PerLevel []LevelComparison `json:"per_level"`
-
-	// PerTask allows per-task delta visualisation in the report.
-	PerTask []TaskComparison `json:"per_task"`
-
-	// Raw holds the original reports for display/download.
-	Raw struct {
-		A Report `json:"a"`
-		B Report `json:"b"`
-	} `json:"raw"`
-}
-
-// MetricComparison holds a head-to-head comparison for a single scalar metric.
-type MetricComparison struct {
-	// Name is the metric abbreviation, e.g. "ESR", "TSA".
-	Name string `json:"name"`
-
-	// FullName is the human-readable label for the report UI.
-	FullName string `json:"full_name"`
-
-	// HigherIsBetter controls the colour coding in the report template:
-	// true → higher value is green; false (CHR, DAAR, latency) → lower is green.
-	HigherIsBetter bool `json:"higher_is_better"`
-
-	ValueA float64 `json:"value_a"`
-	ValueB float64 `json:"value_b"`
-
-	// Delta = ValueA - ValueB (positive means A is better for HigherIsBetter metrics).
-	Delta float64 `json:"delta"`
-
-	// WilcoxonU is the U statistic from the rank-sum test on per-run values.
-	// Present only for metrics that have a per-run sample (ESR, TSA, CHR).
-	// For scalar-only metrics (LAE, MTTR) this is 0.
-	WilcoxonU float64 `json:"wilcoxon_u"`
-
-	// PValue is the two-sided p-value before correction.
-	PValue float64 `json:"p_value"`
-
-	// PValueCorrected is Bonferroni-corrected over the number of metrics tested.
-	PValueCorrected float64 `json:"p_value_corrected"`
-
-	// Significance is the conventional label: "***", "**", "*", or "n.s."
-	Significance string `json:"significance"`
-
-	// EffectSize is the rank-biserial correlation r (range −1 to +1).
-	// Magnitude: |r| < 0.1 = negligible, 0.1–0.3 = small, 0.3–0.5 = medium, >0.5 = large.
-	EffectSize float64 `json:"effect_size_r"`
-
-	// EffectLabel is "negligible", "small", "medium", or "large".
-	EffectLabel string `json:"effect_label"`
-}
-
-// LevelComparison holds per-level ESR/TSA/CHR for both models.
-type LevelComparison struct {
-	Level string  `json:"level"`
-	ESRA  float64 `json:"esr_a"`
-	ESRB  float64 `json:"esr_b"`
-	TSAA  float64 `json:"tsa_a"`
-	TSAB  float64 `json:"tsa_b"`
-	CHRA  float64 `json:"chr_a"`
-	CHRB  float64 `json:"chr_b"`
-	RunsA int     `json:"runs_a"`
-	RunsB int     `json:"runs_b"`
-}
-
-// TaskComparison holds per-task ESR delta (A − B) for the scatter view.
-type TaskComparison struct {
-	TaskID string  `json:"task_id"`
-	Level  string  `json:"level"`
-	ESRA   float64 `json:"esr_a"`
-	ESRB   float64 `json:"esr_b"`
-	Delta  float64 `json:"delta"` // ESRA − ESRB
-}
-
-// ---------------------------------------------------------------------------
-// Main
-// ---------------------------------------------------------------------------
 
 func main() {
 	flag.Parse()
@@ -236,11 +55,7 @@ func main() {
 	mustWriteJSON(flagOutput, out)
 }
 
-// ---------------------------------------------------------------------------
-// Comparison builder
-// ---------------------------------------------------------------------------
-
-func buildCompare(a, b Report) CompareReport {
+func buildCompare(a, b llmbench.Report) llmbench.CompareReport {
 	// Collect per-run binary vectors for statistical tests.
 	// success[i] = 1.0 if run i was DiagnosisCorrect && ActionCorrect, else 0.0
 	successA := successVector(a.Records)
@@ -259,7 +74,7 @@ func buildCompare(a, b Report) CompareReport {
 	// We test: ESR, TSA, CHR, latency_p50 = 4 comparisons.
 	const nTests = 4
 
-	aggregate := []MetricComparison{
+	aggregate := []llmbench.MetricComparison{
 		metricCmp("ESR", "Execution Success Rate", true, a.Metrics.ESR, b.Metrics.ESR, successA, successB, nTests),
 		metricCmp("TSA", "Tool Selection Accuracy", true, a.Metrics.TSA, b.Metrics.TSA, actionA, actionB, nTests),
 		metricCmp("CHR", "Context Hallucination Rate", false, a.Metrics.CHR, b.Metrics.CHR, chrA, chrB, nTests),
@@ -275,7 +90,7 @@ func buildCompare(a, b Report) CompareReport {
 	perLevel := buildPerLevel(a, b)
 	perTask := buildPerTask(a, b)
 
-	cr := CompareReport{
+	cr := llmbench.CompareReport{
 		GeneratedAt: time.Now().UTC().Format(time.RFC3339),
 		ModelA:      a.Metadata.Provider + "/" + a.Metadata.Model,
 		ModelB:      b.Metadata.Provider + "/" + b.Metadata.Model,
@@ -290,12 +105,12 @@ func buildCompare(a, b Report) CompareReport {
 
 // metricCmp builds a MetricComparison for metrics that have per-run samples
 // (enables Wilcoxon + effect size).
-func metricCmp(name, fullName string, higherIsBetter bool, va, vb float64, samplesA, samplesB []float64, nTests int) MetricComparison {
+func metricCmp(name, fullName string, higherIsBetter bool, va, vb float64, samplesA, samplesB []float64, nTests int) llmbench.MetricComparison {
 	u, p := llmbench.WilcoxonRankSum(samplesA, samplesB)
 	pCorrected := math.Min(p*float64(nTests), 1.0) // Bonferroni
 	sig := llmbench.WilcoxonSignificanceLabel(pCorrected)
 	r := rankBiserialR(u, len(samplesA), len(samplesB))
-	return MetricComparison{
+	return llmbench.MetricComparison{
 		Name:            name,
 		FullName:        fullName,
 		HigherIsBetter:  higherIsBetter,
@@ -312,8 +127,8 @@ func metricCmp(name, fullName string, higherIsBetter bool, va, vb float64, sampl
 }
 
 // scalarCmp builds a MetricComparison for scalar-only metrics (no per-run sample).
-func scalarCmp(name, fullName string, higherIsBetter bool, va, vb float64) MetricComparison {
-	return MetricComparison{
+func scalarCmp(name, fullName string, higherIsBetter bool, va, vb float64) llmbench.MetricComparison {
+	return llmbench.MetricComparison{
 		Name:           name,
 		FullName:       fullName,
 		HigherIsBetter: higherIsBetter,
@@ -325,25 +140,25 @@ func scalarCmp(name, fullName string, higherIsBetter bool, va, vb float64) Metri
 	}
 }
 
-func buildPerLevel(a, b Report) []LevelComparison {
-	indexA := make(map[string]LevelMetrics)
+func buildPerLevel(a, b llmbench.Report) []llmbench.LevelComparison {
+	indexA := make(map[string]llmbench.LevelMetrics)
 	for _, l := range a.PerLevel {
 		indexA[l.Name] = l
 	}
-	indexB := make(map[string]LevelMetrics)
+	indexB := make(map[string]llmbench.LevelMetrics)
 	for _, l := range b.PerLevel {
 		indexB[l.Name] = l
 	}
 
 	order := []string{"L1-diagnostic", "L2-repair", "L3-multi-step"}
-	out := make([]LevelComparison, 0, len(order))
+	out := make([]llmbench.LevelComparison, 0, len(order))
 	for _, level := range order {
 		la, oka := indexA[level]
 		lb, okb := indexB[level]
 		if !oka && !okb {
 			continue
 		}
-		out = append(out, LevelComparison{
+		out = append(out, llmbench.LevelComparison{
 			Level: level,
 			ESRA:  la.ESR, ESRB: lb.ESR,
 			TSAA: la.TSA, TSAB: lb.TSA,
@@ -354,16 +169,16 @@ func buildPerLevel(a, b Report) []LevelComparison {
 	return out
 }
 
-func buildPerTask(a, b Report) []TaskComparison {
-	indexB := make(map[string]Summary)
+func buildPerTask(a, b llmbench.Report) []llmbench.TaskComparison {
+	indexB := make(map[string]llmbench.Summary)
 	for _, s := range b.Summaries {
 		indexB[s.TaskID] = s
 	}
 
-	out := make([]TaskComparison, 0, len(a.Summaries))
+	out := make([]llmbench.TaskComparison, 0, len(a.Summaries))
 	for _, sa := range a.Summaries {
 		sb := indexB[sa.TaskID]
-		out = append(out, TaskComparison{
+		out = append(out, llmbench.TaskComparison{
 			TaskID: sa.TaskID,
 			Level:  sa.Level,
 			ESRA:   sa.ESR,
@@ -381,7 +196,7 @@ func buildPerTask(a, b Report) []TaskComparison {
 // ---------------------------------------------------------------------------
 
 // successVector returns 1.0 per run that was fully successful, 0.0 otherwise.
-func successVector(records []Record) []float64 {
+func successVector(records []llmbench.Record) []float64 {
 	v := make([]float64, len(records))
 	for i, r := range records {
 		if r.DiagCorrect && r.ActionCorrect {
@@ -391,7 +206,7 @@ func successVector(records []Record) []float64 {
 	return v
 }
 
-func actionVector(records []Record) []float64 {
+func actionVector(records []llmbench.Record) []float64 {
 	v := make([]float64, len(records))
 	for i, r := range records {
 		if r.ActionCorrect {
@@ -402,7 +217,7 @@ func actionVector(records []Record) []float64 {
 }
 
 // chrVector returns the per-run hallucination fraction.
-func chrVector(records []Record) []float64 {
+func chrVector(records []llmbench.Record) []float64 {
 	v := make([]float64, len(records))
 	for i, r := range records {
 		if r.TotalEntities > 0 {
@@ -412,7 +227,7 @@ func chrVector(records []Record) []float64 {
 	return v
 }
 
-func latencyVector(records []Record) []float64 {
+func latencyVector(records []llmbench.Record) []float64 {
 	v := make([]float64, len(records))
 	for i, r := range records {
 		v[i] = r.LatencySec
@@ -457,15 +272,17 @@ func effectLabel(absR float64) string {
 // I/O helpers
 // ---------------------------------------------------------------------------
 
-func mustReadReport(path string) Report {
+func mustReadReport(path string) llmbench.Report {
 	data, err := os.ReadFile(path)
 	if err != nil {
 		log.Fatalf("cannot read %s: %v", path, err)
 	}
-	var r Report
+
+	var r llmbench.Report
 	if err := json.Unmarshal(data, &r); err != nil {
 		log.Fatalf("cannot parse %s: %v", path, err)
 	}
+
 	return r
 }
 

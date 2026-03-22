@@ -19,5 +19,5 @@ go run ./cmd/compare/main.go -a qwen.json -b llama-pro.json -output compare.json
 ## Show result
 
 ```sh
-go run ./cmd/reportv2/main.go -file compare.json
+go run ./cmd/report/main.go -file compare.json
 ```

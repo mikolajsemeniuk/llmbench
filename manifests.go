@@ -809,10 +809,6 @@ status:
   lastScheduleTime: "2024-11-01T06:00:00Z"
   lastSuccessfulTime: "2024-11-01T06:05:00Z"`
 
-// =============================================================================
-// DODATKOWY SZUM RAG
-// =============================================================================
-
 // NoiseManifestNamespace to drugi szumowy manifest — prosty Namespace.
 const NoiseManifestNamespace = `apiVersion: v1
 kind: Namespace
