@@ -2,23 +2,30 @@ package main
 
 // LLMBench: K8s MCP Benchmark Runner
 //
-// Runs the full benchmark suite against a local Ollama model, evaluates responses
-// using deterministic keyword-based ground truth, and reports metrics required
-// by ACM TOIS, IP&M, IEEE Access, and ESWA reviewers.
+// Runs the full benchmark suite against any supported model provider,
+// evaluates responses using deterministic keyword-based ground truth, and
+// reports metrics required by ACM TOIS, IP&M, IEEE Access, and ESWA reviewers.
 //
-// Usage:
-//   ollama pull qwen2.5:3b-instruct
-//   go run ./cmd/qwen_esr/ -model qwen2.5:3b-instruct -runs 5 -output results.json
+// Usage — Ollama (local, free):
+//
+//	ollama pull qwen2.5:3b-instruct
+//	go run ./cmd/evaluate -provider ollama -model qwen2.5:3b-instruct  -runs 5 -output qwen.json
+//
+//	ollama pull deepseek-r1:7b
+//	go run ./cmd/evaluate -provider ollama -model deepseek-r1:7b       -runs 5 -output deepseek.json
+//
+// Usage — Anthropic ceiling baseline:
+//
+//	export ANTHROPIC_API_KEY=sk-...
+//	go run ./cmd/evaluate -provider anthropic -model claude-sonnet-4-6 -runs 3 -output claude.json
 
 import (
-	"bytes"
+	"context"
 	"encoding/json"
 	"flag"
 	"fmt"
-	"io"
 	"log"
 	"math/rand"
-	"net/http"
 	"os"
 	"strings"
 	"time"
@@ -26,43 +33,41 @@ import (
 	"github.com/mikolajsemeniuk/llmbench"
 )
 
-type OllamaRequest struct {
-	Model   string        `json:"model"`
-	Prompt  string        `json:"prompt"`
-	Stream  bool          `json:"stream"`
-	Options OllamaOptions `json:"options"`
+// Provider is the single abstraction that isolates all model-specific
+// HTTP / SDK logic from the benchmark runner. Every model family (Ollama,
+// Anthropic, OpenAI, …) implements exactly this interface.
+//
+// The runner calls Complete once per (task, run) pair and is otherwise
+// unaware of the underlying transport.
+type Provider interface {
+	// Name returns a stable, human-readable identifier written into the
+	// report metadata (e.g. "ollama/qwen2.5:3b-instruct",
+	// "anthropic/claude-sonnet-4-6"). Used as the primary key when
+	// comparing runs across providers in the paper.
+	Name() string
+
+	// Complete sends prompt to the model and returns the completion.
+	// Implementations must be safe to call concurrently if the runner
+	// ever parallelises runs, but the current runner is sequential.
+	//
+	// Returning a non-nil error causes the runner to record the run as
+	// failed (DiagnosisCorrect=false, full hallucination count) without
+	// aborting the benchmark.
+	ChatCompletion(ctx context.Context, prompt string) (llmbench.Response, error)
 }
 
-type OllamaOptions struct {
-	Temperature float64 `json:"temperature"`
-	Seed        int64   `json:"seed"`
-}
-
-type OllamaResponse struct {
-	Response        string `json:"response"`
-	Done            bool   `json:"done"`
-	TotalDuration   int64  `json:"total_duration"`
-	PromptEvalCount int    `json:"prompt_eval_count"`
-	EvalCount       int    `json:"eval_count"`
-	EvalDuration    int64  `json:"eval_duration"`
-}
-
-type OllamaShowRequest struct {
-	Name string `json:"name"`
-}
-
-type OllamaShowResponse struct {
-	Digest  string `json:"digest"`
-	Details struct {
-		Format            string `json:"format"`
-		Family            string `json:"family"`
-		ParameterSize     string `json:"parameter_size"`
-		QuantizationLevel string `json:"quantization_level"`
-	} `json:"details"`
-}
+var (
+	flagProvider string
+	flagModel    string
+	flagURL      string
+	flagRuns     int
+	flagOutput   string
+	flagSeed     int64
+	flagAPIKey   string
+)
 
 // ---------------------------------------------------------------------------
-// Report types — structured output for reproducibility
+// Report types
 // ---------------------------------------------------------------------------
 
 type Report struct {
@@ -75,10 +80,11 @@ type Report struct {
 }
 
 type Metadata struct {
+	Provider    string `json:"provider"`
 	Model       string `json:"model"`
-	ModelDigest string `json:"model_digest"`
-	ModelFamily string `json:"model_family"`
-	ModelQuant  string `json:"model_quantization"`
+	ModelDigest string `json:"model_digest,omitempty"`
+	ModelFamily string `json:"model_family,omitempty"`
+	ModelQuant  string `json:"model_quantization,omitempty"`
 	Timestamp   string `json:"timestamp"`
 	TotalTasks  int    `json:"total_tasks"`
 	RunsPerTask int    `json:"runs_per_task"`
@@ -141,50 +147,79 @@ type Record struct {
 }
 
 // ---------------------------------------------------------------------------
+// Provider construction
+// ---------------------------------------------------------------------------
+
+// newProvider reads the CLI flags and returns the appropriate Provider.
+// Adding a new provider family means adding one case here — the rest of
+// main.go is completely unaffected.
+func newProvider() Provider {
+	switch strings.ToLower(flagProvider) {
+	case "ollama":
+		return llmbench.NewOllamaProvider(flagURL, flagModel, 0, flagSeed)
+	// case "anthropic":
+	// 	return llmbench.NewAnthropicProvider(flagAPIKey, flagModel, 0, flagSeed)
+	default:
+		log.Fatalf("unknown provider %q — supported: ollama, anthropic", flagProvider)
+		return nil // unreachable
+	}
+}
+
+// ---------------------------------------------------------------------------
 // Main benchmark loop
 // ---------------------------------------------------------------------------
 
-var (
-	model    string
-	flagURL  string
-	flagRuns int
-	output   string
-	seed     int64
-)
-
 func main() {
-	flag.StringVar(&model, "model", "qwen2.5:3b-instruct", "Ollama model name")
-	flag.StringVar(&flagURL, "url", "http://localhost:11434/api/generate", "Ollama API URL")
+	flag.StringVar(&flagProvider, "provider", "ollama", "Model provider: ollama | anthropic")
+	flag.StringVar(&flagModel, "model", "qwen2.5:3b-instruct", "Model identifier (Ollama tag or Anthropic model string)")
+	flag.StringVar(&flagURL, "url", "http://localhost:11434", "Base URL for Ollama server (ignored for non-Ollama providers)")
 	flag.IntVar(&flagRuns, "runs", 5, "Number of independent runs per task")
-	flag.StringVar(&output, "output", "results.json", "Output JSON file path")
-	flag.Int64Var(&seed, "seed", 42, "Random seed for bootstrap CI (reproducibility)")
+	flag.StringVar(&flagOutput, "output", "results.json", "Path for the JSON report output")
+	flag.Int64Var(&flagSeed, "seed", 42, "Random seed for bootstrap CI (set identically across provider runs)")
+	flag.StringVar(&flagAPIKey, "api-key", "", "API key (overrides ANTHROPIC_API_KEY env var for Anthropic provider)")
 	flag.Parse()
 
+	provider := newProvider()
 	tasks := llmbench.BenchmarkTasks()
 	totalRuns := len(tasks) * flagRuns
 
 	fmt.Println("=== LLMBench: K8s MCP Benchmark ===")
-	fmt.Printf("Model:       %s\n", model)
+	fmt.Printf("Provider:    %s\n", provider.Name())
 	fmt.Printf("Tasks:       %d (L1=%d, L2=%d, L3=%d)\n",
-		len(tasks), countLevel(tasks, llmbench.LevelDiagnostic),
-		countLevel(tasks, llmbench.LevelRepair), countLevel(tasks, llmbench.LevelMultiStep))
+		len(tasks),
+		countLevel(tasks, llmbench.LevelDiagnostic),
+		countLevel(tasks, llmbench.LevelRepair),
+		countLevel(tasks, llmbench.LevelMultiStep),
+	)
 	fmt.Printf("Runs/task:   %d\n", flagRuns)
 	fmt.Printf("Total runs:  %d\n", totalRuns)
-	fmt.Printf("Seed:        %d\n", seed)
+	fmt.Printf("Seed:        %d\n", flagSeed)
 	fmt.Println()
 
-	modelInfo := fetchModelInfo(flagURL, model)
-	if modelInfo.Digest != "" {
-		fmt.Printf("Digest:      %s\n", modelInfo.Digest[:12])
-		fmt.Printf("Family:      %s\n", modelInfo.Details.Family)
-		fmt.Printf("Quant:       %s\n", modelInfo.Details.QuantizationLevel)
+	// For Ollama providers, fetch and print model metadata.
+	var modelDigest, modelFamily, modelQuant string
+	if op, ok := provider.(*llmbench.OllamaProvider); ok {
+		if info, err := op.ModelInfo(); err == nil && info.Digest != "" {
+			modelDigest = info.Digest
+			modelFamily = info.Details.Family
+			modelQuant = info.Details.QuantizationLevel
+			if len(modelDigest) > 12 {
+				fmt.Printf("Digest:      %s\n", modelDigest[:12])
+			}
+			fmt.Printf("Family:      %s\n", modelFamily)
+			fmt.Printf("Quant:       %s\n", modelQuant)
+			fmt.Println()
+		} else if err != nil {
+			log.Printf("Warning: cannot fetch Ollama model info: %v", err)
+		}
 	}
-	fmt.Println()
 
 	var (
 		results []llmbench.Result
-		runs    []Record
+		records []Record
 	)
+
+	ctx := context.Background()
 
 	for _, task := range tasks {
 		fmt.Printf("[%s] %s\n", task.ID, task.Description)
@@ -192,47 +227,45 @@ func main() {
 
 		for run := 0; run < flagRuns; run++ {
 			start := time.Now()
-			ollamaResp, err := callOllama(flagURL, model, prompt)
+			resp, err := provider.ChatCompletion(ctx, prompt)
 			latency := time.Since(start).Seconds()
+			resp.LatencySec = latency
 
 			if err != nil {
 				fmt.Printf("  Run %d/%d: ERROR (%v)\n", run+1, flagRuns, err)
-				result := llmbench.Result{
+
+				results = append(results, llmbench.Result{
 					TaskID:           task.ID,
 					RunIndex:         run,
 					LatencySec:       latency,
 					TotalArgs:        len(task.GroundTruth.ContextEntities),
 					HallucinatedArgs: len(task.GroundTruth.ContextEntities),
-				}
-				results = append(results, result)
-
-				record := Record{
+				})
+				records = append(records, Record{
 					TaskID:         task.ID,
 					RunIndex:       run,
 					LatencySec:     latency,
 					TotalEntities:  len(task.GroundTruth.ContextEntities),
 					Hallucinations: len(task.GroundTruth.ContextEntities),
 					Error:          err.Error(),
-				}
-				runs = append(runs, record)
-
+				})
 				continue
 			}
 
-			eval := llmbench.EvaluateResponse(ollamaResp.Response, task.GroundTruth)
+			eval := llmbench.EvaluateResponse(resp.Text, task.GroundTruth)
 			eval.TaskID = task.ID
 			eval.RunIndex = run
 			eval.LatencySec = latency
-			eval.PromptTokens = ollamaResp.PromptEvalCount
-			eval.CompletionTokens = ollamaResp.EvalCount
+			eval.PromptTokens = resp.PromptTokens
+			eval.CompletionTokens = resp.CompletionTokens
 			results = append(results, eval)
 
 			tokPerSec := 0.0
-			if ollamaResp.EvalDuration > 0 {
-				tokPerSec = float64(ollamaResp.EvalCount) / (float64(ollamaResp.EvalDuration) / 1e9)
+			if resp.CompletionTokens > 0 && latency > 0 {
+				tokPerSec = float64(resp.CompletionTokens) / latency
 			}
 
-			record := Record{
+			records = append(records, Record{
 				TaskID:           task.ID,
 				RunIndex:         run,
 				LatencySec:       latency,
@@ -241,81 +274,36 @@ func main() {
 				Hallucinations:   eval.HallucinatedArgs,
 				TotalEntities:    eval.TotalArgs,
 				Destructive:      eval.DestructiveHit,
-				PromptTokens:     ollamaResp.PromptEvalCount,
-				CompletionTokens: ollamaResp.EvalCount,
+				PromptTokens:     resp.PromptTokens,
+				CompletionTokens: resp.CompletionTokens,
 				TokensPerSec:     tokPerSec,
-			}
-			runs = append(runs, record)
+			})
 
 			status := "FAIL"
 			if eval.DiagnosisCorrect && eval.ActionCorrect {
 				status = "PASS"
 			}
 
-			fmt.Printf("  Run %d/%d: %s (%.1fs, %d tok)\n", run+1, flagRuns, status, latency, ollamaResp.EvalCount)
+			fmt.Printf("  Run %d/%d: %s (%.1fs, %d tok)\n", run+1, flagRuns, status, latency, resp.CompletionTokens)
 		}
 	}
 
-	report := newReport(tasks, results, runs, modelInfo)
+	report := buildReport(provider, modelDigest, modelFamily, modelQuant, tasks, results, records)
 	printReport(report)
 	saveReport(report)
 }
 
-func callOllama(url, model, prompt string) (OllamaResponse, error) {
-	in := OllamaRequest{
-		Model:  model,
-		Prompt: prompt,
-		Stream: false,
-		Options: OllamaOptions{
-			Temperature: 0,
-			Seed:        int64(seed),
-		},
-	}
-
-	body, err := json.Marshal(in)
-	if err != nil {
-		return OllamaResponse{}, fmt.Errorf("marshal: %w", err)
-	}
-
-	res, err := http.Post(url, "application/json", bytes.NewReader(body))
-	if err != nil {
-		return OllamaResponse{}, fmt.Errorf("http: %w", err)
-	}
-	defer res.Body.Close()
-
-	if res.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(res.Body)
-		return OllamaResponse{}, fmt.Errorf("status %d: %s", res.StatusCode, string(body))
-	}
-
-	var out OllamaResponse
-	if err := json.NewDecoder(res.Body).Decode(&out); err != nil {
-		return OllamaResponse{}, fmt.Errorf("decode: %w", err)
-	}
-
-	return out, nil
-}
-
-func fetchModelInfo(url, model string) OllamaShowResponse {
-	showURL := strings.TrimSuffix(url, "/api/generate") + "/api/show"
-	body, _ := json.Marshal(OllamaShowRequest{Name: model})
-	res, err := http.Post(showURL, "application/json", bytes.NewReader(body))
-	if err != nil {
-		log.Printf("Warning: cannot fetch model info: %v", err)
-		return OllamaShowResponse{}
-	}
-	defer res.Body.Close()
-
-	var out OllamaShowResponse
-	json.NewDecoder(res.Body).Decode(&out)
-	return out
-}
-
 // ---------------------------------------------------------------------------
-// Metrics computation
+// Metrics computation  (unchanged logic, now provider-agnostic)
 // ---------------------------------------------------------------------------
 
-func newReport(tasks []llmbench.Task, results []llmbench.Result, runs []Record, modelInfo OllamaShowResponse) Report {
+func buildReport(
+	provider Provider,
+	modelDigest, modelFamily, modelQuant string,
+	tasks []llmbench.Task,
+	results []llmbench.Result,
+	records []Record,
+) Report {
 	totalRuns := len(results)
 
 	var (
@@ -350,7 +338,6 @@ func newReport(tasks []llmbench.Task, results []llmbench.Result, runs []Record, 
 	chr := llmbench.ContextHallucinationRate(totalHallucinated, totalEntities)
 	daar := llmbench.DestructiveActionAttemptRate(destructiveCount, totalRuns)
 
-	// FCSR: success on the first run of each task
 	firstCallSuccesses := 0
 	for _, task := range tasks {
 		for _, r := range results {
@@ -370,20 +357,28 @@ func newReport(tasks []llmbench.Task, results []llmbench.Result, runs []Record, 
 	lae := llmbench.LatencyToActionEfficiency(esr, p50)
 	mttr := llmbench.MeanTimeToRecovery(successLatencies)
 
-	rng := rand.New(rand.NewSource(seed))
+	rng := rand.New(rand.NewSource(flagSeed))
 	ci := llmbench.BootstrapConfidenceInterval(successCount, totalRuns, 10000, 0.05, rng.Float64)
+
+	// Split provider name for metadata: "ollama/qwen2.5:3b" → ["ollama", "qwen2.5:3b"]
+	parts := strings.SplitN(provider.Name(), "/", 2)
+	providerName, modelName := parts[0], parts[0]
+	if len(parts) == 2 {
+		modelName = parts[1]
+	}
 
 	return Report{
 		Metadata: Metadata{
-			Model:       model,
-			ModelDigest: modelInfo.Digest,
-			ModelFamily: modelInfo.Details.Family,
-			ModelQuant:  modelInfo.Details.QuantizationLevel,
+			Provider:    providerName,
+			Model:       modelName,
+			ModelDigest: modelDigest,
+			ModelFamily: modelFamily,
+			ModelQuant:  modelQuant,
 			Timestamp:   time.Now().UTC().Format(time.RFC3339),
 			TotalTasks:  len(tasks),
 			RunsPerTask: flagRuns,
 			TotalRuns:   totalRuns,
-			Seed:        seed,
+			Seed:        flagSeed,
 		},
 		Metrics: Metrics{
 			ESR: esr, ESRCI: ci,
@@ -394,18 +389,18 @@ func newReport(tasks []llmbench.Task, results []llmbench.Result, runs []Record, 
 		PerLevel:  computePerLevel(tasks, results),
 		RAG:       computeRAGMetrics(tasks),
 		Summaries: computePerTask(tasks, results),
-		Records:   runs,
+		Records:   records,
 	}
-}
-
-type levelAccum struct {
-	success, actionCorrect, hallucinated, entities, total int
 }
 
 func computePerLevel(tasks []llmbench.Task, results []llmbench.Result) []LevelMetrics {
 	taskLevel := make(map[string]llmbench.TaskLevel, len(tasks))
 	for _, t := range tasks {
 		taskLevel[t.ID] = t.Level
+	}
+
+	type levelAccum struct {
+		success, actionCorrect, hallucinated, entities, total int
 	}
 
 	accum := make(map[string]*levelAccum)
@@ -432,25 +427,20 @@ func computePerLevel(tasks []llmbench.Task, results []llmbench.Result) []LevelMe
 		string(llmbench.LevelRepair),
 		string(llmbench.LevelMultiStep),
 	}
-
 	var out []LevelMetrics
 	for _, level := range order {
 		v, ok := accum[level]
 		if !ok {
 			continue
 		}
-
-		lm := LevelMetrics{
+		out = append(out, LevelMetrics{
 			Name: level,
 			ESR:  llmbench.ExecutionSuccessRate(v.success, v.total),
 			TSA:  llmbench.ToolSelectionAccuracy(v.actionCorrect, v.total),
 			CHR:  llmbench.ContextHallucinationRate(v.hallucinated, v.entities),
 			Runs: v.total,
-		}
-
-		out = append(out, lm)
+		})
 	}
-
 	return out
 }
 
@@ -508,18 +498,16 @@ func computePerTask(tasks []llmbench.Task, results []llmbench.Result) []Summary 
 			MeanLatSec: meanLat,
 		})
 	}
+
 	return summaries
 }
-
-// ---------------------------------------------------------------------------
-// Output
-// ---------------------------------------------------------------------------
 
 func printReport(r Report) {
 	sep := strings.Repeat("=", 60)
 	fmt.Printf("\n%s\n", sep)
 	fmt.Println("BENCHMARK REPORT")
 	fmt.Println(sep)
+	fmt.Printf("Provider:    %s\n", r.Metadata.Provider)
 	fmt.Printf("Model:       %s\n", r.Metadata.Model)
 	fmt.Printf("Tasks:       %d\n", r.Metadata.TotalTasks)
 	fmt.Printf("Runs/task:   %d\n", r.Metadata.RunsPerTask)
@@ -545,7 +533,7 @@ func printReport(r Report) {
 			m.Name, m.ESR, m.TSA, m.CHR, m.Runs)
 	}
 
-	fmt.Println("\n--- RAG QUALITY (task design validation) ---")
+	fmt.Println("\n--- RAG QUALITY ---")
 	fmt.Printf("  P@K=%.3f  |  R@K=%.3f  |  F1@K=%.3f  |  MRR=%.3f  |  NDCG@K=%.3f\n",
 		r.RAG.MeanPrecisionAtK, r.RAG.MeanRecallAtK,
 		r.RAG.MeanFScoreAtK, r.RAG.MeanMRR, r.RAG.MeanNDCGAtK)
@@ -556,7 +544,7 @@ func printReport(r Report) {
 			ts.TaskID, ts.Level, ts.ESR, ts.TSA, ts.CHR, ts.MeanLatSec)
 	}
 
-	fmt.Printf("\nResults saved to: %s\n", output)
+	fmt.Printf("\nResults saved to: %s\n", flagOutput)
 }
 
 func saveReport(r Report) {
@@ -565,16 +553,10 @@ func saveReport(r Report) {
 		log.Printf("Error marshaling report: %v", err)
 		return
 	}
-
-	if err := os.WriteFile(output, data, 0644); err != nil {
-		log.Printf("Error writing %s: %v", output, err)
-		return
+	if err := os.WriteFile(flagOutput, data, 0644); err != nil {
+		log.Printf("Error writing %s: %v", flagOutput, err)
 	}
 }
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
 
 func countLevel(tasks []llmbench.Task, level llmbench.TaskLevel) int {
 	n := 0

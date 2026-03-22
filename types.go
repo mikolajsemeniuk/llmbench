@@ -66,3 +66,24 @@ type Result struct {
 	PromptTokens     int
 	CompletionTokens int
 }
+
+// Response holds the raw output from any model provider after a single
+// completion call. All fields required for metric computation are present
+// so the benchmark runner never needs to know which provider produced them.
+type Response struct {
+	// Text is the raw completion string returned by the model.
+	Text string
+
+	// PromptTokens is the number of tokens in the input prompt as reported
+	// by the provider. Used for context-compression ratio (CCR) analysis.
+	PromptTokens int
+
+	// CompletionTokens is the number of tokens generated. Used for token
+	// efficiency (TE) and cost-efficiency score (CES) computation.
+	CompletionTokens int
+
+	// LatencySec is the wall-clock time from request dispatch to full
+	// response receipt, measured by the caller. Populated by the runner,
+	// not by the provider implementation.
+	LatencySec float64
+}
