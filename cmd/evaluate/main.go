@@ -1,24 +1,5 @@
 package main
 
-// LLMBench: K8s MCP Benchmark Runner
-//
-// Runs the full benchmark suite against any supported model provider,
-// evaluates responses using deterministic keyword-based ground truth, and
-// reports metrics required by ACM TOIS, IP&M, IEEE Access, and ESWA reviewers.
-//
-// Usage — Ollama (local, free):
-//
-//	ollama pull qwen2.5:3b-instruct
-//	go run ./cmd/evaluate -provider ollama -model qwen2.5:3b-instruct  -runs 5 -output qwen.json
-//
-//	ollama pull deepseek-r1:7b
-//	go run ./cmd/evaluate -provider ollama -model deepseek-r1:7b       -runs 5 -output deepseek.json
-//
-// Usage — Anthropic ceiling baseline:
-//
-//	export ANTHROPIC_API_KEY=sk-...
-//	go run ./cmd/evaluate -provider anthropic -model claude-sonnet-4-6 -runs 3 -output claude.json
-
 import (
 	"context"
 	"encoding/json"
@@ -143,21 +124,24 @@ func main() {
 			if err != nil {
 				fmt.Printf("  Run %d/%d: ERROR (%v)\n", run+1, flagRuns, err)
 
-				results = append(results, llmbench.Result{
+				result := llmbench.Result{
 					TaskID:           task.ID,
 					RunIndex:         run,
 					LatencySec:       latency,
 					TotalArgs:        len(task.GroundTruth.ContextEntities),
 					HallucinatedArgs: len(task.GroundTruth.ContextEntities),
-				})
-				records = append(records, llmbench.Record{
+				}
+				results = append(results, result)
+
+				record := llmbench.Record{
 					TaskID:         task.ID,
 					RunIndex:       run,
 					LatencySec:     latency,
 					TotalEntities:  len(task.GroundTruth.ContextEntities),
 					Hallucinations: len(task.GroundTruth.ContextEntities),
 					Error:          err.Error(),
-				})
+				}
+				records = append(records, record)
 				continue
 			}
 
@@ -174,7 +158,7 @@ func main() {
 				tokPerSec = float64(resp.CompletionTokens) / latency
 			}
 
-			records = append(records, llmbench.Record{
+			record := llmbench.Record{
 				TaskID:           task.ID,
 				RunIndex:         run,
 				LatencySec:       latency,
@@ -186,7 +170,8 @@ func main() {
 				PromptTokens:     resp.PromptTokens,
 				CompletionTokens: resp.CompletionTokens,
 				TokensPerSec:     tokPerSec,
-			})
+			}
+			records = append(records, record)
 
 			status := "FAIL"
 			if eval.DiagnosisCorrect && eval.ActionCorrect {
@@ -204,7 +189,7 @@ func main() {
 
 func buildReport(
 	provider Provider,
-	modelDigest, modelFamily, modelQuant string,
+	digest, family, quant string,
 	tasks []llmbench.Task,
 	results []llmbench.Result,
 	records []llmbench.Record,
@@ -276,9 +261,9 @@ func buildReport(
 		Metadata: llmbench.Metadata{
 			Provider:    providerName,
 			Model:       modelName,
-			ModelDigest: modelDigest,
-			ModelFamily: modelFamily,
-			ModelQuant:  modelQuant,
+			ModelDigest: digest,
+			ModelFamily: family,
+			ModelQuant:  quant,
 			Timestamp:   time.Now().UTC().Format(time.RFC3339),
 			TotalTasks:  len(tasks),
 			RunsPerTask: flagRuns,
@@ -316,13 +301,16 @@ func computePerLevel(tasks []llmbench.Task, results []llmbench.Result) []llmbenc
 			a = &levelAccum{}
 			accum[level] = a
 		}
+
 		a.total++
 		if r.DiagnosisCorrect && r.ActionCorrect {
 			a.success++
 		}
+
 		if r.ActionCorrect {
 			a.actionCorrect++
 		}
+
 		a.hallucinated += r.HallucinatedArgs
 		a.entities += r.TotalArgs
 	}
@@ -332,19 +320,22 @@ func computePerLevel(tasks []llmbench.Task, results []llmbench.Result) []llmbenc
 		string(llmbench.LevelRepair),
 		string(llmbench.LevelMultiStep),
 	}
+
 	var out []llmbench.LevelMetrics
 	for _, level := range order {
 		v, ok := accum[level]
 		if !ok {
 			continue
 		}
-		out = append(out, llmbench.LevelMetrics{
+
+		metric := llmbench.LevelMetrics{
 			Name: level,
 			ESR:  llmbench.ExecutionSuccessRate(v.success, v.total),
 			TSA:  llmbench.ToolSelectionAccuracy(v.actionCorrect, v.total),
 			CHR:  llmbench.ContextHallucinationRate(v.hallucinated, v.entities),
 			Runs: v.total,
-		})
+		}
+		out = append(out, metric)
 	}
 	return out
 }

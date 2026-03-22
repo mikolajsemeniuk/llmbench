@@ -1,22 +1,5 @@
 package main
 
-// LLMBench: Compare
-//
-// Reads two benchmark result JSONs produced by cmd/evaluate, computes
-// pairwise statistical tests (Wilcoxon rank-sum + rank-biserial r effect
-// size, Bonferroni-corrected p-values), and writes a compare.json file
-// suitable for cmd/report to render.
-//
-// No output is printed to stdout on success — only the JSON file is written.
-// Errors go to stderr via log.Fatal.
-//
-// Usage:
-//
-//	go run ./cmd/compare \
-//	  -a qwen.json \
-//	  -b llama-pro.json \
-//	  -output compare.json
-
 import (
 	"encoding/json"
 	"flag"
@@ -35,24 +18,42 @@ var (
 	flagOutput string
 )
 
-func init() {
+func main() {
 	flag.StringVar(&flagA, "a", "", "Path to first benchmark JSON (required)")
 	flag.StringVar(&flagB, "b", "", "Path to second benchmark JSON (required)")
 	flag.StringVar(&flagOutput, "output", "compare.json", "Output path for comparison JSON")
-}
-
-func main() {
 	flag.Parse()
 
 	if flagA == "" || flagB == "" {
 		log.Fatal("both -a and -b are required")
 	}
 
-	reportA := mustReadReport(flagA)
-	reportB := mustReadReport(flagB)
+	read := func(path string) llmbench.Report {
+		data, err := os.ReadFile(path)
+		if err != nil {
+			log.Fatalf("cannot read %s: %v", path, err)
+		}
+
+		var r llmbench.Report
+		if err := json.Unmarshal(data, &r); err != nil {
+			log.Fatalf("cannot parse %s: %v", path, err)
+		}
+
+		return r
+	}
+
+	reportA := read(flagA)
+	reportB := read(flagB)
 
 	out := buildCompare(reportA, reportB)
-	mustWriteJSON(flagOutput, out)
+	data, err := json.MarshalIndent(out, "", "  ")
+	if err != nil {
+		log.Fatalf("cannot marshal output: %v", err)
+	}
+
+	if err := os.WriteFile(flagOutput, data, 0644); err != nil {
+		log.Fatalf("cannot write %s: %v", flagOutput, err)
+	}
 }
 
 func buildCompare(a, b llmbench.Report) llmbench.CompareReport {
@@ -100,6 +101,7 @@ func buildCompare(a, b llmbench.Report) llmbench.CompareReport {
 	}
 	cr.Raw.A = a
 	cr.Raw.B = b
+
 	return cr
 }
 
@@ -110,6 +112,7 @@ func metricCmp(name, fullName string, higherIsBetter bool, va, vb float64, sampl
 	pCorrected := math.Min(p*float64(nTests), 1.0) // Bonferroni
 	sig := llmbench.WilcoxonSignificanceLabel(pCorrected)
 	r := rankBiserialR(u, len(samplesA), len(samplesB))
+
 	return llmbench.MetricComparison{
 		Name:            name,
 		FullName:        fullName,
@@ -145,6 +148,7 @@ func buildPerLevel(a, b llmbench.Report) []llmbench.LevelComparison {
 	for _, l := range a.PerLevel {
 		indexA[l.Name] = l
 	}
+
 	indexB := make(map[string]llmbench.LevelMetrics)
 	for _, l := range b.PerLevel {
 		indexB[l.Name] = l
@@ -158,14 +162,17 @@ func buildPerLevel(a, b llmbench.Report) []llmbench.LevelComparison {
 		if !oka && !okb {
 			continue
 		}
-		out = append(out, llmbench.LevelComparison{
+
+		comparison := llmbench.LevelComparison{
 			Level: level,
 			ESRA:  la.ESR, ESRB: lb.ESR,
 			TSAA: la.TSA, TSAB: lb.TSA,
 			CHRA: la.CHR, CHRB: lb.CHR,
 			RunsA: la.Runs, RunsB: lb.Runs,
-		})
+		}
+		out = append(out, comparison)
 	}
+
 	return out
 }
 
@@ -188,6 +195,7 @@ func buildPerTask(a, b llmbench.Report) []llmbench.TaskComparison {
 	}
 	// Sort by task ID for stable output.
 	sort.Slice(out, func(i, j int) bool { return out[i].TaskID < out[j].TaskID })
+
 	return out
 }
 
@@ -203,6 +211,7 @@ func successVector(records []llmbench.Record) []float64 {
 			v[i] = 1.0
 		}
 	}
+
 	return v
 }
 
@@ -213,6 +222,7 @@ func actionVector(records []llmbench.Record) []float64 {
 			v[i] = 1.0
 		}
 	}
+
 	return v
 }
 
@@ -224,6 +234,7 @@ func chrVector(records []llmbench.Record) []float64 {
 			v[i] = float64(r.Hallucinations) / float64(r.TotalEntities)
 		}
 	}
+
 	return v
 }
 
@@ -232,6 +243,7 @@ func latencyVector(records []llmbench.Record) []float64 {
 	for i, r := range records {
 		v[i] = r.LatencySec
 	}
+
 	return v
 }
 
@@ -265,33 +277,5 @@ func effectLabel(absR float64) string {
 		return "small"
 	default:
 		return "negligible"
-	}
-}
-
-// ---------------------------------------------------------------------------
-// I/O helpers
-// ---------------------------------------------------------------------------
-
-func mustReadReport(path string) llmbench.Report {
-	data, err := os.ReadFile(path)
-	if err != nil {
-		log.Fatalf("cannot read %s: %v", path, err)
-	}
-
-	var r llmbench.Report
-	if err := json.Unmarshal(data, &r); err != nil {
-		log.Fatalf("cannot parse %s: %v", path, err)
-	}
-
-	return r
-}
-
-func mustWriteJSON(path string, v any) {
-	data, err := json.MarshalIndent(v, "", "  ")
-	if err != nil {
-		log.Fatalf("cannot marshal output: %v", err)
-	}
-	if err := os.WriteFile(path, data, 0644); err != nil {
-		log.Fatalf("cannot write %s: %v", path, err)
 	}
 }
