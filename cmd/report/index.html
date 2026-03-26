@@ -8,7 +8,11 @@
     {{- else}} Report — {{.Single.Metadata.Model}}{{end}}</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>tailwind.config={theme:{extend:{fontFamily:{sans:['Inter','system-ui','sans-serif']}}}}</script>
-  <style>@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');</style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    .chart-container { position: relative; width: 100%; }
+  </style>
 </head>
 <body class="bg-gray-950 text-gray-100 min-h-screen font-sans">
 
@@ -95,9 +99,43 @@
   <p class="text-xs text-gray-600 mt-2">p-values Bonferroni-corrected over 4 tested metrics (ESR, TSA, CHR, Lat p50). Wilcoxon rank-sum, two-sided. Effect size: rank-biserial r.</p>
 </section>
 
-<!-- ===== Per-level comparison ===== -->
+<!-- ===== CHART 1: ESR + CHR per level (side by side) ===== -->
 <section>
   <h2 class="text-lg font-semibold mb-4 text-gray-200">Per-Level Breakdown</h2>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+    <!-- ESR chart -->
+    <div class="bg-gray-900 border border-gray-800 rounded-xl p-5">
+      <div class="flex items-center gap-3 mb-4">
+        <span class="text-sm font-medium text-gray-200">ESR — Execution Success Rate</span>
+        <span class="text-xs text-gray-500 ml-auto">higher = better</span>
+      </div>
+      <div class="flex gap-4 mb-3 text-xs text-gray-400">
+        <span class="flex items-center gap-1.5"><span class="inline-block w-3 h-3 rounded-sm" style="background:#6366f1"></span>{{.Compare.ModelA}}</span>
+        <span class="flex items-center gap-1.5"><span class="inline-block w-3 h-3 rounded-sm" style="background:#e11d48"></span>{{.Compare.ModelB}}</span>
+      </div>
+      <div class="chart-container" style="height:200px">
+        <canvas id="esrLevelChart"></canvas>
+      </div>
+    </div>
+
+    <!-- CHR chart -->
+    <div class="bg-gray-900 border border-gray-800 rounded-xl p-5">
+      <div class="flex items-center gap-3 mb-4">
+        <span class="text-sm font-medium text-gray-200">CHR — Context Hallucination Rate</span>
+        <span class="text-xs text-gray-500 ml-auto">lower = better</span>
+      </div>
+      <div class="flex gap-4 mb-3 text-xs text-gray-400">
+        <span class="flex items-center gap-1.5"><span class="inline-block w-3 h-3 rounded-sm" style="background:#6366f1"></span>{{.Compare.ModelA}}</span>
+        <span class="flex items-center gap-1.5"><span class="inline-block w-3 h-3 rounded-sm" style="background:#e11d48"></span>{{.Compare.ModelB}}</span>
+      </div>
+      <div class="chart-container" style="height:200px">
+        <canvas id="chrLevelChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Raw numbers table stays below charts -->
   <div class="overflow-x-auto rounded-xl border border-gray-800">
     <table class="w-full text-sm">
       <thead class="bg-gray-900 text-gray-400 uppercase text-xs">
@@ -130,42 +168,167 @@
   </div>
 </section>
 
-<!-- ===== Per-task delta ===== -->
+<!-- ===== CHART 2: Per-task ESR delta heatmap-style bar ===== -->
 <section>
-  <h2 class="text-lg font-semibold mb-4 text-gray-200">Per-Task ESR Delta <span class="text-sm font-normal text-gray-500">(A − B)</span></h2>
-  <div class="overflow-x-auto rounded-xl border border-gray-800 max-h-[32rem] overflow-y-auto">
-    <table class="w-full text-sm">
-      <thead class="bg-gray-900 text-gray-400 uppercase text-xs sticky top-0">
-        <tr>
-          <th class="text-left px-5 py-3">Task ID</th>
-          <th class="text-left px-5 py-3">Level</th>
-          <th class="text-right px-5 py-3 text-gray-200">ESR A</th>
-          <th class="text-right px-5 py-3 text-indigo-400">ESR B</th>
-          <th class="text-right px-5 py-3">Δ</th>
-        </tr>
-      </thead>
-      <tbody class="divide-y divide-gray-800/60">
-        {{range .Compare.PerTask}}
-        <tr class="hover:bg-gray-900/40 transition-colors">
-          <td class="px-5 py-2 font-mono text-xs">{{.TaskID}}</td>
-          <td class="px-5 py-2">
-            {{if eq .Level "L1-diagnostic"}}<span class="bg-emerald-500/10 text-emerald-400 text-xs px-2 py-0.5 rounded-full">L1</span>
-            {{else if eq .Level "L2-repair"}}<span class="bg-blue-500/10 text-blue-400 text-xs px-2 py-0.5 rounded-full">L2</span>
-            {{else}}<span class="bg-violet-500/10 text-violet-400 text-xs px-2 py-0.5 rounded-full">L3</span>{{end}}
-          </td>
-          <td class="px-5 py-2 text-right font-mono text-gray-200">{{pct .ESRA}}</td>
-          <td class="px-5 py-2 text-right font-mono text-indigo-300">{{pct .ESRB}}</td>
-          <td class="px-5 py-2 text-right font-mono {{if gt .Delta 0.0}}text-emerald-400{{else if lt .Delta 0.0}}text-red-400{{else}}text-gray-500{{end}}">{{deltaFmt .Delta}}</td>
-        </tr>
-        {{end}}
-      </tbody>
-    </table>
+  <h2 class="text-lg font-semibold mb-1 text-gray-200">Per-Task ESR Delta <span class="text-sm font-normal text-gray-500">(A − B)</span></h2>
+  <p class="text-xs text-gray-500 mb-4">Green bars = A wins, red bars = B wins, zero = tied</p>
+
+  <div class="bg-gray-900 border border-gray-800 rounded-xl p-5">
+    <div class="chart-container" style="height:{{len .Compare.PerTask | mul 18 | add 60}}px; min-height:300px; max-height:900px">
+      <canvas id="deltaChart"></canvas>
+    </div>
+  </div>
+
+  <!-- table kept for exact numbers -->
+  <details class="mt-3">
+    <summary class="text-xs text-gray-500 cursor-pointer hover:text-gray-300 transition-colors">Show raw table</summary>
+    <div class="overflow-x-auto rounded-xl border border-gray-800 max-h-[32rem] overflow-y-auto mt-2">
+      <table class="w-full text-sm">
+        <thead class="bg-gray-900 text-gray-400 uppercase text-xs sticky top-0">
+          <tr>
+            <th class="text-left px-5 py-3">Task ID</th>
+            <th class="text-left px-5 py-3">Level</th>
+            <th class="text-right px-5 py-3 text-gray-200">ESR A</th>
+            <th class="text-right px-5 py-3 text-indigo-400">ESR B</th>
+            <th class="text-right px-5 py-3">Δ</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-800/60">
+          {{range .Compare.PerTask}}
+          <tr class="hover:bg-gray-900/40 transition-colors">
+            <td class="px-5 py-2 font-mono text-xs">{{.TaskID}}</td>
+            <td class="px-5 py-2">
+              {{if eq .Level "L1-diagnostic"}}<span class="bg-emerald-500/10 text-emerald-400 text-xs px-2 py-0.5 rounded-full">L1</span>
+              {{else if eq .Level "L2-repair"}}<span class="bg-blue-500/10 text-blue-400 text-xs px-2 py-0.5 rounded-full">L2</span>
+              {{else}}<span class="bg-violet-500/10 text-violet-400 text-xs px-2 py-0.5 rounded-full">L3</span>{{end}}
+            </td>
+            <td class="px-5 py-2 text-right font-mono text-gray-200">{{pct .ESRA}}</td>
+            <td class="px-5 py-2 text-right font-mono text-indigo-300">{{pct .ESRB}}</td>
+            <td class="px-5 py-2 text-right font-mono {{if gt .Delta 0.0}}text-emerald-400{{else if lt .Delta 0.0}}text-red-400{{else}}text-gray-500{{end}}">{{deltaFmt .Delta}}</td>
+          </tr>
+          {{end}}
+        </tbody>
+      </table>
+    </div>
+  </details>
+</section>
+
+<!-- ===== CHART 3: Latency distribution (p50/p95/p99) ===== -->
+<section>
+  <h2 class="text-lg font-semibold mb-4 text-gray-200">Latency Distribution</h2>
+  <div class="bg-gray-900 border border-gray-800 rounded-xl p-5">
+    <div class="flex gap-4 mb-4 text-xs text-gray-400">
+      <span class="flex items-center gap-1.5"><span class="inline-block w-3 h-3 rounded-sm" style="background:#6366f1"></span>{{.Compare.ModelA}}</span>
+      <span class="flex items-center gap-1.5"><span class="inline-block w-3 h-3 rounded-sm" style="background:#e11d48"></span>{{.Compare.ModelB}}</span>
+    </div>
+    <div class="chart-container" style="height:220px">
+      <canvas id="latencyChart"></canvas>
+    </div>
   </div>
 </section>
 
+<!-- ===== Chart init scripts ===== -->
+<script>
+(function() {
+  const COLORS = { a: '#6366f1', b: '#e11d48', aFade: 'rgba(99,102,241,0.15)', bFade: 'rgba(225,29,72,0.15)' };
+  const TICK = { color: '#6b7280', font: { size: 11, family: 'Inter, system-ui, sans-serif' } };
+  const GRID = { color: 'rgba(255,255,255,0.05)' };
+
+  // --- ESR per level ---
+  const esrData = {
+    labels: [{{range .Compare.PerLevel}}'{{.Level}}',{{end}}],
+    a:      [{{range .Compare.PerLevel}}{{mulf .ESRA 100}},{{end}}],
+    b:      [{{range .Compare.PerLevel}}{{mulf .ESRB 100}},{{end}}],
+  };
+  new Chart(document.getElementById('esrLevelChart'), {
+    type: 'bar',
+    data: {
+      labels: esrData.labels,
+      datasets: [
+        { label: 'A', data: esrData.a, backgroundColor: COLORS.a, borderRadius: 4, barPercentage: 0.7 },
+        { label: 'B', data: esrData.b, backgroundColor: COLORS.b, borderRadius: 4, barPercentage: 0.7 },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(1) + '%' } } },
+      scales: {
+        x: { ticks: TICK, grid: GRID },
+        y: { min: 75, max: 105, ticks: { ...TICK, callback: v => v + '%' }, grid: GRID }
+      }
+    }
+  });
+
+  // --- CHR per level ---
+  const chrData = {
+    labels: [{{range .Compare.PerLevel}}'{{.Level}}',{{end}}],
+    a:      [{{range .Compare.PerLevel}}{{mulf .CHRA 100}},{{end}}],
+    b:      [{{range .Compare.PerLevel}}{{mulf .CHRB 100}},{{end}}],
+  };
+  new Chart(document.getElementById('chrLevelChart'), {
+    type: 'bar',
+    data: {
+      labels: chrData.labels,
+      datasets: [
+        { label: 'A', data: chrData.a, backgroundColor: COLORS.a, borderRadius: 4, barPercentage: 0.7 },
+        { label: 'B', data: chrData.b, backgroundColor: COLORS.b, borderRadius: 4, barPercentage: 0.7 },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(1) + '%' } } },
+      scales: {
+        x: { ticks: TICK, grid: GRID },
+        y: { min: 0, ticks: { ...TICK, callback: v => v + '%' }, grid: GRID }
+      }
+    }
+  });
+
+  // --- Per-task delta (horizontal bar) ---
+  const deltaRaw = [{{range .Compare.PerTask}}{id:'{{.TaskID}}',delta:{{.Delta}},level:'{{.Level}}'},{{end}}];
+  const deltaColors = deltaRaw.map(d => d.delta > 0 ? 'rgba(52,211,153,0.8)' : d.delta < 0 ? 'rgba(248,113,113,0.8)' : 'rgba(107,114,128,0.5)');
+  new Chart(document.getElementById('deltaChart'), {
+    type: 'bar',
+    data: {
+      labels: deltaRaw.map(d => d.id),
+      datasets: [{ data: deltaRaw.map(d => d.delta), backgroundColor: deltaColors, borderRadius: 2, barPercentage: 0.8 }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => 'Δ ESR: ' + (ctx.parsed.x >= 0 ? '+' : '') + ctx.parsed.x.toFixed(2) } } },
+      scales: {
+        x: { min: -1.1, max: 1.1, ticks: { ...TICK, callback: v => (v > 0 ? '+' : '') + v.toFixed(1) }, grid: GRID },
+        y: { ticks: { ...TICK, font: { size: 10, family: 'ui-monospace, monospace' } }, grid: { display: false } }
+      }
+    }
+  });
+
+  // --- Latency p50/p95/p99 grouped bar ---
+  new Chart(document.getElementById('latencyChart'), {
+    type: 'bar',
+    data: {
+      labels: ['p50', 'p95', 'p99'],
+      datasets: [
+        { label: 'A', data: [{{f2 .Compare.Raw.A.Metrics.LatencyP50}}, {{f2 .Compare.Raw.A.Metrics.LatencyP95}}, {{f2 .Compare.Raw.A.Metrics.LatencyP99}}], backgroundColor: COLORS.a, borderRadius: 4, barPercentage: 0.6 },
+        { label: 'B', data: [{{f2 .Compare.Raw.B.Metrics.LatencyP50}}, {{f2 .Compare.Raw.B.Metrics.LatencyP95}}, {{f2 .Compare.Raw.B.Metrics.LatencyP99}}], backgroundColor: COLORS.b, borderRadius: 4, barPercentage: 0.6 },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(2) + 's' } } },
+      scales: {
+        x: { ticks: TICK, grid: GRID },
+        y: { min: 0, ticks: { ...TICK, callback: v => v + 's' }, grid: GRID }
+      }
+    }
+  });
+})();
+</script>
+
 {{- else}}
 <!-- ================================================================
-     SINGLE REPORT MODE  (identical to original viewer)
+     SINGLE REPORT MODE
      ================================================================ -->
 
 <!-- Pills -->
@@ -215,34 +378,27 @@
   </div>
 </section>
 
-<!-- Latency -->
-<section>
-  <h2 class="text-lg font-semibold mb-4 text-gray-200">Latency Distribution</h2>
-  <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-    {{- with .Single.Metrics}}
-    <div class="bg-gray-900 border border-gray-800 rounded-xl p-4 text-center">
-      <p class="text-xs text-gray-500 uppercase">p50</p>
-      <p class="text-xl font-bold mt-1">{{f2 .LatencyP50}}s</p>
-    </div>
-    <div class="bg-gray-900 border border-gray-800 rounded-xl p-4 text-center">
-      <p class="text-xs text-gray-500 uppercase">p95</p>
-      <p class="text-xl font-bold mt-1">{{f2 .LatencyP95}}s</p>
-    </div>
-    <div class="bg-gray-900 border border-gray-800 rounded-xl p-4 text-center">
-      <p class="text-xs text-gray-500 uppercase">p99</p>
-      <p class="text-xl font-bold mt-1">{{f2 .LatencyP99}}s</p>
-    </div>
-    <div class="bg-gray-900 border border-gray-800 rounded-xl p-4 text-center">
-      <p class="text-xs text-gray-500 uppercase">MTTR</p>
-      <p class="text-xl font-bold mt-1">{{f2 .MTTR}}s</p>
-    </div>
-    {{- end}}
-  </div>
-</section>
-
-<!-- Per-Level -->
+<!-- ===== SINGLE: ESR + CHR per level chart ===== -->
 <section>
   <h2 class="text-lg font-semibold mb-4 text-gray-200">Per-Level Breakdown</h2>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+    <div class="bg-gray-900 border border-gray-800 rounded-xl p-5">
+      <p class="text-sm font-medium text-gray-200 mb-1">ESR per level</p>
+      <p class="text-xs text-gray-500 mb-4">higher = better</p>
+      <div class="chart-container" style="height:180px">
+        <canvas id="singleEsrChart"></canvas>
+      </div>
+    </div>
+    <div class="bg-gray-900 border border-gray-800 rounded-xl p-5">
+      <p class="text-sm font-medium text-gray-200 mb-1">CHR per level</p>
+      <p class="text-xs text-gray-500 mb-4">lower = better</p>
+      <div class="chart-container" style="height:180px">
+        <canvas id="singleChrChart"></canvas>
+      </div>
+    </div>
+  </div>
+
   <div class="overflow-x-auto rounded-xl border border-gray-800">
     <table class="w-full text-sm">
       <thead class="bg-gray-900 text-gray-400 uppercase text-xs">
@@ -266,6 +422,40 @@
         {{end}}
       </tbody>
     </table>
+  </div>
+</section>
+
+<!-- ===== SINGLE: Latency chart ===== -->
+<section>
+  <h2 class="text-lg font-semibold mb-4 text-gray-200">Latency Distribution</h2>
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- chart -->
+    <div class="bg-gray-900 border border-gray-800 rounded-xl p-5">
+      <div class="chart-container" style="height:180px">
+        <canvas id="singleLatChart"></canvas>
+      </div>
+    </div>
+    <!-- cards -->
+    <div class="grid grid-cols-2 gap-4 content-start">
+      {{- with .Single.Metrics}}
+      <div class="bg-gray-900 border border-gray-800 rounded-xl p-4 text-center">
+        <p class="text-xs text-gray-500 uppercase">p50</p>
+        <p class="text-xl font-bold mt-1">{{f2 .LatencyP50}}s</p>
+      </div>
+      <div class="bg-gray-900 border border-gray-800 rounded-xl p-4 text-center">
+        <p class="text-xs text-gray-500 uppercase">p95</p>
+        <p class="text-xl font-bold mt-1">{{f2 .LatencyP95}}s</p>
+      </div>
+      <div class="bg-gray-900 border border-gray-800 rounded-xl p-4 text-center">
+        <p class="text-xs text-gray-500 uppercase">p99</p>
+        <p class="text-xl font-bold mt-1">{{f2 .LatencyP99}}s</p>
+      </div>
+      <div class="bg-gray-900 border border-gray-800 rounded-xl p-4 text-center">
+        <p class="text-xs text-gray-500 uppercase">MTTR</p>
+        <p class="text-xl font-bold mt-1">{{f2 .MTTR}}s</p>
+      </div>
+      {{- end}}
+    </div>
   </div>
 </section>
 
@@ -373,6 +563,67 @@
     </table>
   </div>
 </section>
+
+<!-- Single mode chart init -->
+<script>
+(function() {
+  const C = '#6366f1';
+  const TICK = { color: '#6b7280', font: { size: 11, family: 'Inter, system-ui, sans-serif' } };
+  const GRID = { color: 'rgba(255,255,255,0.05)' };
+
+  new Chart(document.getElementById('singleEsrChart'), {
+    type: 'bar',
+    data: {
+      labels: [{{range .Single.PerLevel}}'{{.Name}}',{{end}}],
+      datasets: [{ data: [{{range .Single.PerLevel}}{{mulf .ESR 100}},{{end}}], backgroundColor: C, borderRadius: 4, barPercentage: 0.5 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ctx.parsed.y.toFixed(1) + '%' } } },
+      scales: {
+        x: { ticks: TICK, grid: GRID },
+        y: { min: 75, max: 105, ticks: { ...TICK, callback: v => v + '%' }, grid: GRID }
+      }
+    }
+  });
+
+  new Chart(document.getElementById('singleChrChart'), {
+    type: 'bar',
+    data: {
+      labels: [{{range .Single.PerLevel}}'{{.Name}}',{{end}}],
+      datasets: [{ data: [{{range .Single.PerLevel}}{{mulf .CHR 100}},{{end}}], backgroundColor: '#f59e0b', borderRadius: 4, barPercentage: 0.5 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ctx.parsed.y.toFixed(1) + '%' } } },
+      scales: {
+        x: { ticks: TICK, grid: GRID },
+        y: { min: 0, ticks: { ...TICK, callback: v => v + '%' }, grid: GRID }
+      }
+    }
+  });
+
+  new Chart(document.getElementById('singleLatChart'), {
+    type: 'bar',
+    data: {
+      labels: ['p50', 'p95', 'p99', 'MTTR'],
+      datasets: [{
+        data: [{{f2 .Single.Metrics.LatencyP50}}, {{f2 .Single.Metrics.LatencyP95}}, {{f2 .Single.Metrics.LatencyP99}}, {{f2 .Single.Metrics.MTTR}}],
+        backgroundColor: ['#6366f1','#818cf8','#a5b4fc','#c7d2fe'],
+        borderRadius: 4, barPercentage: 0.5
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ctx.parsed.y.toFixed(2) + 's' } } },
+      scales: {
+        x: { ticks: TICK, grid: GRID },
+        y: { min: 0, ticks: { ...TICK, callback: v => v + 's' }, grid: GRID }
+      }
+    }
+  });
+})();
+</script>
 
 {{- end}}
 </main>

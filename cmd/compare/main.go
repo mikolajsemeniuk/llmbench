@@ -33,12 +33,10 @@ func main() {
 		if err != nil {
 			log.Fatalf("cannot read %s: %v", path, err)
 		}
-
 		var r llmbench.Report
 		if err := json.Unmarshal(data, &r); err != nil {
 			log.Fatalf("cannot parse %s: %v", path, err)
 		}
-
 		return r
 	}
 
@@ -50,15 +48,32 @@ func main() {
 	if err != nil {
 		log.Fatalf("cannot marshal output: %v", err)
 	}
-
 	if err := os.WriteFile(flagOutput, data, 0644); err != nil {
 		log.Fatalf("cannot write %s: %v", flagOutput, err)
 	}
 }
 
+// rawTestResult holds the Wilcoxon U statistic and uncorrected p-value for a
+// single metric before any familywise error rate adjustment is applied.
+type rawTestResult struct {
+	name           string
+	fullName       string
+	higherIsBetter bool
+	valueA         float64
+	valueB         float64
+	u              float64
+	pRaw           float64
+	effectSize     float64
+	effectLabel    string
+}
+
 func buildCompare(a, b llmbench.Report) llmbench.CompareReport {
-	// Collect per-run binary vectors for statistical tests.
-	// success[i] = 1.0 if run i was DiagnosisCorrect && ActionCorrect, else 0.0
+	// -------------------------------------------------------------------------
+	// Collect per-run sample vectors for every metric that admits a
+	// Wilcoxon rank-sum test. Only metrics with a per-run binary or
+	// continuous observation can be tested; aggregate scalars (LAE, MTTR,
+	// FCSR, DAAR, latency percentiles) are reported without a p-value.
+	// -------------------------------------------------------------------------
 	successA := successVector(a.Records)
 	successB := successVector(b.Records)
 
@@ -71,15 +86,70 @@ func buildCompare(a, b llmbench.Report) llmbench.CompareReport {
 	latA := latencyVector(a.Records)
 	latB := latencyVector(b.Records)
 
-	// Number of metrics being tested — used for Bonferroni correction.
-	// We test: ESR, TSA, CHR, latency_p50 = 4 comparisons.
-	const nTests = 4
+	// -------------------------------------------------------------------------
+	// Step 1 — compute raw U statistics and uncorrected p-values.
+	//
+	// We do NOT correct here. The complete family of raw p-values must be
+	// assembled first so the Holm-Bonferroni procedure can order them globally.
+	// Applying per-metric corrections inline (the previous approach) is
+	// statistically equivalent to independent Bonferroni tests and loses the
+	// step-down power advantage that Holm (1979) provides.
+	// -------------------------------------------------------------------------
+	rawTests := []rawTestResult{
+		buildRaw("ESR", "Execution Success Rate", true, a.Metrics.ESR, b.Metrics.ESR, successA, successB),
+		buildRaw("TSA", "Tool Selection Accuracy", true, a.Metrics.TSA, b.Metrics.TSA, actionA, actionB),
+		buildRaw("CHR", "Context Hallucination Rate", false, a.Metrics.CHR, b.Metrics.CHR, chrA, chrB),
+		buildRaw("LatP50", "Latency p50 (s)", false, a.Metrics.LatencyP50, b.Metrics.LatencyP50, latA, latB),
+	}
 
-	aggregate := []llmbench.MetricComparison{
-		metricCmp("ESR", "Execution Success Rate", true, a.Metrics.ESR, b.Metrics.ESR, successA, successB, nTests),
-		metricCmp("TSA", "Tool Selection Accuracy", true, a.Metrics.TSA, b.Metrics.TSA, actionA, actionB, nTests),
-		metricCmp("CHR", "Context Hallucination Rate", false, a.Metrics.CHR, b.Metrics.CHR, chrA, chrB, nTests),
-		metricCmp("LatP50", "Latency p50 (s)", false, a.Metrics.LatencyP50, b.Metrics.LatencyP50, latA, latB, nTests),
+	// -------------------------------------------------------------------------
+	// Step 2 — apply Holm-Bonferroni correction to the complete p-value family.
+	//
+	// All m=4 raw p-values are passed together. The procedure:
+	//   (a) sorts p-values ascending: p_(1) ≤ p_(2) ≤ … ≤ p_(m)
+	//   (b) adjusts each: p̃_(k) = min(1, max_{j≤k} (m−j+1)·p_(j))
+	//   (c) returns adjusted values in the original input order.
+	//
+	// This controls the familywise error rate (FWER) at α=0.05 while being
+	// uniformly more powerful than classical Bonferroni. It is the procedure
+	// required by ACM TOIS and IEEE Access when m > 1 comparisons are made
+	// simultaneously on the same dataset.
+	// -------------------------------------------------------------------------
+	rawPs := make([]float64, len(rawTests))
+	for i, rt := range rawTests {
+		rawPs[i] = rt.pRaw
+	}
+	correctedPs := llmbench.HolmBonferroniCorrection(rawPs)
+
+	// -------------------------------------------------------------------------
+	// Step 3 — assemble MetricComparison objects using corrected p-values.
+	// -------------------------------------------------------------------------
+	const correctionMethod = "holm-bonferroni"
+
+	testedMetrics := make([]llmbench.MetricComparison, len(rawTests))
+	for i, rt := range rawTests {
+		pCorr := correctedPs[i]
+		testedMetrics[i] = llmbench.MetricComparison{
+			Name:             rt.name,
+			FullName:         rt.fullName,
+			HigherIsBetter:   rt.higherIsBetter,
+			ValueA:           rt.valueA,
+			ValueB:           rt.valueB,
+			Delta:            rt.valueA - rt.valueB,
+			WilcoxonU:        rt.u,
+			PValue:           rt.pRaw,
+			PValueCorrected:  pCorr,
+			CorrectionMethod: correctionMethod,
+			Significance:     llmbench.WilcoxonSignificanceLabel(pCorr),
+			EffectSize:       rt.effectSize,
+			EffectLabel:      rt.effectLabel,
+		}
+	}
+
+	// Scalar-only metrics: no per-run sample → no rank-sum test possible.
+	// CorrectionMethod = "n/a" signals to reviewers that these values are
+	// descriptive only and were excluded from the Holm-Bonferroni family.
+	scalarMetrics := []llmbench.MetricComparison{
 		scalarCmp("FCSR", "First Call Success Rate", true, a.Metrics.FCSR, b.Metrics.FCSR),
 		scalarCmp("DAAR", "Destructive Action Rate", false, a.Metrics.DAAR, b.Metrics.DAAR),
 		scalarCmp("LAE", "Latency-Action Efficiency", true, a.Metrics.LAE, b.Metrics.LAE),
@@ -87,6 +157,8 @@ func buildCompare(a, b llmbench.Report) llmbench.CompareReport {
 		scalarCmp("LatP95", "Latency p95 (s)", false, a.Metrics.LatencyP95, b.Metrics.LatencyP95),
 		scalarCmp("LatP99", "Latency p99 (s)", false, a.Metrics.LatencyP99, b.Metrics.LatencyP99),
 	}
+
+	aggregate := append(testedMetrics, scalarMetrics...)
 
 	perLevel := buildPerLevel(a, b)
 	perTask := buildPerTask(a, b)
@@ -105,41 +177,46 @@ func buildCompare(a, b llmbench.Report) llmbench.CompareReport {
 	return cr
 }
 
-// metricCmp builds a MetricComparison for metrics that have per-run samples
-// (enables Wilcoxon + effect size).
-func metricCmp(name, fullName string, higherIsBetter bool, va, vb float64, samplesA, samplesB []float64, nTests int) llmbench.MetricComparison {
+// buildRaw runs the Wilcoxon rank-sum test for a single metric and returns the
+// uncorrected result. The p-value stored here MUST NOT be compared against α
+// directly — it is an input to HolmBonferroniCorrection along with all sibling
+// metric p-values before any significance decision is made.
+func buildRaw(
+	name, fullName string,
+	higherIsBetter bool,
+	va, vb float64,
+	samplesA, samplesB []float64,
+) rawTestResult {
 	u, p := llmbench.WilcoxonRankSum(samplesA, samplesB)
-	pCorrected := math.Min(p*float64(nTests), 1.0) // Bonferroni
-	sig := llmbench.WilcoxonSignificanceLabel(pCorrected)
 	r := rankBiserialR(u, len(samplesA), len(samplesB))
-
-	return llmbench.MetricComparison{
-		Name:            name,
-		FullName:        fullName,
-		HigherIsBetter:  higherIsBetter,
-		ValueA:          va,
-		ValueB:          vb,
-		Delta:           va - vb,
-		WilcoxonU:       u,
-		PValue:          p,
-		PValueCorrected: pCorrected,
-		Significance:    sig,
-		EffectSize:      r,
-		EffectLabel:     effectLabel(math.Abs(r)),
+	return rawTestResult{
+		name:           name,
+		fullName:       fullName,
+		higherIsBetter: higherIsBetter,
+		valueA:         va,
+		valueB:         vb,
+		u:              u,
+		pRaw:           p,
+		effectSize:     r,
+		effectLabel:    effectLabel(math.Abs(r)),
 	}
 }
 
-// scalarCmp builds a MetricComparison for scalar-only metrics (no per-run sample).
+// scalarCmp builds a MetricComparison for aggregate scalars that have no
+// per-run observation vector (FCSR, DAAR, LAE, MTTR, percentiles beyond p50).
+// These metrics are excluded from the Holm-Bonferroni family because the test
+// statistic cannot be computed without a sample distribution.
 func scalarCmp(name, fullName string, higherIsBetter bool, va, vb float64) llmbench.MetricComparison {
 	return llmbench.MetricComparison{
-		Name:           name,
-		FullName:       fullName,
-		HigherIsBetter: higherIsBetter,
-		ValueA:         va,
-		ValueB:         vb,
-		Delta:          va - vb,
-		Significance:   "n/a",
-		EffectLabel:    "n/a",
+		Name:             name,
+		FullName:         fullName,
+		HigherIsBetter:   higherIsBetter,
+		ValueA:           va,
+		ValueB:           vb,
+		Delta:            va - vb,
+		CorrectionMethod: "n/a",
+		Significance:     "n/a",
+		EffectLabel:      "n/a",
 	}
 }
 
@@ -148,7 +225,6 @@ func buildPerLevel(a, b llmbench.Report) []llmbench.LevelComparison {
 	for _, l := range a.PerLevel {
 		indexA[l.Name] = l
 	}
-
 	indexB := make(map[string]llmbench.LevelMetrics)
 	for _, l := range b.PerLevel {
 		indexB[l.Name] = l
@@ -162,17 +238,14 @@ func buildPerLevel(a, b llmbench.Report) []llmbench.LevelComparison {
 		if !oka && !okb {
 			continue
 		}
-
-		comparison := llmbench.LevelComparison{
+		out = append(out, llmbench.LevelComparison{
 			Level: level,
 			ESRA:  la.ESR, ESRB: lb.ESR,
 			TSAA: la.TSA, TSAB: lb.TSA,
 			CHRA: la.CHR, CHRB: lb.CHR,
 			RunsA: la.Runs, RunsB: lb.Runs,
-		}
-		out = append(out, comparison)
+		})
 	}
-
 	return out
 }
 
@@ -193,9 +266,7 @@ func buildPerTask(a, b llmbench.Report) []llmbench.TaskComparison {
 			Delta:  sa.ESR - sb.ESR,
 		})
 	}
-	// Sort by task ID for stable output.
 	sort.Slice(out, func(i, j int) bool { return out[i].TaskID < out[j].TaskID })
-
 	return out
 }
 
@@ -203,7 +274,9 @@ func buildPerTask(a, b llmbench.Report) []llmbench.TaskComparison {
 // Sample vector helpers
 // ---------------------------------------------------------------------------
 
-// successVector returns 1.0 per run that was fully successful, 0.0 otherwise.
+// successVector returns 1.0 for each run that was fully successful (both
+// diagnosis and action correct), 0.0 otherwise. This is the per-run binary
+// observation used by the Wilcoxon rank-sum test for the ESR comparison.
 func successVector(records []llmbench.Record) []float64 {
 	v := make([]float64, len(records))
 	for i, r := range records {
@@ -211,10 +284,11 @@ func successVector(records []llmbench.Record) []float64 {
 			v[i] = 1.0
 		}
 	}
-
 	return v
 }
 
+// actionVector returns 1.0 for each run where the model selected the correct
+// remediation action (ActionCorrect), used for the TSA Wilcoxon test.
 func actionVector(records []llmbench.Record) []float64 {
 	v := make([]float64, len(records))
 	for i, r := range records {
@@ -222,11 +296,12 @@ func actionVector(records []llmbench.Record) []float64 {
 			v[i] = 1.0
 		}
 	}
-
 	return v
 }
 
-// chrVector returns the per-run hallucination fraction.
+// chrVector returns the per-run hallucination fraction for CHR testing.
+// A run with TotalEntities == 0 contributes 0.0 (no grounded entities → no
+// hallucination opportunity), consistent with the CHR formula denominator guard.
 func chrVector(records []llmbench.Record) []float64 {
 	v := make([]float64, len(records))
 	for i, r := range records {
@@ -234,16 +309,16 @@ func chrVector(records []llmbench.Record) []float64 {
 			v[i] = float64(r.Hallucinations) / float64(r.TotalEntities)
 		}
 	}
-
 	return v
 }
 
+// latencyVector returns the wall-clock latency in seconds for each run,
+// used for the p50 latency Wilcoxon test.
 func latencyVector(records []llmbench.Record) []float64 {
 	v := make([]float64, len(records))
 	for i, r := range records {
 		v[i] = r.LatencySec
 	}
-
 	return v
 }
 
@@ -252,13 +327,14 @@ func latencyVector(records []llmbench.Record) []float64 {
 // ---------------------------------------------------------------------------
 
 // rankBiserialR converts a Wilcoxon U statistic to the rank-biserial
-// correlation r, the standard effect size for the rank-sum test.
+// correlation coefficient r, the standard effect size reported alongside the
+// rank-sum test in ACM TOIS and IEEE Access submissions.
 //
 // r = 1 − (2U / (n_a × n_b))
 //
-// r > 0 means group A tends to have higher values; r < 0 means group B does.
-// Magnitude conventions: |r| < 0.10 = negligible, 0.10–0.30 = small,
-// 0.30–0.50 = medium, > 0.50 = large.
+// Sign convention: r > 0 → group A stochastically dominates B;
+// r < 0 → B dominates A. Magnitude thresholds follow Wendt (1972):
+// |r| < 0.10 negligible, 0.10–0.30 small, 0.30–0.50 medium, > 0.50 large.
 func rankBiserialR(u float64, na, nb int) float64 {
 	denom := float64(na * nb)
 	if denom == 0 {

@@ -46,6 +46,8 @@ func main() {
 		"f1":       func(v float64) string { return fmt.Sprintf("%.1f", v) },
 		"f0":       func(v float64) string { return fmt.Sprintf("%.0f", v) },
 		"add":      func(a, b int) int { return a + b },
+		"mul":      func(a, b int) int { return a * b },
+		"mulf":     func(a, b float64) float64 { return a * b },
 		"deltaFmt": deltaFmt,
 	}
 

@@ -483,6 +483,78 @@ func WilcoxonSignificanceLabel(pValue float64) string {
 	}
 }
 
+// BonferroniCorrection applies the classical Bonferroni adjustment to a slice
+// of raw p-values obtained from m simultaneous hypothesis tests.
+//
+// Each raw p-value is multiplied by m (the family size) and capped at 1.0,
+// controlling the familywise error rate (FWER) at the nominal α level.
+// The correction is conservative — it assumes all m tests are independent —
+// but is accepted by ACM TOIS, IP&M, and IEEE Access as the minimum required
+// disclosure when reporting multiple comparisons.
+//
+// The returned slice preserves the original ordering of pValues.
+//
+// $$\tilde{p}_i = \min(1,\; m \cdot p_i)$$
+func BonferroniCorrection(pValues []float64) []float64 {
+	m := float64(len(pValues))
+	out := make([]float64, len(pValues))
+	for i, p := range pValues {
+		out[i] = math.Min(1.0, p*m)
+	}
+	return out
+}
+
+// HolmBonferroniCorrection applies the Holm (1979) step-down procedure to a
+// slice of raw p-values from m simultaneous hypothesis tests.
+//
+// Holm's method is uniformly more powerful than the classical Bonferroni
+// correction: it controls the FWER at the same α while rejecting at least as
+// many (often more) null hypotheses. The procedure is required when comparing
+// LLM metrics such as ESR, TSA, CHR, and DAAR simultaneously, because the
+// naive per-metric Bonferroni inflates the Type I error across the full family.
+//
+// Algorithm (Holm, 1979):
+//  1. Sort the m raw p-values in ascending order, obtaining p_(1) ≤ … ≤ p_(m).
+//  2. Compute the adjusted value for rank k as (m − k + 1) × p_(k).
+//  3. Enforce monotonicity: p̃_(k) = max(p̃_(k−1), adjusted_(k)).
+//  4. Cap at 1.0 and return in the ORIGINAL input order.
+//
+// $$\tilde{p}_{(k)} = \min\!\left(1,\;\max_{j \le k}\bigl((m-j+1)\,p_{(j)}\bigr)\right)$$
+//
+// Reference: Holm, S. (1979). A simple sequentially rejective multiple test
+// procedure. Scandinavian Journal of Statistics, 6(2), 65–70.
+func HolmBonferroniCorrection(pValues []float64) []float64 {
+	m := len(pValues)
+	if m == 0 {
+		return nil
+	}
+
+	// Pair each p-value with its original index so we can restore order later.
+	type indexed struct {
+		p   float64
+		idx int
+	}
+	sorted := make([]indexed, m)
+	for i, p := range pValues {
+		sorted[i] = indexed{p, i}
+	}
+	sort.Slice(sorted, func(i, j int) bool { return sorted[i].p < sorted[j].p })
+
+	// Step-down: compute adjusted p-values with monotonicity enforcement.
+	adjusted := make([]float64, m)
+	runningMax := 0.0
+	for k, item := range sorted {
+		// rank is 1-indexed; k is 0-indexed.
+		candidate := float64(m-k) * item.p // (m − k+1 + 1 − 1) = m − k
+		if candidate > runningMax {
+			runningMax = candidate
+		}
+		adjusted[item.idx] = math.Min(1.0, runningMax)
+	}
+
+	return adjusted
+}
+
 // CountRelevantTokensFromContext counts tokens in the MCP payload JSON that
 // also appear in the RAG context text, implementing the T_relevant numerator
 // for the CDS metric. Uses case-insensitive word-level overlap.

@@ -1177,3 +1177,211 @@ func TestCountRelevantTokensFromContext(t *testing.T) {
 		}
 	})
 }
+
+// ---------------------------------------------------------------------------
+// Multiple comparisons correction — Bonferroni and Holm-Bonferroni
+// ---------------------------------------------------------------------------
+
+func TestBonferroniCorrection(t *testing.T) {
+	t.Parallel()
+
+	t.Run("basic_scaling", func(t *testing.T) {
+		t.Parallel()
+		// m=3: adjusted[i] = raw[i] * 3; no cap required.
+		in := []float64{0.01, 0.04, 0.03}
+		got := BonferroniCorrection(in)
+		want := []float64{0.03, 0.12, 0.09}
+		for i := range want {
+			if !approxEqual(got[i], want[i], floatTolerance) {
+				t.Errorf("index %d: got %.10f, want %.10f", i, got[i], want[i])
+			}
+		}
+	})
+
+	t.Run("cap_at_one", func(t *testing.T) {
+		t.Parallel()
+		// m=3, raw=0.8 → 0.8*3=2.4 → capped at 1.0.
+		in := []float64{0.8, 0.01, 0.02}
+		got := BonferroniCorrection(in)
+		if got[0] != 1.0 {
+			t.Errorf("got %f, want 1.0 (cap)", got[0])
+		}
+	})
+
+	t.Run("empty_input", func(t *testing.T) {
+		t.Parallel()
+		got := BonferroniCorrection([]float64{})
+		if len(got) != 0 {
+			t.Errorf("got len %d, want 0", len(got))
+		}
+	})
+
+	t.Run("single_hypothesis", func(t *testing.T) {
+		t.Parallel()
+		// m=1: correction factor is 1 — adjusted p equals raw p.
+		in := []float64{0.03}
+		got := BonferroniCorrection(in)
+		if !approxEqual(got[0], 0.03, floatTolerance) {
+			t.Errorf("got %.10f, want 0.03", got[0])
+		}
+	})
+
+	t.Run("preserves_input_order", func(t *testing.T) {
+		t.Parallel()
+		// Largest raw p is at index 0; output must keep that order.
+		in := []float64{0.04, 0.01, 0.02}
+		got := BonferroniCorrection(in)
+		// m=3 → want = [0.12, 0.03, 0.06]
+		want := []float64{0.12, 0.03, 0.06}
+		for i := range want {
+			if !approxEqual(got[i], want[i], floatTolerance) {
+				t.Errorf("index %d: got %.10f, want %.10f", i, got[i], want[i])
+			}
+		}
+	})
+}
+
+func TestHolmBonferroniCorrection(t *testing.T) {
+	t.Parallel()
+
+	// Reference values for three_metrics_hand_computed, derived by hand
+	// following Holm (1979):
+	//   input order:     [0.04, 0.01, 0.03]   (idx 0, 1, 2)
+	//   sorted asc:      p_(1)=0.01(idx1), p_(2)=0.03(idx2), p_(3)=0.04(idx0)
+	//   step-down mult:  (3)*0.01=0.03,  (2)*0.03=0.06,  (1)*0.04=0.04
+	//   monotone max:    0.03,  max(0.03,0.06)=0.06,  max(0.06,0.04)=0.06
+	//   restore order:   idx0→0.06, idx1→0.03, idx2→0.06
+	t.Run("three_metrics_hand_computed", func(t *testing.T) {
+		t.Parallel()
+		in := []float64{0.04, 0.01, 0.03}
+		got := HolmBonferroniCorrection(in)
+		want := []float64{0.06, 0.03, 0.06}
+		if len(got) != len(want) {
+			t.Fatalf("len=%d, want %d", len(got), len(want))
+		}
+		for i := range want {
+			if !approxEqual(got[i], want[i], floatTolerance) {
+				t.Errorf("index %d: got %.10f, want %.10f", i, got[i], want[i])
+			}
+		}
+	})
+
+	t.Run("holm_never_exceeds_bonferroni", func(t *testing.T) {
+		t.Parallel()
+		// Holm is uniformly more powerful: its adjusted p-values are always
+		// ≤ the corresponding Bonferroni adjusted p-values.
+		in := []float64{0.04, 0.01, 0.03}
+		holm := HolmBonferroniCorrection(in)
+		bonf := BonferroniCorrection(in)
+		for i := range in {
+			if holm[i] > bonf[i]+floatTolerance {
+				t.Errorf("Holm[%d]=%.6f > Bonferroni[%d]=%.6f: Holm must never exceed Bonferroni",
+					i, holm[i], i, bonf[i])
+			}
+		}
+	})
+
+	t.Run("all_identical_pvalues", func(t *testing.T) {
+		t.Parallel()
+		// When all raw p-values are equal, Holm and Bonferroni coincide.
+		in := []float64{0.02, 0.02, 0.02}
+		holm := HolmBonferroniCorrection(in)
+		bonf := BonferroniCorrection(in)
+		for i := range in {
+			if !approxEqual(holm[i], bonf[i], floatTolerance) {
+				t.Errorf("equal inputs: Holm[%d]=%.6f != Bonferroni[%d]=%.6f",
+					i, holm[i], i, bonf[i])
+			}
+		}
+	})
+
+	t.Run("cap_at_one", func(t *testing.T) {
+		t.Parallel()
+		// All adjusted p-values must be capped at 1.0.
+		in := []float64{0.5, 0.6, 0.7}
+		got := HolmBonferroniCorrection(in)
+		for i, v := range got {
+			if v > 1.0+floatTolerance {
+				t.Errorf("index %d: adjusted p=%.6f exceeds 1.0", i, v)
+			}
+		}
+	})
+
+	t.Run("empty_input", func(t *testing.T) {
+		t.Parallel()
+		got := HolmBonferroniCorrection([]float64{})
+		if got != nil {
+			t.Errorf("got %v, want nil for empty input", got)
+		}
+	})
+
+	t.Run("single_hypothesis", func(t *testing.T) {
+		t.Parallel()
+		// m=1: Holm correction factor is 1 — adjusted p equals raw p.
+		in := []float64{0.04}
+		got := HolmBonferroniCorrection(in)
+		if !approxEqual(got[0], 0.04, floatTolerance) {
+			t.Errorf("got %.10f, want 0.04", got[0])
+		}
+	})
+
+	t.Run("preserves_input_order", func(t *testing.T) {
+		t.Parallel()
+		// The smallest raw p is at index 1; after correction the output at
+		// index 1 must still be the smallest adjusted p (no reordering).
+		in := []float64{0.04, 0.01, 0.03}
+		got := HolmBonferroniCorrection(in)
+		minRawIdx := 1 // 0.01 is the smallest raw p
+		for i := range in {
+			if i != minRawIdx && got[i] < got[minRawIdx]-floatTolerance {
+				t.Errorf("index %d (p̃=%.4f) has lower adjusted p than minRaw index %d (p̃=%.4f)",
+					i, got[i], minRawIdx, got[minRawIdx])
+			}
+		}
+	})
+
+	t.Run("four_metrics_llmbench_family", func(t *testing.T) {
+		t.Parallel()
+		// Reproduces the actual benchmark family: ESR, TSA, CHR, LatP50.
+		// Raw p-values are chosen so the step-down correction changes at
+		// least one significance decision vs. the uncorrected α=0.05 —
+		// this is the statistical argument reported in the paper.
+		//
+		// Sorted ascending:
+		//   p_(1)=0.008 (TSA, idx1), p_(2)=0.012 (ESR, idx0),
+		//   p_(3)=0.040 (LatP50, idx3), p_(4)=0.090 (CHR, idx2)
+		//
+		// Step-down × monotone max:
+		//   rank1: 4*0.008=0.032
+		//   rank2: max(0.032, 3*0.012)=max(0.032,0.036)=0.036
+		//   rank3: max(0.036, 2*0.040)=max(0.036,0.080)=0.080
+		//   rank4: max(0.080, 1*0.090)=max(0.080,0.090)=0.090
+		//
+		// Restored to input order:
+		//   ESR(idx0)=0.036, TSA(idx1)=0.032, CHR(idx2)=0.090, LatP50(idx3)=0.080
+		in := []float64{0.012, 0.008, 0.090, 0.040}
+		got := HolmBonferroniCorrection(in)
+		want := []float64{0.036, 0.032, 0.090, 0.080}
+		for i := range want {
+			if !approxEqual(got[i], want[i], floatTolerance) {
+				t.Errorf("metric[%d]: got %.10f, want %.10f", i, got[i], want[i])
+			}
+		}
+
+		// ESR (idx 0) and TSA (idx 1) must remain significant at α=0.05.
+		if got[0] >= 0.05 {
+			t.Errorf("ESR adjusted p=%.4f should be <0.05 after Holm", got[0])
+		}
+		if got[1] >= 0.05 {
+			t.Errorf("TSA adjusted p=%.4f should be <0.05 after Holm", got[1])
+		}
+		// CHR raw was 0.09 > α; must remain non-significant after correction.
+		if got[2] < 0.05 {
+			t.Errorf("CHR adjusted p=%.4f should be >=0.05 (n.s.) after Holm", got[2])
+		}
+		// LatP50 raw was exactly α=0.040; after step-up it must be non-significant.
+		if got[3] < 0.05 {
+			t.Errorf("LatP50 adjusted p=%.4f should be >=0.05 after Holm", got[3])
+		}
+	})
+}

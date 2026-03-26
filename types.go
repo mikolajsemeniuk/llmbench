@@ -217,8 +217,17 @@ type MetricComparison struct {
 	// PValue is the two-sided p-value before correction.
 	PValue float64 `json:"p_value"`
 
-	// PValueCorrected is Bonferroni-corrected over the number of metrics tested.
+	// PValueCorrected is the adjusted p-value after applying the multiple
+	// comparisons correction indicated by CorrectionMethod. Compared against
+	// the nominal α (typically 0.05) to determine Significance.
 	PValueCorrected float64 `json:"p_value_corrected"`
+
+	// CorrectionMethod identifies the familywise error rate procedure used.
+	// "holm-bonferroni" (default) is uniformly more powerful than "bonferroni"
+	// while controlling the FWER at the same α; both are accepted by ACM TOIS,
+	// IP&M, and IEEE Access. "n/a" is recorded for scalar-only metrics that
+	// lack a per-run sample and therefore cannot undergo a rank-sum test.
+	CorrectionMethod string `json:"correction_method"`
 
 	// Significance is the conventional label: "***", "**", "*", or "n.s."
 	Significance string `json:"significance"`
