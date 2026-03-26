@@ -48,6 +48,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("cannot marshal output: %v", err)
 	}
+
 	if err := os.WriteFile(flagOutput, data, 0644); err != nil {
 		log.Fatalf("cannot write %s: %v", flagOutput, err)
 	}
