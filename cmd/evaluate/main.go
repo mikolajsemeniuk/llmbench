@@ -6,6 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"math"
 	"math/rand"
 	"os"
 	"strings"
@@ -14,37 +15,20 @@ import (
 	"github.com/mikolajsemeniuk/llmbench"
 )
 
-// Provider is the single abstraction that isolates all model-specific
-// HTTP / SDK logic from the benchmark runner. Every model family (Ollama,
-// Anthropic, OpenAI, …) implements exactly this interface.
-//
-// The runner calls Complete once per (task, run) pair and is otherwise
-// unaware of the underlying transport.
 type Provider interface {
-	// Name returns a stable, human-readable identifier written into the
-	// report metadata (e.g. "ollama/qwen2.5:3b-instruct",
-	// "anthropic/claude-sonnet-4-6"). Used as the primary key when
-	// comparing runs across providers in the paper.
 	Name() string
-
-	// Complete sends prompt to the model and returns the completion.
-	// Implementations must be safe to call concurrently if the runner
-	// ever parallelises runs, but the current runner is sequential.
-	//
-	// Returning a non-nil error causes the runner to record the run as
-	// failed (DiagnosisCorrect=false, full hallucination count) without
-	// aborting the benchmark.
 	ChatCompletion(ctx context.Context, prompt string) (llmbench.Response, error)
 }
 
 var (
-	flagProvider string
-	flagModel    string
-	flagURL      string
-	flagRuns     int
-	flagOutput   string
-	flagSeed     int64
-	flagAPIKey   string
+	flagProvider      string
+	flagModel         string
+	flagURL           string
+	flagRuns          int
+	flagOutput        string
+	flagSeed          int64
+	flagAPIKey        string
+	flagContextWindow int
 )
 
 func newProvider() Provider {
@@ -55,23 +39,35 @@ func newProvider() Provider {
 	// 	return llmbench.NewAnthropicProvider(flagAPIKey, flagModel, 0, flagSeed)
 	default:
 		log.Fatalf("unknown provider %q — supported: ollama, anthropic", flagProvider)
-		return nil // unreachable
+		return nil
 	}
 }
 
 func main() {
 	flag.StringVar(&flagProvider, "provider", "ollama", "Model provider: ollama | anthropic")
-	flag.StringVar(&flagModel, "model", "qwen2.5:3b-instruct", "Model identifier (Ollama tag or Anthropic model string)")
-	flag.StringVar(&flagURL, "url", "http://localhost:11434", "Base URL for Ollama server (ignored for non-Ollama providers)")
-	flag.IntVar(&flagRuns, "runs", 5, "Number of independent runs per task")
-	flag.StringVar(&flagOutput, "output", "results.json", "Path for the JSON report output")
-	flag.Int64Var(&flagSeed, "seed", 42, "Random seed for bootstrap CI (set identically across provider runs)")
-	flag.StringVar(&flagAPIKey, "api-key", "", "API key (overrides ANTHROPIC_API_KEY env var for Anthropic provider)")
+	flag.StringVar(&flagModel, "model", "qwen2.5:3b-instruct", "Model identifier")
+	flag.StringVar(&flagURL, "url", "http://localhost:11434", "Base URL for Ollama server")
+	flag.IntVar(&flagRuns, "runs", 10, "Number of independent runs per task")
+	flag.StringVar(&flagOutput, "output", "results.json", "Path for the JSON report")
+	flag.Int64Var(&flagSeed, "seed", 42, "Random seed for bootstrap CI")
+	flag.StringVar(&flagAPIKey, "api-key", "", "API key for API providers")
+	flag.IntVar(&flagContextWindow, "context-window", 0, "Model context window in tokens (0 = use provider default)")
 	flag.Parse()
 
 	provider := newProvider()
 	tasks := llmbench.BenchmarkTasks()
 	totalRuns := len(tasks) * flagRuns
+
+	parts := strings.SplitN(provider.Name(), "/", 2)
+	providerName, modelName := parts[0], parts[0]
+	if len(parts) == 2 {
+		modelName = parts[1]
+	}
+	pricing := llmbench.KnownPricing(providerName, modelName)
+	ctxWindow := flagContextWindow
+	if ctxWindow == 0 {
+		ctxWindow = pricing.ContextWindow
+	}
 
 	fmt.Println("=== LLMBench: K8s MCP Benchmark ===")
 	fmt.Printf("Provider:    %s\n", provider.Name())
@@ -86,7 +82,6 @@ func main() {
 	fmt.Printf("Seed:        %d\n", flagSeed)
 	fmt.Println()
 
-	// For Ollama providers, fetch and print model metadata.
 	var modelDigest, modelFamily, modelQuant string
 	if op, ok := provider.(*llmbench.OllamaProvider); ok {
 		if info, err := op.ModelInfo(); err == nil && info.Digest != "" {
@@ -105,8 +100,9 @@ func main() {
 	}
 
 	var (
-		results []llmbench.Result
-		records []llmbench.Record
+		results      []llmbench.Result
+		records      []llmbench.Record
+		totalCostUSD float64
 	)
 
 	ctx := context.Background()
@@ -123,29 +119,20 @@ func main() {
 
 			if err != nil {
 				fmt.Printf("  Run %d/%d: ERROR (%v)\n", run+1, flagRuns, err)
-
-				result := llmbench.Result{
-					TaskID:           task.ID,
-					RunIndex:         run,
-					LatencySec:       latency,
-					TotalArgs:        len(task.GroundTruth.ContextEntities),
-					HallucinatedArgs: len(task.GroundTruth.ContextEntities),
-				}
-				results = append(results, result)
-
-				record := llmbench.Record{
-					TaskID:         task.ID,
-					RunIndex:       run,
-					LatencySec:     latency,
-					TotalEntities:  len(task.GroundTruth.ContextEntities),
-					Hallucinations: len(task.GroundTruth.ContextEntities),
-					Error:          err.Error(),
-				}
-				records = append(records, record)
+				results = append(results, llmbench.Result{
+					TaskID: task.ID, RunIndex: run, LatencySec: latency,
+					TotalArgs: len(task.GroundTruth.ContextEntities), HallucinatedArgs: len(task.GroundTruth.ContextEntities),
+					TotalSteps: len(task.GroundTruth.DiagnosisGroups),
+				})
+				records = append(records, llmbench.Record{
+					TaskID: task.ID, RunIndex: run, LatencySec: latency,
+					TotalEntities: len(task.GroundTruth.ContextEntities), Hallucinations: len(task.GroundTruth.ContextEntities),
+					Error: err.Error(),
+				})
 				continue
 			}
 
-			eval := llmbench.EvaluateResponse(resp.Text, task.GroundTruth)
+			eval := llmbench.EvaluateResponseFull(resp.Text, task, resp.PromptTokens, ctxWindow)
 			eval.TaskID = task.ID
 			eval.RunIndex = run
 			eval.LatencySec = latency
@@ -153,36 +140,43 @@ func main() {
 			eval.CompletionTokens = resp.CompletionTokens
 			results = append(results, eval)
 
+			totalCostUSD += pricing.RunCostUSD(resp.PromptTokens, resp.CompletionTokens)
+
 			tokPerSec := 0.0
 			if resp.CompletionTokens > 0 && latency > 0 {
 				tokPerSec = float64(resp.CompletionTokens) / latency
 			}
-
-			record := llmbench.Record{
-				TaskID:           task.ID,
-				RunIndex:         run,
-				LatencySec:       latency,
-				DiagCorrect:      eval.DiagnosisCorrect,
-				ActionCorrect:    eval.ActionCorrect,
-				Hallucinations:   eval.HallucinatedArgs,
-				TotalEntities:    eval.TotalArgs,
-				Destructive:      eval.DestructiveHit,
-				PromptTokens:     resp.PromptTokens,
-				CompletionTokens: resp.CompletionTokens,
-				TokensPerSec:     tokPerSec,
+			te := llmbench.ComputeTokenEfficiency(resp.Text, resp.CompletionTokens)
+			cds := 0.0
+			if eval.ContextTotalWords > 0 {
+				cds = float64(eval.ContextRelevantWords) / float64(eval.ContextTotalWords)
 			}
-			records = append(records, record)
+			mfs := 0.0
+			if eval.TotalSteps > 0 {
+				mfs = float64(eval.GroundedSteps) / float64(eval.TotalSteps)
+			}
+
+			records = append(records, llmbench.Record{
+				TaskID: task.ID, RunIndex: run, LatencySec: latency,
+				DiagCorrect: eval.DiagnosisCorrect, ActionCorrect: eval.ActionCorrect,
+				Hallucinations: eval.HallucinatedArgs, TotalEntities: eval.TotalArgs,
+				Destructive:  eval.DestructiveHit,
+				PromptTokens: resp.PromptTokens, CompletionTokens: resp.CompletionTokens,
+				TokensPerSec: tokPerSec,
+				JSONValid:    eval.JSONValid, SchemaCompliant: eval.SchemaCompliant,
+				RPR: eval.RPRScore, MFS: mfs, CDS: cds, TE: te,
+				Truncated: eval.Truncated,
+			})
 
 			status := "FAIL"
 			if eval.DiagnosisCorrect && eval.ActionCorrect {
 				status = "PASS"
 			}
-
 			fmt.Printf("  Run %d/%d: %s (%.1fs, %d tok)\n", run+1, flagRuns, status, latency, resp.CompletionTokens)
 		}
 	}
 
-	report := buildReport(provider, modelDigest, modelFamily, modelQuant, tasks, results, records)
+	report := buildReport(provider, modelDigest, modelFamily, modelQuant, tasks, results, records, totalCostUSD, ctxWindow)
 	printReport(report)
 	saveReport(report)
 }
@@ -193,17 +187,21 @@ func buildReport(
 	tasks []llmbench.Task,
 	results []llmbench.Result,
 	records []llmbench.Record,
+	totalCostUSD float64,
+	contextWindow int,
 ) llmbench.Report {
 	totalRuns := len(results)
 
 	var (
-		successCount       int
-		actionCorrectCount int
-		totalHallucinated  int
-		totalEntities      int
-		destructiveCount   int
-		latencies          []float64
-		successLatencies   []float64
+		successCount, actionCorrectCount     int
+		totalHallucinated, totalEntities     int
+		destructiveCount                     int
+		latencies, successLatencies          []float64
+		jsonValidCount, schemaCompliantCount int
+		rprSum                               float64
+		groundedStepsSum, totalStepsSum      int
+		cdsRelevantSum, cdsTotalSum          int
+		truncatedCount                       int
 	)
 
 	for _, r := range results {
@@ -221,6 +219,20 @@ func buildReport(
 			destructiveCount++
 		}
 		latencies = append(latencies, r.LatencySec)
+		if r.JSONValid {
+			jsonValidCount++
+		}
+		if r.SchemaCompliant {
+			schemaCompliantCount++
+		}
+		rprSum += r.RPRScore
+		groundedStepsSum += r.GroundedSteps
+		totalStepsSum += r.TotalSteps
+		cdsRelevantSum += r.ContextRelevantWords
+		cdsTotalSum += r.ContextTotalWords
+		if r.Truncated {
+			truncatedCount++
+		}
 	}
 
 	esr := llmbench.ExecutionSuccessRate(successCount, totalRuns)
@@ -250,31 +262,51 @@ func buildReport(
 	rng := rand.New(rand.NewSource(flagSeed))
 	ci := llmbench.BootstrapConfidenceInterval(successCount, totalRuns, 10000, 0.05, rng.Float64)
 
-	// Split provider name for metadata: "ollama/qwen2.5:3b" → ["ollama", "qwen2.5:3b"]
+	svr := llmbench.SyntaxValidationRate(jsonValidCount, totalRuns)
+	scr := llmbench.SchemaComplianceRate(schemaCompliantCount, totalRuns)
+
+	teAgg := 0.0
+	teN := 0
+	for _, rec := range records {
+		if rec.TE > 0 {
+			teAgg += rec.TE
+			teN++
+		}
+	}
+	if teN > 0 {
+		teAgg /= float64(teN)
+	}
+
+	cds := llmbench.ContextDensityScore(cdsRelevantSum, cdsTotalSum)
+	rpr := 0.0
+	if totalRuns > 0 {
+		rpr = rprSum / float64(totalRuns)
+	}
+	mfs := llmbench.MultiStepFaithfulnessScore(groundedStepsSum, totalStepsSum)
+	ces := llmbench.CostEfficiencyScore(successCount, totalCostUSD)
+	ctr := llmbench.ContextTruncationRate(truncatedCount, totalRuns)
+	ccr := llmbench.MeasureCCR(llmbench.ManifestTokenCount())
+
 	parts := strings.SplitN(provider.Name(), "/", 2)
-	providerName, modelName := parts[0], parts[0]
+	provName, modName := parts[0], parts[0]
 	if len(parts) == 2 {
-		modelName = parts[1]
+		modName = parts[1]
 	}
 
 	return llmbench.Report{
 		Metadata: llmbench.Metadata{
-			Provider:    providerName,
-			Model:       modelName,
-			ModelDigest: digest,
-			ModelFamily: family,
-			ModelQuant:  quant,
-			Timestamp:   time.Now().UTC().Format(time.RFC3339),
-			TotalTasks:  len(tasks),
-			RunsPerTask: flagRuns,
-			TotalRuns:   totalRuns,
-			Seed:        flagSeed,
+			Provider: provName, Model: modName,
+			ModelDigest: digest, ModelFamily: family, ModelQuant: quant,
+			Timestamp:  time.Now().UTC().Format(time.RFC3339),
+			TotalTasks: len(tasks), RunsPerTask: flagRuns, TotalRuns: totalRuns,
+			Seed: flagSeed, ContextWindow: contextWindow,
 		},
 		Metrics: llmbench.Metrics{
-			ESR: esr, ESRCI: ci,
-			TSA: tsa, CHR: chr, DAAR: daar,
+			ESR: esr, ESRCI: ci, TSA: tsa, CHR: chr, DAAR: daar,
 			FCSR: fcsr, LAE: lae, MTTR: mttr,
 			LatencyP50: p50, LatencyP95: p95, LatencyP99: p99,
+			SVR: svr, SCR: scr, TE: teAgg, CDS: cds,
+			RPR: rpr, MFS: mfs, CES: ces, CTR: ctr, CCR: ccr,
 		},
 		PerLevel:  computePerLevel(tasks, results),
 		RAG:       computeRAGMetrics(tasks),
@@ -288,54 +320,39 @@ func computePerLevel(tasks []llmbench.Task, results []llmbench.Result) []llmbenc
 	for _, t := range tasks {
 		taskLevel[t.ID] = t.Level
 	}
-
-	type levelAccum struct {
-		success, actionCorrect, hallucinated, entities, total int
-	}
-
-	accum := make(map[string]*levelAccum)
+	type acc struct{ success, action, hall, ent, total int }
+	m := make(map[string]*acc)
 	for _, r := range results {
-		level := string(taskLevel[r.TaskID])
-		a, ok := accum[level]
+		lv := string(taskLevel[r.TaskID])
+		a, ok := m[lv]
 		if !ok {
-			a = &levelAccum{}
-			accum[level] = a
+			a = &acc{}
+			m[lv] = a
 		}
-
 		a.total++
 		if r.DiagnosisCorrect && r.ActionCorrect {
 			a.success++
 		}
-
 		if r.ActionCorrect {
-			a.actionCorrect++
+			a.action++
 		}
-
-		a.hallucinated += r.HallucinatedArgs
-		a.entities += r.TotalArgs
+		a.hall += r.HallucinatedArgs
+		a.ent += r.TotalArgs
 	}
-
-	order := []string{
-		string(llmbench.LevelDiagnostic),
-		string(llmbench.LevelRepair),
-		string(llmbench.LevelMultiStep),
-	}
-
+	order := []string{string(llmbench.LevelDiagnostic), string(llmbench.LevelRepair), string(llmbench.LevelMultiStep)}
 	var out []llmbench.LevelMetrics
-	for _, level := range order {
-		v, ok := accum[level]
+	for _, lv := range order {
+		v, ok := m[lv]
 		if !ok {
 			continue
 		}
-
-		metric := llmbench.LevelMetrics{
-			Name: level,
+		out = append(out, llmbench.LevelMetrics{
+			Name: lv,
 			ESR:  llmbench.ExecutionSuccessRate(v.success, v.total),
-			TSA:  llmbench.ToolSelectionAccuracy(v.actionCorrect, v.total),
-			CHR:  llmbench.ContextHallucinationRate(v.hallucinated, v.entities),
+			TSA:  llmbench.ToolSelectionAccuracy(v.action, v.total),
+			CHR:  llmbench.ContextHallucinationRate(v.hall, v.ent),
 			Runs: v.total,
-		}
-		out = append(out, metric)
+		})
 	}
 	return out
 }
@@ -350,22 +367,19 @@ func computeRAGMetrics(tasks []llmbench.Task) llmbench.RAGQualityMetrics {
 		sumNDCG += n
 	}
 	nt := float64(len(tasks))
-	meanP := sumP / nt
-	meanR := sumR / nt
+	mp, mr := sumP/nt, sumR/nt
 	return llmbench.RAGQualityMetrics{
-		MeanPrecisionAtK: meanP,
-		MeanRecallAtK:    meanR,
-		MeanMRR:          sumMRR / nt,
-		MeanNDCGAtK:      sumNDCG / nt,
-		MeanFScoreAtK:    llmbench.RAGFScoreAtK(meanP, meanR, 1.0),
+		MeanPrecisionAtK: mp, MeanRecallAtK: mr,
+		MeanMRR: sumMRR / nt, MeanNDCGAtK: sumNDCG / nt,
+		MeanFScoreAtK: llmbench.RAGFScoreAtK(mp, mr, 1.0),
 	}
 }
 
 func computePerTask(tasks []llmbench.Task, results []llmbench.Result) []llmbench.Summary {
-	summaries := make([]llmbench.Summary, 0, len(tasks))
+	out := make([]llmbench.Summary, 0, len(tasks))
 	for _, t := range tasks {
-		var success, actionCorrect, hallucinated, entities, total int
-		var totalLat float64
+		var success, action, hall, ent, total int
+		var lat float64
 		for _, r := range results {
 			if r.TaskID != t.ID {
 				continue
@@ -375,83 +389,74 @@ func computePerTask(tasks []llmbench.Task, results []llmbench.Result) []llmbench
 				success++
 			}
 			if r.ActionCorrect {
-				actionCorrect++
+				action++
 			}
-			hallucinated += r.HallucinatedArgs
-			entities += r.TotalArgs
-			totalLat += r.LatencySec
+			hall += r.HallucinatedArgs
+			ent += r.TotalArgs
+			lat += r.LatencySec
 		}
-		meanLat := 0.0
+		ml := 0.0
 		if total > 0 {
-			meanLat = totalLat / float64(total)
+			ml = lat / float64(total)
 		}
-		summaries = append(summaries, llmbench.Summary{
-			TaskID:     t.ID,
-			Level:      string(t.Level),
+		out = append(out, llmbench.Summary{
+			TaskID: t.ID, Level: string(t.Level),
 			ESR:        llmbench.ExecutionSuccessRate(success, total),
-			TSA:        llmbench.ToolSelectionAccuracy(actionCorrect, total),
-			CHR:        llmbench.ContextHallucinationRate(hallucinated, entities),
-			MeanLatSec: meanLat,
+			TSA:        llmbench.ToolSelectionAccuracy(action, total),
+			CHR:        llmbench.ContextHallucinationRate(hall, ent),
+			MeanLatSec: ml,
 		})
 	}
-
-	return summaries
+	return out
 }
 
 func printReport(r llmbench.Report) {
 	sep := strings.Repeat("=", 60)
-	fmt.Printf("\n%s\n", sep)
-	fmt.Println("BENCHMARK REPORT")
-	fmt.Println(sep)
-	fmt.Printf("Provider:    %s\n", r.Metadata.Provider)
-	fmt.Printf("Model:       %s\n", r.Metadata.Model)
-	fmt.Printf("Tasks:       %d\n", r.Metadata.TotalTasks)
-	fmt.Printf("Runs/task:   %d\n", r.Metadata.RunsPerTask)
-	fmt.Printf("Total runs:  %d\n", r.Metadata.TotalRuns)
-	fmt.Printf("Timestamp:   %s\n", r.Metadata.Timestamp)
+	fmt.Printf("\n%s\nBENCHMARK REPORT\n%s\n", sep, sep)
+	fmt.Printf("Provider:    %s\nModel:       %s\n", r.Metadata.Provider, r.Metadata.Model)
+	fmt.Printf("Tasks:       %d\nRuns/task:   %d\nTotal runs:  %d\n", r.Metadata.TotalTasks, r.Metadata.RunsPerTask, r.Metadata.TotalRuns)
 
 	a := r.Metrics
-	fmt.Println("\n--- AGGREGATE METRICS ---")
-	fmt.Printf("ESR  (Execution Success Rate):     %.3f  [95%% CI: %.3f, %.3f]\n", a.ESR, a.ESRCI[0], a.ESRCI[1])
-	fmt.Printf("TSA  (Tool Selection Accuracy):    %.3f\n", a.TSA)
-	fmt.Printf("CHR  (Context Hallucination Rate): %.3f\n", a.CHR)
-	fmt.Printf("DAAR (Destructive Action Rate):    %.3f\n", a.DAAR)
-	fmt.Printf("FCSR (First Call Success Rate):    %.3f\n", a.FCSR)
-	fmt.Printf("LAE  (Latency-Action Efficiency):  %.4f\n", a.LAE)
-
+	fmt.Println("\n--- CORE ---")
+	fmt.Printf("ESR=%.3f [CI %.3f,%.3f]  TSA=%.3f  CHR=%.3f  DAAR=%.3f  FCSR=%.3f  LAE=%.4f\n",
+		a.ESR, a.ESRCI[0], a.ESRCI[1], a.TSA, a.CHR, a.DAAR, a.FCSR, a.LAE)
+	fmt.Println("\n--- EXTENDED ---")
+	fmt.Printf("SVR=%.3f  SCR=%.3f  TE=%.3f  CDS=%.3f  RPR=%.3f  MFS=%.3f\n", a.SVR, a.SCR, a.TE, a.CDS, a.RPR, a.MFS)
+	fmt.Printf("CES=%.2f  CTR=%.3f  CCR=%.3f\n", a.CES, a.CTR, a.CCR)
 	fmt.Println("\n--- LATENCY ---")
-	fmt.Printf("p50: %.2fs  |  p95: %.2fs  |  p99: %.2fs\n", a.LatencyP50, a.LatencyP95, a.LatencyP99)
-	fmt.Printf("MTTR (successful runs): %.2fs\n", a.MTTR)
+	fmt.Printf("p50=%.2fs  p95=%.2fs  p99=%.2fs  MTTR=%.2fs\n", a.LatencyP50, a.LatencyP95, a.LatencyP99, a.MTTR)
 
-	fmt.Println("\n--- PER-LEVEL BREAKDOWN ---")
+	fmt.Println("\n--- PER-LEVEL ---")
 	for _, m := range r.PerLevel {
-		fmt.Printf("  %-18s  ESR=%.3f  TSA=%.3f  CHR=%.3f  (n=%d)\n",
-			m.Name, m.ESR, m.TSA, m.CHR, m.Runs)
+		fmt.Printf("  %-18s ESR=%.3f TSA=%.3f CHR=%.3f (n=%d)\n", m.Name, m.ESR, m.TSA, m.CHR, m.Runs)
 	}
-
 	fmt.Println("\n--- RAG QUALITY ---")
-	fmt.Printf("  P@K=%.3f  |  R@K=%.3f  |  F1@K=%.3f  |  MRR=%.3f  |  NDCG@K=%.3f\n",
-		r.RAG.MeanPrecisionAtK, r.RAG.MeanRecallAtK,
-		r.RAG.MeanFScoreAtK, r.RAG.MeanMRR, r.RAG.MeanNDCGAtK)
-
-	fmt.Println("\n--- PER-TASK SUMMARY ---")
-	for _, ts := range r.Summaries {
-		fmt.Printf("  %-14s %-18s ESR=%.2f  TSA=%.2f  CHR=%.2f  lat=%.1fs\n",
-			ts.TaskID, ts.Level, ts.ESR, ts.TSA, ts.CHR, ts.MeanLatSec)
-	}
-
-	fmt.Printf("\nResults saved to: %s\n", flagOutput)
+	fmt.Printf("  P@K=%.3f R@K=%.3f F1@K=%.3f MRR=%.3f NDCG@K=%.3f\n",
+		r.RAG.MeanPrecisionAtK, r.RAG.MeanRecallAtK, r.RAG.MeanFScoreAtK, r.RAG.MeanMRR, r.RAG.MeanNDCGAtK)
+	fmt.Printf("\nSaved: %s\n", flagOutput)
 }
 
 func saveReport(r llmbench.Report) {
+	sanitizeMetrics(&r.Metrics)
 	data, err := json.MarshalIndent(r, "", "  ")
 	if err != nil {
-		log.Printf("Error marshaling report: %v", err)
+		log.Printf("marshal error: %v", err)
 		return
 	}
 	if err := os.WriteFile(flagOutput, data, 0644); err != nil {
-		log.Printf("Error writing %s: %v", flagOutput, err)
+		log.Printf("write error: %v", err)
 	}
+}
+
+func sanitizeMetrics(m *llmbench.Metrics) {
+	sanitize := func(v *float64) {
+		if math.IsInf(*v, 0) || math.IsNaN(*v) {
+			*v = -1 // sentinel: -1 means "not applicable" (local provider, zero cost)
+		}
+	}
+	sanitize(&m.CES)
+	sanitize(&m.LAE)
+	sanitize(&m.MTTR)
 }
 
 func countLevel(tasks []llmbench.Task, level llmbench.TaskLevel) int {
@@ -461,5 +466,6 @@ func countLevel(tasks []llmbench.Task, level llmbench.TaskLevel) int {
 			n++
 		}
 	}
+
 	return n
 }
