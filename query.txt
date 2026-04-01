@@ -34,3 +34,121 @@ CliffsEffectSizeLabel
 CliffsData
 ErrorRecoveryRate
 CalculateTokenEfficiency
+
+
+
+chciałbym napisać artykuł naukowy do czasopisma takiego jak np:
+  * ACM Transactions on Information Systems (TOIS)
+  * Information Processing & Management (Elsevier)
+  * IEEE Access
+  * Expert Systems with Applications
+
+
+tematyka, k8s, MCP server do K8S, modele AI, context, RAG, GroudTruth, etc...
+
+Pomyślałem że fajnie by było na początek napisać artykuł o sposobie mierzenia dwóch modeli w taki bardziej matematyczny sposób przy użyciu innego modela np embeddingu, reranku lub bazy grafowej. na koniec program generował by raport w html i latexie tak by można było porównać wyniki i dobrze by było wziąć może jeszcze jakieś inne obecne metody i pokazać że moja jest równie dobra lub lepsza a nie wymaga ręcznie przez człowieka ustawiania groudtruth
+
+Dwa modele np qwen i llama byłyby hostowane u mnie na ollamie a np bazę grafową dałbym na dockerze.
+
+Podsuń jakiś fajny pomysł jak to wykonać i zrobić aby nie spędzić przy tym pół życia a żeby był fajny, autorski artykuł którego recenzent nie odrzuci
+
+
+# Title
+* Zero-Human Ground Truth: Automated Evaluation of LLMs for Kubernetes Operations using Graph-Assisted Model Context Protocol
+* Graph-Grounded Factual Evaluation of LLMs: A Reference-Free Framework for Domain-Specific Question Answering
+* Pairwise ranking based on evidence-consistency graphs estimates relative model quality as well as or better than standard reference-free evaluators, while reducing or eliminating the need for manually written ground-truth answers.
+
+1. Co wnosi Twoja metryka? (Wkład naukowy / Contribution)
+
+Musisz wytknąć w artykule słabości obecnych rozwiązań w kontekście domeny DevOps/K8s:
+
+Problem z metrykami semantycznymi (Cosine Similarity, BLEU): LLM może wygenerować odpowiedź, która brzmi bardzo mądrze i poprawnie językowo, ale zawiera zmyślone (halucynowane) IP poda lub pomyloną nazwę serwisu (frontend-v2 zamiast frontend-v1). Klasyczne metryki dadzą tej odpowiedzi wysoki wynik (np. 90%), bo "sens" i słownictwo się zgadzają. W K8s pomyłka w literce to awaria systemu (wynik powinien wynosić 0%).
+
+Problem z LLM-as-a-Judge: Użycie dużego, płatnego modelu (jak GPT-4) do oceny mniejszych (jak Qwen/Llama) jest drogie, wolne i czasami sam sędzia halucynuje.
+
+Twój dorobek (The Novelty): Wprowadzasz metrykę, która jest bezlitosna dla halucynacji encji (dzięki weryfikacji z grafem) i jednocześnie ocenia jakość odpowiedzi. Udowadniasz, że w IT twarde fakty (Entity Recall) są ważniejsze niż styl.
+
+## Background
+istniejące metody (BLEU, ROUGE, BERTScore) mierzą podobieństwo tekstowe, nie faktyczną poprawność. Twoje podejście mierzy factual grounding — czy model mówi prawdę względem źródła wiedzy.
+ROUGE-L, BERTScore, G-Eval (LLM-as-judge)
+
+## Jakie baseline’y porównać
+Nie musisz porównywać się ze wszystkim. Wystarczą 4–5 mocnych baseline’ów:
+Exact / lexical overlap z pseudo-reference albo reference-lite, jeśli masz
+BERTScore / embedding similarity
+RAGAs metrics
+ARES-style judge albo lekki LLM judge
+Pure LLM-as-a-judge pairwise bez grafu
+
+* piszę skrypt który pobiera mi rekurencyjnie wszystkie pliki .md do jednego folderu
+* piszę skrypt który przy użyciu modelu na ollamie czyta mi te pliki i z każdego pliku generuje mi 3 jako relacje i zapisuje je do bazy grafowej neo4j + zapisuje w bazie grafowej także embedding
+
+```
+Given the following documentation text, extract factual triples
+in the format (subject, relation, object).
+Rules:
+- subject and object should be K8s concepts or values
+- relation should be a short verb phrase
+- extract ALL factual relationships, not just obvious ones
+
+Text: "The restartPolicy field of a Pod spec has three
+possible values: Always, OnFailure, and Never.
+The default value is Always."
+
+Output as JSON array:
+
+[
+  {"s": "restartPolicy", "r": "is_field_of", "s": "PodSpec"},
+  {"s": "restartPolicy", "r": "has_possible_value", "o": "Always"},
+  {"s": "restartPolicy", "r": "has_possible_value", "o": "OnFailure"},
+  {"s": "restartPolicy", "r": "has_possible_value", "o": "Never"},
+  {"s": "restartPolicy", "r": "has_default_value", "o": "Always"}
+]
+```
+
+* mając już trójki w bazie grafowej muszę wygenerować pytania więc iteruje po wszystkich encjach w bazie wyciągając w jednym rzucie 5-10 podobnych sobie trójek i pytam się modelu czy może z tych trójek wygenerować mi pytania np jedno pytanie + zapisać kilka trójek jako source do tego pytania w taki sposób
+
+```
+question = {
+    "text": "What are the possible values of restartPolicy?",
+    "source_triples": [
+        "restartPolicy HAS_POSSIBLE_VALUE Always",
+        "restartPolicy HAS_POSSIBLE_VALUE OnFailure",
+        "restartPolicy HAS_POSSIBLE_VALUE Never"
+    ]
+}
+```
+
+* następnie wysyłam te pytania do modelu a on odpowiada mi na pytanie
+* następnie ja muszę z odpowiedzi claimy w taki sposób:
+
+```
+Masz odpowiedź modelu, np. Llama odpowiada na pytanie *"What is a Pod in Kubernetes?"*:
+
+> *"A Pod is the smallest deployable unit in Kubernetes. It can contain one or more containers that share storage and network. Pods are always scheduled on the same node."*
+
+Wysyłasz to do LLM-a z promptem:
+```
+Decompose the following text into atomic factual claims.
+Each claim should contain exactly ONE fact that can be
+independently verified as true or false.
+
+Text: "A Pod is the smallest deployable unit in Kubernetes.
+It can contain one or more containers that share storage
+and network. Pods are always scheduled on the same node."
+
+Return a JSON array of strings:
+
+[
+  "A Pod is the smallest deployable unit in Kubernetes",
+  "A Pod can contain one or more containers",
+  "Containers in a Pod share storage",
+  "Containers in a Pod share network",
+  "All containers in a Pod are scheduled on the same node"
+]
+```
+
+* dla każdego claima obliczam embedding i liczę cosine similarity vs wszysktie embeddingi przechowywane które także mam w bazie grafowej
+* używam reranka na tych embeddingach
+
+doc -> triple -> questions -> answer -> claims
