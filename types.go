@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path/filepath"
 	"time"
 )
 
@@ -12,20 +13,6 @@ type Sample struct {
 	Question  string `json:"question"`
 	Reference string `json:"reference"`
 	Candidate string `json:"candidate"`
-}
-
-type Result struct {
-	ID    string  `json:"id"`
-	Score float64 `json:"score"`
-}
-
-type Report struct {
-	Metric    string   `json:"metric"`
-	Timestamp string   `json:"timestamp"`
-	Results   []Result `json:"results"`
-	Mean      float64  `json:"mean"`
-	Min       float64  `json:"min"`
-	Max       float64  `json:"max"`
 }
 
 func NewSamples(path string) ([]Sample, error) {
@@ -41,6 +28,20 @@ func NewSamples(path string) ([]Sample, error) {
 	}
 
 	return samples, nil
+}
+
+type Report struct {
+	Metric    string   `json:"metric"`
+	Timestamp string   `json:"timestamp"`
+	Results   []Result `json:"results"`
+	Mean      float64  `json:"mean"`
+	Min       float64  `json:"min"`
+	Max       float64  `json:"max"`
+}
+
+type Result struct {
+	ID    string  `json:"id"`
+	Score float64 `json:"score"`
 }
 
 func NewReport(metric string, results []Result) Report {
@@ -74,8 +75,7 @@ func (r Report) WriteJSON(path string) error {
 		return err
 	}
 
-	if path == "" || path == "-" {
-		_, err = os.Stdout.Write(append(out, '\n'))
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		return err
 	}
 

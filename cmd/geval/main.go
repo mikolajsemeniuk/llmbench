@@ -11,27 +11,30 @@ import (
 	"github.com/mikolajsemeniuk/llmbench"
 )
 
+var (
+	input  string
+	output string
+	host   string
+	judge  string
+)
+
 func main() {
-	input := flag.String("input", "", "path to samples JSON file")
-	output := flag.String("output", "-", "path to write report JSON (- for stdout)")
-	host := flag.String("host", "http://localhost:11434", "Ollama host URL")
-	judge := flag.String("judge", "qwen2.5:7b", "Ollama model used as evaluator")
+	flag.StringVar(&input, "input", "", "path to samples JSON file")
+	flag.StringVar(&output, "output", "-", "path to write report JSON (- for stdout)")
+	flag.StringVar(&host, "host", "http://localhost:11434", "Ollama host URL")
+	flag.StringVar(&judge, "judge", "qwen2.5:7b", "Ollama model used as evaluator")
 	flag.Parse()
 
-	if *input == "" {
-		fmt.Fprintln(os.Stderr, "usage: geval -input samples.json [-judge qwen2.5:7b] [-host http://localhost:11434]")
-		os.Exit(1)
-	}
-
-	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
+	ctx := context.Background()
+	ctx, cancel := signal.NotifyContext(ctx, os.Interrupt)
 	defer cancel()
 
-	samples, err := llmbench.NewSamples(*input)
+	samples, err := llmbench.NewSamples(input)
 	if err != nil {
 		log.Fatalf("load samples: %v", err)
 	}
 
-	eval := llmbench.NewGEval(*host, *judge)
+	eval := llmbench.NewGEval(host, judge)
 
 	results := make([]llmbench.Result, len(samples))
 	for i, s := range samples {
@@ -44,7 +47,7 @@ func main() {
 	}
 
 	report := llmbench.NewReport("G-Eval", results)
-	if err := report.WriteJSON(*output); err != nil {
+	if err := report.WriteJSON(output); err != nil {
 		log.Fatalf("write report: %v", err)
 	}
 }

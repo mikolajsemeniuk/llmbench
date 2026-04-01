@@ -131,9 +131,5 @@ func (o *Ollama) Embed(ctx context.Context, text string) ([]float64, error) {
 		return nil, fmt.Errorf("ollama: decode embed response: %w", err)
 	}
 
-	if len(payload.Embeddings) == 0 || len(payload.Embeddings[0]) == 0 {
-		return nil, fmt.Errorf("ollama: empty embedding returned")
-	}
-
 	return payload.Embeddings[0], nil
 }
