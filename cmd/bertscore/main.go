@@ -20,7 +20,7 @@ var (
 
 func main() {
 	flag.StringVar(&input, "input", "", "path to samples JSON file")
-	flag.StringVar(&output, "output", "-", "path to write report JSON (- for stdout)")
+	flag.StringVar(&output, "output", "", "path to write report JSON (- for stdout)")
 	flag.StringVar(&host, "host", "http://localhost:11434", "Ollama host URL")
 	flag.StringVar(&embed, "embed", "nomic-embed-text", "Ollama embedding model")
 	flag.Parse()
