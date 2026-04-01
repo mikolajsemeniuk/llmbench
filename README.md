@@ -1,34 +1,25 @@
-# Model 1 — Qwen
+# LLMBench
+
+## BLEU
 
 ```sh
-go run ./cmd/evaluate/main.go -provider ollama -model qwen2.5:3b-instruct -runs 1 -output qwen.json
+go run ./cmd/bleu  -input testdata/samples.json -output bleu_llama.json
 ```
 
-# Model 2 — LLama Pro
+## ROUGE
 
 ```sh
-go run ./cmd/evaluate/main.go -provider ollama -model llama-pro:latest -runs 1 -output llama-pro.json
+go run ./cmd/rouge -input testdata/samples.json -output rouge_llama.json
 ```
 
-## Compare results
+# BERTScore
 
 ```sh
-go run ./cmd/compare/main.go -a qwen.json -b llama-pro.json -output compare.json
+go run ./cmd/bertscore -input testdata/samples.json -embed nomic-embed-text -output bert_llama.json
 ```
 
-## Show result
+# G-Eval
 
 ```sh
-go run ./cmd/report/main.go -file compare.json
+go run ./cmd/geval -input testdata/samples.json -judge qwen2.5:7b-instruct-q4_K_M -output geval_llama.json
 ```
-
-## Show latex
-
-```sh
-go run cmd/latex/main.go -file compare.json -output tables.tex
-```
-
-cenoj72302@fun4k.com
-Semafor4!
-
-na stoku

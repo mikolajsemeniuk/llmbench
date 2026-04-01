@@ -1,0 +1,32 @@
+[
+  {
+    "id": "q001",
+    "question": "What are the possible values of restartPolicy for a Pod?",
+    "reference": "The restartPolicy field supports three values: Always, OnFailure, and Never. The default value is Always.",
+    "candidate": "The restartPolicy for a Pod can be set to Always, OnFailure, or Never. Always is the default."
+  },
+  {
+    "id": "q002",
+    "question": "What is a Pod in Kubernetes?",
+    "reference": "A Pod is the smallest deployable unit in Kubernetes. It can contain one or more containers that share storage and network resources.",
+    "candidate": "A Pod is the smallest unit of deployment in Kubernetes. It represents a group of one or more containers with shared storage and network."
+  },
+  {
+    "id": "q003",
+    "question": "What does a Deployment controller do?",
+    "reference": "A Deployment provides declarative updates for Pods and ReplicaSets. You describe a desired state and the Deployment controller changes the actual state to match.",
+    "candidate": "A Deployment manages ReplicaSets and provides declarative updates for Pods. The controller reconciles the current state with the desired state defined in the spec."
+  },
+  {
+    "id": "q004",
+    "question": "What is the purpose of a ReplicaSet?",
+    "reference": "A ReplicaSet ensures that a specified number of pod replicas are running at any given time. It is often used indirectly through Deployments.",
+    "candidate": "ReplicaSets maintain a stable set of replica Pods running at all times. They guarantee availability of a specified number of identical Pods."
+  },
+  {
+    "id": "q005",
+    "question": "What happens when a Pod exceeds its memory limit?",
+    "reference": "If a container in a Pod exceeds its memory limit, the kubelet terminates it with an OOMKilled status. The container may be restarted depending on the restartPolicy.",
+    "candidate": "When a Pod uses more memory than allowed, Kubernetes kills it. The Pod is then restarted automatically."
+  }
+]

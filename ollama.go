@@ -9,43 +9,25 @@ import (
 	"net/http"
 )
 
-// OllamaProvider implements llmbench.Provider for any model served via
-// the Ollama HTTP API (qwen2.5, deepseek-r1, llama3, mistral, …).
-//
-// Usage:
-//
-//	p := providers.NewOllamaProvider(providers.OllamaConfig{
-//	    Model: "qwen2.5:3b-instruct",
-//	})
-//	resp, err := p.Complete(ctx, prompt)
-type OllamaProvider struct {
-	// BaseURL is the root URL of the Ollama server, e.g.
-	// "http://localhost:11434". Defaults to that value.
-	Host string
+const defaultSeed = 42
 
-	// Model is the Ollama model tag, e.g. "qwen2.5:3b-instruct" or
-	// "deepseek-r1:7b". Required — no default.
-	Model string
-
-	// Temperature is passed to the model. Must be 0 for reproducibility
-	// in benchmark runs. Defaults to 0.
+type Ollama struct {
+	Host        string
+	Model       string
 	Temperature float64
-
-	// Seed is passed to Ollama for deterministic sampling. Defaults to 42.
-	Seed int64
+	Seed        int64
 }
 
-// NewOllamaProvider constructs an OllamaProvider with sensible defaults.
-func NewOllamaProvider(host, model string, temperature float64, seed int64) *OllamaProvider {
+func NewOllama(host, model string, temperature float64, seed int64) *Ollama {
 	if host == "" {
 		host = "http://localhost:11434"
 	}
 
 	if seed == 0 {
-		seed = 42
+		seed = defaultSeed
 	}
 
-	return &OllamaProvider{
+	return &Ollama{
 		Host:        host,
 		Model:       model,
 		Seed:        seed,
@@ -53,38 +35,31 @@ func NewOllamaProvider(host, model string, temperature float64, seed int64) *Oll
 	}
 }
 
-// Name returns a stable identifier written into every report.
-// Format: "ollama/<model-tag>", e.g. "ollama/qwen2.5:3b-instruct".
-func (p *OllamaProvider) Name() string {
-	return "ollama/" + p.Model
+type Response struct {
+	Text string `json:"text"`
 }
 
-// Complete sends prompt to the locally running Ollama instance and returns
-// the completion. Stream is always false so the full response arrives in a
-// single JSON object — simpler to decode and avoids partial-read errors.
-func (p *OllamaProvider) ChatCompletion(ctx context.Context, prompt string) (Response, error) {
+func (o *Ollama) Chat(ctx context.Context, prompt string) (Response, error) {
 	var in struct {
 		Model   string `json:"model"`
 		Prompt  string `json:"prompt"`
-		Stream  bool   `json:"stream"`
 		Options struct {
 			Temperature float64 `json:"temperature"`
 			Seed        int64   `json:"seed"`
 		} `json:"options"`
 	}
 
-	in.Model = p.Model
+	in.Model = o.Model
 	in.Prompt = prompt
-	in.Stream = false
-	in.Options.Temperature = p.Temperature
-	in.Options.Seed = p.Seed
+	in.Options.Temperature = o.Temperature
+	in.Options.Seed = o.Seed
 
 	body, err := json.Marshal(in)
 	if err != nil {
 		return Response{}, fmt.Errorf("ollama: marshal request: %w", err)
 	}
 
-	url := p.Host + "/api/generate"
+	url := o.Host + "/api/generate"
 	reader := bytes.NewReader(body)
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, reader)
 	if err != nil {
@@ -104,52 +79,61 @@ func (p *OllamaProvider) ChatCompletion(ctx context.Context, prompt string) (Res
 	}
 
 	var payload struct {
-		Response        string `json:"response"`
-		Done            bool   `json:"done"`
-		PromptEvalCount int    `json:"prompt_eval_count"`
-		EvalCount       int    `json:"eval_count"`
-		EvalDuration    int64  `json:"eval_duration"`
+		Response string `json:"response"`
+		Done     bool   `json:"done"`
 	}
 	if err := json.NewDecoder(res.Body).Decode(&payload); err != nil {
 		return Response{}, fmt.Errorf("ollama: decode response: %w", err)
 	}
 
 	out := Response{
-		Text:             payload.Response,
-		PromptTokens:     payload.PromptEvalCount,
-		CompletionTokens: payload.EvalCount,
+		Text: payload.Response,
 	}
 
 	return out, nil
 }
 
-// ModelInfo fetches metadata (digest, family, quantization) from /api/show.
-// Called once at startup to populate report.Metadata for reproducibility.
-func (p *OllamaProvider) ModelInfo() (OllamaModelInfo, error) {
-	url := p.Host + "/api/show"
+func (o *Ollama) Embed(ctx context.Context, text string) ([]float64, error) {
+	var in struct {
+		Model string `json:"model"`
+		Input string `json:"input"`
+	}
+	in.Model = o.Model
+	in.Input = text
 
-	body, _ := json.Marshal(map[string]string{"name": p.Model})
-	reader := bytes.NewReader(body)
-	res, err := http.Post(url, "application/json", reader)
+	body, err := json.Marshal(in)
 	if err != nil {
-		return OllamaModelInfo{}, fmt.Errorf("ollama: model info: %w", err)
+		return nil, fmt.Errorf("ollama: marshal embed request: %w", err)
+	}
+
+	url := o.Host + "/api/embed"
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(body))
+	if err != nil {
+		return nil, fmt.Errorf("ollama: build embed request: %w", err)
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("ollama: embed http: %w", err)
 	}
 	defer res.Body.Close()
 
-	var out OllamaModelInfo
-	if err := json.NewDecoder(res.Body).Decode(&out); err != nil {
-		return OllamaModelInfo{}, fmt.Errorf("ollama: decode model info: %w", err)
+	if res.StatusCode != http.StatusOK {
+		raw, _ := io.ReadAll(res.Body)
+		return nil, fmt.Errorf("ollama: embed status %d: %s", res.StatusCode, string(raw))
 	}
 
-	return out, nil
-}
+	var payload struct {
+		Embeddings [][]float64 `json:"embeddings"`
+	}
+	if err := json.NewDecoder(res.Body).Decode(&payload); err != nil {
+		return nil, fmt.Errorf("ollama: decode embed response: %w", err)
+	}
 
-// OllamaModelInfo holds the subset of /api/show fields used in report metadata.
-type OllamaModelInfo struct {
-	Digest  string `json:"digest"`
-	Details struct {
-		Family            string `json:"family"`
-		ParameterSize     string `json:"parameter_size"`
-		QuantizationLevel string `json:"quantization_level"`
-	} `json:"details"`
+	if len(payload.Embeddings) == 0 || len(payload.Embeddings[0]) == 0 {
+		return nil, fmt.Errorf("ollama: empty embedding returned")
+	}
+
+	return payload.Embeddings[0], nil
 }
