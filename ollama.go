@@ -9,127 +9,97 @@ import (
 	"net/http"
 )
 
-const defaultSeed = 42
-
 type Ollama struct {
-	Host        string
-	Model       string
-	Temperature float64
-	Seed        int64
+	Host string
 }
 
-func NewOllama(host, model string, temperature float64, seed int64) *Ollama {
-	if host == "" {
-		host = "http://localhost:11434"
-	}
-
-	if seed == 0 {
-		seed = defaultSeed
-	}
-
-	return &Ollama{
-		Host:        host,
-		Model:       model,
-		Seed:        seed,
-		Temperature: temperature,
-	}
+func NewOllama(host string) *Ollama {
+	return &Ollama{Host: host}
 }
 
-type Response struct {
-	Text string `json:"text"`
+type ChatInput struct {
+	Model   string      `json:"model"`
+	Prompt  string      `json:"prompt"`
+	Options ChatOptions `json:"options"`
 }
 
-func (o *Ollama) Chat(ctx context.Context, prompt string) (Response, error) {
-	var in struct {
-		Model   string `json:"model"`
-		Prompt  string `json:"prompt"`
-		Options struct {
-			Temperature float64 `json:"temperature"`
-			Seed        int64   `json:"seed"`
-		} `json:"options"`
-	}
+type ChatOptions struct {
+	Temperature float64 `json:"temperature"`
+	Seed        int64   `json:"seed"`
+}
 
-	in.Model = o.Model
-	in.Prompt = prompt
-	in.Options.Temperature = o.Temperature
-	in.Options.Seed = o.Seed
+type ChatOutput struct {
+	Response string `json:"response"`
+}
 
-	body, err := json.Marshal(in)
+func (o *Ollama) Chat(ctx context.Context, in ChatInput) (ChatOutput, error) {
+	input, err := json.Marshal(in)
 	if err != nil {
-		return Response{}, fmt.Errorf("ollama: marshal request: %w", err)
+		return ChatOutput{}, fmt.Errorf("ollama: marshal request: %w", err)
 	}
 
 	url := o.Host + "/api/generate"
-	reader := bytes.NewReader(body)
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, reader)
+	body := bytes.NewReader(input)
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, body)
 	if err != nil {
-		return Response{}, fmt.Errorf("ollama: build request: %w", err)
+		return ChatOutput{}, fmt.Errorf("ollama: build request: %w", err)
 	}
-	req.Header.Set("Content-Type", "application/json")
 
+	req.Header.Set("Content-Type", "application/json")
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return Response{}, fmt.Errorf("ollama: http: %w", err)
+		return ChatOutput{}, fmt.Errorf("ollama: http: %w", err)
 	}
 	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusOK {
-		raw, _ := io.ReadAll(res.Body)
-		return Response{}, fmt.Errorf("ollama: status %d: %s", res.StatusCode, string(raw))
+		return ChatOutput{}, fmt.Errorf("ollama: status %d", res.StatusCode)
 	}
 
-	var payload struct {
-		Response string `json:"response"`
-		Done     bool   `json:"done"`
-	}
-	if err := json.NewDecoder(res.Body).Decode(&payload); err != nil {
-		return Response{}, fmt.Errorf("ollama: decode response: %w", err)
-	}
-
-	out := Response{
-		Text: payload.Response,
+	var out ChatOutput
+	if err := json.NewDecoder(res.Body).Decode(&out); err != nil {
+		return ChatOutput{}, fmt.Errorf("ollama: decode response: %w", err)
 	}
 
 	return out, nil
 }
 
-func (o *Ollama) Embed(ctx context.Context, text string) ([]float64, error) {
-	var in struct {
-		Model string `json:"model"`
-		Input string `json:"input"`
-	}
-	in.Model = o.Model
-	in.Input = text
+type EmbedInput struct {
+	Model string `json:"model"`
+	Input string `json:"input"`
+}
 
+type EmbedOutput struct {
+	Embeddings [][]float64 `json:"embeddings"`
+}
+
+func (o *Ollama) Embed(ctx context.Context, in EmbedInput) (EmbedOutput, error) {
 	body, err := json.Marshal(in)
 	if err != nil {
-		return nil, fmt.Errorf("ollama: marshal embed request: %w", err)
+		return EmbedOutput{}, fmt.Errorf("ollama: marshal embed request: %w", err)
 	}
 
-	url := o.Host + "/api/embed"
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(body))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, o.Host+"/api/embed", bytes.NewReader(body))
 	if err != nil {
-		return nil, fmt.Errorf("ollama: build embed request: %w", err)
+		return EmbedOutput{}, fmt.Errorf("ollama: build embed request: %w", err)
 	}
-
 	req.Header.Set("Content-Type", "application/json")
+
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("ollama: embed http: %w", err)
+		return EmbedOutput{}, fmt.Errorf("ollama: embed http: %w", err)
 	}
 	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusOK {
 		raw, _ := io.ReadAll(res.Body)
-		return nil, fmt.Errorf("ollama: embed status %d: %s", res.StatusCode, string(raw))
+		return EmbedOutput{}, fmt.Errorf("ollama: embed status %d: %s", res.StatusCode, string(raw))
 	}
 
-	var payload struct {
-		Embeddings [][]float64 `json:"embeddings"`
-	}
-	if err := json.NewDecoder(res.Body).Decode(&payload); err != nil {
-		return nil, fmt.Errorf("ollama: decode embed response: %w", err)
+	var out EmbedOutput
+	if err := json.NewDecoder(res.Body).Decode(&out); err != nil {
+		return EmbedOutput{}, fmt.Errorf("ollama: decode embed response: %w", err)
 	}
 
-	return payload.Embeddings[0], nil
+	return out, nil
 }

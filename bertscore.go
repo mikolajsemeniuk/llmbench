@@ -16,26 +16,28 @@ import (
 // methodology section.
 type BERTScorer struct {
 	Provider *Ollama
+	Model    string
 }
 
 func NewBERTScorer(host, model string) *BERTScorer {
 	return &BERTScorer{
-		Provider: NewOllama(host, model, 0, defaultSeed),
+		Provider: NewOllama(host),
+		Model:    model,
 	}
 }
 
 func (b *BERTScorer) Score(ctx context.Context, reference, candidate string) (float64, error) {
-	ref, err := b.Provider.Embed(ctx, reference)
+	ref, err := b.Provider.Embed(ctx, EmbedInput{Model: b.Model, Input: reference})
 	if err != nil {
 		return 0, fmt.Errorf("bertscore: embed reference: %w", err)
 	}
 
-	cand, err := b.Provider.Embed(ctx, candidate)
+	cand, err := b.Provider.Embed(ctx, EmbedInput{Model: b.Model, Input: candidate})
 	if err != nil {
 		return 0, fmt.Errorf("bertscore: embed candidate: %w", err)
 	}
 
-	return cosineSimilarity(ref, cand), nil
+	return cosineSimilarity(ref.Embeddings[0], cand.Embeddings[0]), nil
 }
 
 // cosineSimilarity returns the cosine similarity of two vectors.

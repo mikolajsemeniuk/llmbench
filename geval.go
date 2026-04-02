@@ -19,11 +19,13 @@ import (
 // The final score is the average of both dimensions, divided by 5.
 type GEval struct {
 	Provider *Ollama
+	Model    string
 }
 
 func NewGEval(host, model string) *GEval {
 	return &GEval{
-		Provider: NewOllama(host, model, 0, defaultSeed),
+		Provider: NewOllama(host),
+		Model:    model,
 	}
 }
 
@@ -54,14 +56,14 @@ Do not include any other text.`
 func (g *GEval) Score(ctx context.Context, question, reference, candidate string) (float64, error) {
 	prompt := fmt.Sprintf(gevalPrompt, question, reference, candidate)
 
-	resp, err := g.Provider.Chat(ctx, prompt)
+	res, err := g.Provider.Chat(ctx, ChatInput{Model: g.Model, Prompt: prompt})
 	if err != nil {
 		return 0, fmt.Errorf("geval: completion: %w", err)
 	}
 
-	correctness, completeness, err := parseGEvalResponse(resp.Text)
+	correctness, completeness, err := parseGEvalResponse(res.Response)
 	if err != nil {
-		return 0, fmt.Errorf("geval: parse response %q: %w", resp.Text, err)
+		return 0, fmt.Errorf("geval: parse response %q: %w", res.Response, err)
 	}
 
 	score := (float64(correctness) + float64(completeness)) / 10.0
@@ -71,30 +73,30 @@ func (g *GEval) Score(ctx context.Context, question, reference, candidate string
 // parseGEvalResponse extracts two integers from the LLM output.
 // Handles formats like "4 3", "4, 3", "Correctness: 4\nCompleteness: 3".
 func parseGEvalResponse(raw string) (int, int, error) {
-	// First try: just find all integers in the response.
 	nums := extractInts(raw)
 	if len(nums) >= 2 {
 		c, k := clampScore(nums[0]), clampScore(nums[1])
 		return c, k, nil
 	}
+
 	if len(nums) == 1 {
-		// If only one number, use it for both dimensions.
 		c := clampScore(nums[0])
 		return c, c, nil
 	}
+
 	return 0, 0, fmt.Errorf("no integers found in response")
 }
 
 func extractInts(s string) []int {
 	var result []int
 	for _, field := range strings.Fields(s) {
-		// Strip common punctuation.
 		field = strings.TrimRight(field, ".,;:!?")
 		n, err := strconv.Atoi(field)
 		if err == nil {
 			result = append(result, n)
 		}
 	}
+
 	return result
 }
 
@@ -102,8 +104,10 @@ func clampScore(n int) int {
 	if n < 1 {
 		return 1
 	}
+
 	if n > 5 {
 		return 5
 	}
+
 	return n
 }
