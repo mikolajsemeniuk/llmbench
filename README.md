@@ -23,3 +23,15 @@ go run ./cmd/bertscore -input testdata/samples.json -embed nomic-embed-text -out
 ```sh
 go run ./cmd/geval -input testdata/samples.json -judge qwen2.5:7b-instruct-q4_K_M -output output/geval.json
 ```
+
+## MCP
+
+```sh
+go run ./cmd/mcp
+```
+
+## Agent
+
+```sh
+go run ./cmd/agent
+```
