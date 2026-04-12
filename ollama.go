@@ -21,6 +21,7 @@ type ChatInput struct {
 	Model   string      `json:"model"`
 	Prompt  string      `json:"prompt"`
 	Options ChatOptions `json:"options"`
+	Stream  bool        `json:"stream"`
 }
 
 type ChatOptions struct {

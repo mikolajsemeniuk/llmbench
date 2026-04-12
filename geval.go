@@ -56,7 +56,7 @@ Do not include any other text.`
 func (g *GEval) Score(ctx context.Context, question, reference, candidate string) (float64, error) {
 	prompt := fmt.Sprintf(gevalPrompt, question, reference, candidate)
 
-	res, err := g.Provider.Chat(ctx, ChatInput{Model: g.Model, Prompt: prompt})
+	res, err := g.Provider.Chat(ctx, ChatInput{Model: g.Model, Prompt: prompt, Stream: false})
 	if err != nil {
 		return 0, fmt.Errorf("geval: completion: %w", err)
 	}

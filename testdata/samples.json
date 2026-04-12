@@ -28,5 +28,365 @@
     "question": "What happens when a Pod exceeds its memory limit?",
     "reference": "If a container in a Pod exceeds its memory limit, the kubelet terminates it with an OOMKilled status. The container may be restarted depending on the restartPolicy.",
     "candidate": "When a Pod uses more memory than allowed, Kubernetes kills it. The Pod is then restarted automatically."
+  },
+  {
+    "id": "q006",
+    "question": "Jak działa mechanizm Horizontal Pod Autoscaler (HPA)?",
+    "reference": "Horizontal Pod Autoscaler automatycznie skaluje liczbę replik w Deployment lub ReplicaSet na podstawie obserwowanego wykorzystania zasobów CPU lub pamięci. Działa on w pętli sterowania, pobierając metryki z Metrics API i obliczając wymaganą liczbę replik, aby utrzymać średnie wykorzystanie na poziomie zdefiniowanego celu.",
+    "candidate": "Mechanizm HPA odpowiada za dynamiczne dostosowywanie liczby działających podów w zależności od obciążenia systemu. Pobiera on dane o zużyciu procesora lub RAM z serwera metryk i jeśli przekraczają one zadany próg, nakazuje kontrolerowi uruchomienie dodatkowych instancji, aby rozłożyć ruch i zapewnić stabilność aplikacji."
+  },
+  {
+    "id": "q007",
+    "question": "Czym różni się StatefulSet od Deploymentu?",
+    "reference": "StatefulSet jest przeznaczony dla aplikacji wymagających trwałości danych i stałej tożsamości sieciowej. W przeciwieństwie do Deploymentu, pody w StatefulSet mają stałe nazwy (np. pod-0, pod-1) oraz dedykowane wolumeny PersistentVolume, które są zachowywane nawet po restarcie poda. Deployment traktuje pody jako wymienne i bezstanowe.",
+    "candidate": "Główną różnicą jest sposób zarządzania tożsamością i stanem. Deployment tworzy pody o losowych nazwach i są one całkowicie zastępowalne. StatefulSet gwarantuje, że każdy pod otrzyma ten sam identyfikator sieciowy i ten sam dysk po ponownym uruchomieniu, co jest kluczowe dla baz danych takich jak PostgreSQL czy MongoDB."
+  },
+  {
+    "id": "q008",
+    "question": "Wyjaśnij pojęcie Ingress Controller w kontekście Kubernetes.",
+    "reference": "Ingress Controller to wyspecjalizowany pod, który zarządza ruchem zewnętrznym wchodzącym do klastra, implementując reguły zdefiniowane w zasobach Ingress. Działa jako reverse proxy i load balancer (np. NGINX, HAProxy), kierując zapytania HTTP/HTTPS do odpowiednich usług wewnętrznych na podstawie ścieżki URL lub hosta.",
+    "candidate": "Jest to komponent odpowiedzialny za wystawianie usług klastra na świat zewnętrzny bez konieczności tworzenia wielu LoadBalancerów chmurowych. Ingress Controller interpretuje reguły routingu i przekazuje ruch do serwisów. Może również obsługiwać terminację połączeń TLS oraz wirtualny hosting dla wielu domen na jednym adresie IP."
+  },
+  {
+    "id": "q009",
+    "question": "Do czego służą sondy Liveness i Readiness?",
+    "reference": "Sonda Liveness sprawdza, czy kontener wciąż działa; jeśli zawiedzie, kubelet restartuje kontener. Sonda Readiness sprawdza, czy kontener jest gotowy do przyjmowania ruchu; jeśli zawiedzie, adres IP poda jest usuwany z endpointów serwisu, co zapobiega kierowaniu ruchu do nieuruchomionej jeszcze aplikacji.",
+    "candidate": "Liveness probe służy do wykrywania stanów zawieszenia aplikacji (deadlock), wymuszając restart kontenera w celu przywrócenia sprawności. Readiness probe informuje klaster, że aplikacja przeszła proces inicjalizacji i może obsługiwać użytkowników. Dzięki temu unika się błędów 502 podczas wdrażania nowej wersji oprogramowania."
+  },
+  {
+    "id": "q010",
+    "question": "Czym jest Sidecar Container Pattern?",
+    "reference": "Wzorzec Sidecar polega na dodaniu pomocniczego kontenera do tego samego Poda, w którym znajduje się kontener główny. Kontenery te współdzielą zasoby, takie jak system plików i interfejs sieciowy. Sidecar zazwyczaj realizuje zadania pomocnicze, np. agregację logów, synchronizację konfiguracji lub obsługę service mesh (np. Envoy proxy).",
+    "candidate": "To technika projektowa, gdzie obok głównej aplikacji w jednym podzie działa drugi kontener wspomagający. Dzięki temu, że dzielą one localhost, sidecar może łatwo przechwytywać ruch sieciowy lub czytać pliki logów generowane przez aplikację bazową, co pozwala na separację logiki biznesowej od infrastrukturalnej."
+  },
+  {
+    "id": "q011",
+    "question": "Opisz rolę etcd w architekturze Kubernetes.",
+    "reference": "etcd to rozproszona, spójna baza danych typu klucz-wartość, która służy jako główny magazyn danych dla całego klastra Kubernetes. Przechowuje ona stan konfiguracji, dane o sekretach, metadane obiektów oraz informacje o aktualnym stanie klastra. Wszystkie komponenty Control Plane komunikują się z etcd wyłącznie za pośrednictwem API Servera.",
+    "candidate": "Jest to mózg klastra, w którym zapisywane są wszystkie informacje o zasobach. Ponieważ bazuje na protokole Raft, zapewnia wysoką dostępność i spójność danych. Jeśli etcd ulegnie awarii, klaster przestaje poprawnie funkcjonować, ponieważ API Server nie może odczytać ani zapisać żadnych zmian w stanie pożądanym obiektów."
+  },
+  {
+    "id": "q012",
+    "question": "Co to jest Network Policy?",
+    "reference": "Network Policy to specyfikacja określająca, jak grupy podów mogą komunikować się ze sobą oraz z innymi punktami końcowymi sieci. Działa jak firewall warstwy 3 i 4, pozwalając na definiowanie reguł ruchu przychodzącego (ingress) i wychodzącego (egress) na podstawie selektorów etykiet, przestrzeni nazw lub bloków IP.",
+    "candidate": "Reguły sieciowe (Network Policy) pozwalają kontrolować przepływ pakietów między podami wewnątrz klastra. Domyślnie komunikacja jest otwarta, ale dzięki tym polisom możemy odizolować wrażliwe bazy danych tak, aby przyjmowały połączenia tylko z konkretnych mikroserwisów, co znacząco podnosi poziom bezpieczeństwa infrastruktury."
+  },
+  {
+    "id": "q013",
+    "question": "Jaką funkcję pełni Kube-Proxy?",
+    "reference": "Kube-proxy to komponent sieciowy działający na każdym węźle (node) w klastrze. Odpowiada on za utrzymywanie reguł sieciowych na hostach i obsługę przekierowań ruchu do odpowiednich podów będących częścią serwisu. Wykorzystuje do tego mechanizmy systemowe, takie jak IPVS lub iptables, zapewniając prosty load balancing warstwy czwartej.",
+    "candidate": "Zadaniem kube-proxy jest zarządzanie ruchem skierowanym do wirtualnych adresów IP serwisów Kubernetes. Mapuje on te adresy na fizyczne IP konkretnych podów. Dzięki niemu, gdy klient uderza w serwis, ruch jest inteligentnie przekierowywany do jednego ze zdrowych kontenerów, niezależnie od tego, na którym węźle się on znajduje."
+  },
+  {
+    "id": "q014",
+    "question": "Wyjaśnij różnicę między Requestami a Limitami zasobów.",
+    "reference": "Requesty (żądania) to minimalna ilość CPU i pamięci, jaką Kubernetes gwarantuje kontenerowi; na ich podstawie scheduler wybiera węzeł dla poda. Limity to maksymalna ilość zasobów, jaką kontener może skonsumować. Jeśli kontener przekroczy limit pamięci, zostanie zabity (OOM), natomiast przy limicie CPU zostanie ograniczony (throttling).",
+    "candidate": "Requests definiują ile zasobów aplikacja potrzebuje do startu i stabilnej pracy, co pomaga w planowaniu obciążenia klastra. Limits to twarde ograniczenia bezpieczeństwa. Można powiedzieć, że requesty to obietnica zasobów od klastra, a limity to kordon sanitarny zapobiegający sytuacji, w której jeden pod konsumuje całą moc obliczeniową maszyny fizycznej."
+  },
+  {
+    "id": "q015",
+    "question": "Czym są Custom Resource Definitions (CRD)?",
+    "reference": "CRD to mechanizm pozwalający na rozszerzanie API Kubernetes o własne, niestandardowe typy obiektów. Po zarejestrowaniu CRD, użytkownik może tworzyć i zarządzać nowymi zasobami za pomocą kubectl, a ich logikę zazwyczaj obsługuje dedykowany kontroler (często nazywany Operatorem).",
+    "candidate": "To sposób na zdefiniowanie własnych obiektów w Kubernetes, które zachowują się tak samo jak wbudowane Deploymenty czy Serwisy. Dzięki CRD możemy opisać specyficzne komponenty naszej infrastruktury, np. 'Backup' lub 'Database', i zarządzać nimi deklaratywnie, korzystając z natywnych mechanizmów klastra i automatyzacji."
+  },
+  {
+    "id": "q016",
+    "question": "Na czym polega proces Rolling Update w Deploymentach?",
+    "reference": "Rolling Update polega na stopniowej wymianie starych podów na nowe wersje bez przestojów w działaniu aplikacji. Deployment tworzy nowy ReplicaSet i powoli zwiększa liczbę nowych podów, jednocześnie zmniejszając liczbę starych, zachowując przy tym określoną dostępność zgodnie z parametrami maxUnavailable i maxSurge.",
+    "candidate": "Jest to strategia aktualizacji, która pozwala na wdrożenie nowej wersji kodu przy zachowaniu ciągłości usług. Zamiast wyłączać wszystko na raz, Kubernetes podmienia pody jeden po drugim. Jeśli nowy pod przejdzie testy gotowości, stary jest usuwany, co gwarantuje, że w każdym momencie aktualizacji część instancji obsługuje zapytania użytkowników."
+  },
+  {
+    "id": "q017",
+    "question": "Co to jest ConfigMap i do czego służy?",
+    "reference": "ConfigMap to obiekt API służący do przechowywania niepoufnych danych w formie par klucz-wartość. Pozwala on na odseparowanie konfiguracji specyficznej dla środowiska od obrazu kontenera, co umożliwia przenoszenie aplikacji między środowiskami deweloperskimi a produkcyjnymi bez konieczności przebudowywania obrazów.",
+    "candidate": "ConfigMapy służą do wstrzykiwania ustawień do aplikacji w czasie runtime. Można je zamontować jako pliki w systemie plików kontenera lub przekazać jako zmienne środowiskowe. Dzięki temu ten sam obraz Dockera może działać z różnymi bazami danych czy poziomami logowania, zależnie od tego, jaką mapę konfiguracji mu podepniemy."
+  },
+  {
+    "id": "q018",
+    "question": "Jak działają Kubernetes Secrets?",
+    "reference": "Secrets to obiekty przeznaczone do przechowywania wrażliwych informacji, takich jak hasła, klucze OAuth czy certyfikaty SSL. Są one przechowywane w etcd w formie zakodowanej (base64) i mogą być montowane do podów w sposób bezpieczniejszy niż ConfigMapy, często z wykorzystaniem pamięci RAM (tmpfs) wewnątrz węzła.",
+    "candidate": "To mechanizm do zarządzania tajnymi danymi w klastrze. Choć domyślnie są tylko zakodowane w base64, pozwalają na lepszą kontrolę dostępu (RBAC) niż zwykłe pliki. Pody mogą z nich korzystać poprzez zmienne środowiskowe, a system dba o to, by te wrażliwe dane nie wyciekły przypadkiem do logów systemowych podczas budowania infrastruktury."
+  },
+  {
+    "id": "q019",
+    "question": "Czym jest Namespace i kiedy go używać?",
+    "reference": "Namespace to wirtualny klaster wewnątrz fizycznego klastra Kubernetes. Służy do logicznej izolacji zasobów, zarządzania uprawnieniami (RBAC) oraz ograniczania zużycia zasobów (Resource Quotas). Jest idealny do separacji różnych projektów, zespołów lub środowisk, takich jak development, staging i production.",
+    "candidate": "Przestrzenie nazw pozwalają podzielić jeden duży klaster na mniejsze, odizolowane od siebie części. Używamy ich, gdy wielu użytkowników lub wiele mikroserwisów korzysta z tej samej infrastruktury, aby uniknąć konfliktów nazw (np. dwóch serwisów o nazwie 'web') i łatwiej zarządzać dostępem oraz kosztami poszczególnych działów firmy."
+  },
+  {
+    "id": "q020",
+    "question": "Co to jest PersistentVolume (PV) i PersistentVolumeClaim (PVC)?",
+    "reference": "PersistentVolume (PV) to zasób pamięci masowej w klastrze skonfigurowany przez administratora, reprezentujący fizyczny dysk. PersistentVolumeClaim (PVC) to żądanie użytkownika o konkretny rozmiar i tryb dostępu do pamięci. Kubernetes automatycznie wiąże PVC z pasującym PV, umożliwiając podom trwałe przechowywanie danych.",
+    "candidate": "PV to rzeczywista przestrzeń dyskowa dostępna w infrastrukturze, natomiast PVC to sposób, w jaki deweloper prosi o tę przestrzeń dla swojej aplikacji. Działa to jak abstrakcja: programista nie musi wiedzieć, czy dane leżą na dysku SSD w AWS czy na macierzy NFS w serwerowni; po prostu definiuje zapotrzebowanie, a system dopasowuje zasoby."
+  },
+  {
+    "id": "q021",
+    "question": "Jaką rolę pełni Scheduler w Kubernetes?",
+    "reference": "Kubernetes Scheduler to komponent Control Plane, który monitoruje nowo utworzone pody nieprzypisane do żadnego węzła. Analizuje on wymagania poda (zasoby, powiązania, tolerancje) oraz aktualny stan obciążenia dostępnych węzłów, a następnie wybiera optymalną maszynę, na której dany pod powinien zostać uruchomiony.",
+    "candidate": "Scheduler decyduje, gdzie w klastrze wyląduje dany kontener. Bierze pod uwagę mnóstwo czynników: od wolnego RAMu i CPU na nodach, po bardziej skomplikowane reguły, jak np. to, by dwa pody tej samej aplikacji nie trafiły na ten sam serwer (anty-affinity). Po podjęciu decyzji, informuje API Server o przypisaniu poda do noda."
+  },
+  {
+    "id": "q022",
+    "question": "Czym są Taints i Tolerations?",
+    "reference": "Taints to właściwości nakładane na węzły, które pozwalają im odpychać pody. Tolerations to właściwości nakładane na pody, które pozwalają im na uruchomienie się na węzłach z pasującymi taintami. Mechanizm ten służy do dedykowania specyficznych maszyn dla konkretnych obciążeń, np. węzłów z GPU tylko dla zadań ML.",
+    "candidate": "Tainty to 'odstraszacze' na węzłach, a tolerancje to 'odporności' podów. Jeśli node ma tainty, żaden pod bez odpowiedniej tolerancji tam nie trafi. Jest to przydatne, gdy chcemy zarezerwować konkretne serwery dla baz danych lub wykluczyć pody użytkowników z maszyn zarządzających infrastrukturą klastra."
+  },
+  {
+    "id": "q023",
+    "question": "Co to jest Helm i dlaczego jest przydatny?",
+    "reference": "Helm to menedżer pakietów dla Kubernetes, który używa 'Chartów' do definiowania, instalowania i aktualizowania nawet najbardziej złożonych aplikacji. Pozwala na parametryzację plików YAML za pomocą szablonów, zarządzanie wersjami wydań (releases) oraz łatwe wycofywanie zmian w przypadku błędów.",
+    "candidate": "To odpowiednik 'apt' lub 'npm' w świecie K8s. Zamiast ręcznie zarządzać dziesiątkami plików YAML dla jednej aplikacji, używasz Helma, który pakuje wszystko w jeden chart. Możesz łatwo zmieniać konfigurację dla różnych środowisk za pomocą plików values.yaml, co znacznie przyspiesza i standaryzuje procesy CI/CD."
+  },
+  {
+    "id": "q024",
+    "question": "Wyjaśnij działanie Cluster Autoscaler.",
+    "reference": "Cluster Autoscaler to narzędzie, które automatycznie dostosowuje rozmiar klastra (liczbę węzłów). Gdy pody nie mogą zostać uruchomione z powodu braku zasobów na obecnych węzłach, Autoscaler dodaje nowe instancje do grupy węzłów. Usuwa również puste lub mało obciążone węzły, aby optymalizować koszty utrzymania infrastruktury.",
+    "candidate": "Ten komponent dba o to, aby klaster miał odpowiednią liczbę serwerów fizycznych lub maszyn wirtualnych. Jeśli widzi, że niektóre pody mają status 'Pending' z braku miejsca, prosi dostawcę chmury o dołożenie nowej maszyny. Działa to w obie strony – gdy ruch spada i maszyny się nudzą, są one bezpiecznie wyłączane, by oszczędzać pieniądze."
+  },
+  {
+    "id": "q025",
+    "question": "Czym jest Service Mesh (np. Istio)?",
+    "reference": "Service Mesh to dedykowana warstwa infrastruktury do zarządzania komunikacją między mikroserwisami. Wykorzystuje ona sidecar proxy (np. Envoy) do obsługi routingu, bezpieczeństwa (mTLS), obserwowalności (metryki, trasowanie) i odporności sieciowej (retries, circuit breakers) bez modyfikacji kodu źródłowego aplikacji.",
+    "candidate": "To sieć usług, która przejmuje kontrolę nad tym, jak pody rozmawiają ze sobą. Dzięki niej możemy łatwo wprowadzić szyfrowanie ruchu wewnątrz klastra, robić zaawansowane testy typu Canary lub monitorować dokładnie czas odpowiedzi każdego mikroserwisu. Wszystko to dzieje się transparentnie dla dewelopera, na poziomie warstwy sieciowej."
+  },
+  {
+    "id": "q026",
+    "question": "Opisz rolę kontrolera ReplicaSet.",
+    "reference": "Głównym zadaniem ReplicaSet jest utrzymanie stabilnej liczby identycznych podów działających w danym momencie. Monitoruje on liczbę replik i jeśli któryś pod ulegnie awarii lub zostanie ręcznie usunięty, kontroler natychmiast tworzy nowy, aby stan faktyczny zgadzał się z pożądanym stanem zdefiniowanym w specyfikacji.",
+    "candidate": "ReplicaSet dba o to, żeby zawsze działało tyle kopii aplikacji, ile zadeklarowaliśmy. Jeśli ustawimy 3 repliki, a jedna z nich zniknie z powodu błędu noda, ReplicaSet to wykryje i nakaże klastrowi postawienie nowej instancji. Zazwyczaj nie tworzymy go ręcznie, lecz poprzez Deployment, który nim zarządza."
+  },
+  {
+    "id": "q027",
+    "question": "Czym różnią się typy serwisów: ClusterIP, NodePort i LoadBalancer?",
+    "reference": "ClusterIP wystawia usługę tylko na wewnętrznym IP klastra (dostęp tylko wewnątrz). NodePort otwiera statyczny port na każdym adresie IP węzła, umożliwiając dostęp z zewnątrz przez <NodeIP>:<NodePort>. LoadBalancer korzysta z zewnętrznego balansera obciążenia dostawcy chmury, który kieruje ruch do serwisów typu NodePort lub ClusterIP.",
+    "candidate": "ClusterIP to domyślny typ dla komunikacji wewnątrz klastra. NodePort to prosty sposób na wyjście na zewnątrz przez porty noda (zakres 30000-32767). LoadBalancer to najbardziej profesjonalne rozwiązanie produkcyjne, gdzie chmura (np. Azure czy AWS) automatycznie konfiguruje zewnętrzne urządzenie sieciowe kierujące ruch do naszych podów."
+  },
+  {
+    "id": "q028",
+    "question": "Co to jest kubelet i jakie są jego zadania?",
+    "reference": "Kubelet to agent działający na każdym węźle w klastrze. Jego głównym obowiązkiem jest zapewnienie, że kontenery opisane w PodSpecs działają i są zdrowe. Kubelet odbiera instrukcje od API Servera, komunikuje się z runtime'em kontenerów (np. Docker, containerd) w celu ich uruchomienia i raportuje ich stan z powrotem do systemu.",
+    "candidate": "To najważniejszy proces na noda, taki 'zarządca lokalny'. Kubelet pilnuje, by pody przydzielone do jego maszyny faktycznie wystartowały i działały poprawnie. Sprawdza zdrowie kontenerów (health checks), montuje wolumeny i zarządza cyklem życia obrazów na dysku, będąc łącznikiem między masterem a warstwą wykonawczą."
+  },
+  {
+    "id": "q029",
+    "question": "Do czego służy pole 'selector' w definicji Serwisu?",
+    "reference": "Pole selector służy do identyfikowania grupy podów, do których serwis powinien kierować ruch sieciowy. Serwis szuka podów, których etykiety (labels) pasują do wartości zdefiniowanych w selektorze. Dzięki temu ruch jest dynamicznie rozdzielany pomiędzy wszystkie pody spełniające te kryteria, niezależnie od ich adresów IP.",
+    "candidate": "Selektor to taki filtr, który mówi serwisowi, które pody należą do danej usługi. Jeśli pod ma etykietę 'app: backend', a serwis szuka właśnie takiej etykiety, to zostanie on dołączony do listy punktów końcowych (Endpoints). Pozwala to na luźne powiązanie serwisów z podami, co ułatwia skalowanie i aktualizacje."
+  },
+  {
+    "id": "q030",
+    "question": "Wyjaśnij mechanizm RBAC (Role-Based Access Control).",
+    "reference": "RBAC to metoda regulowania dostępu do zasobów Kubernetes na podstawie ról poszczególnych użytkowników lub kont serwisowych. Składa się z Ról (definiujących uprawnienia do operacji na zasobach) oraz RoleBindings (przypisujących te role do konkretnych osób lub grup), co pozwala na precyzyjne wdrażanie zasady najniższych uprawnień.",
+    "candidate": "To system uprawnień, który decyduje kto i co może robić w klastrze. Możemy stworzyć rolę, która pozwala tylko na podgląd logów w danym namespace, i przypisać ją nowemu programiście. Dzięki RBAC zabezpieczamy klaster przed nieautoryzowanymi zmianami, dzieląc uprawnienia między ludzi i automatyczne procesy (Service Accounts)."
+  },
+  {
+    "id": "q031",
+    "question": "Czym jest Container Runtime Interface (CRI)?",
+    "reference": "CRI to standardowy interfejs API, który pozwala Kubeletowi komunikować się z różnymi silnikami uruchomieniowymi kontenerów bez konieczności ich ponownej kompilacji. Dzięki CRI Kubernetes może wspierać wiele technologii, takich jak containerd, CRI-O czy Docker (poprzez shim), co zwiększa elastyczność i modularność ekosystemu.",
+    "candidate": "Jest to warstwa abstrakcji między Kubernetesem a niskopoziomowym oprogramowaniem do odpalania kontenerów. Zamiast pisać osobną logikę dla każdej technologii, twórcy K8s stworzyli jeden protokół. Dzięki temu administratorzy mogą wybrać lżejszy runtime niż Docker, co poprawia wydajność i bezpieczeństwo węzłów roboczych."
+  },
+  {
+    "id": "q032",
+    "question": "Jak działa mechanizm DNS wewnątrz klastra Kubernetes?",
+    "reference": "Kubernetes automatycznie zarządza wewnętrznym serwerem DNS (zazwyczaj CoreDNS), który przypisuje nazwy domenowe serwisom. Każdy serwis otrzymuje wpis w formacie <service-name>.<namespace>.svc.cluster.local. Pody są konfigurowane tak, aby używały tego serwera DNS, co pozwala na komunikację między usługami przy użyciu nazw zamiast zmiennych adresów IP.",
+    "candidate": "W klastrze działa usługa DNS, która pozwala mikroserwisom znajdować się nawzajem po nazwach. Gdy jedna aplikacja chce połączyć się z bazą, uderza pod adres 'db-service'. DNS Kubernetes zamienia tę nazwę na aktualny adres IP serwisu. To kluczowe, bo pody często giną i zmieniają IP, a nazwa serwisu pozostaje stała."
+  },
+  {
+    "id": "q033",
+    "question": "Czym jest Resource Quota?",
+    "reference": "Resource Quota to obiekt pozwalający na ograniczenie łącznego zużycia zasobów w danej przestrzeni nazw (Namespace). Może limitować sumę requestów i limitów CPU oraz pamięci, a także liczbę tworzonych obiektów (np. maksymalnie 10 podów). Pomaga to zapobiegać nadmiernemu zużyciu zasobów przez jeden projekt w klastrze współdzielonym.",
+    "candidate": "To taki 'budżet zasobów' dla zespołu. Administrator ustawia limit, np. 20GB RAM dla namespace 'dev'. Jeśli deweloperzy spróbują uruchomić pody, które przekroczą ten limit, klaster odrzuci ich żądanie. Gwarantuje to, że żadna grupa użytkowników nie 'zje' całej mocy obliczeniowej klastra, zostawiając innych bez zasobów."
+  },
+  {
+    "id": "q034",
+    "question": "Do czego służą adnotacje (Annotations) w Kubernetes?",
+    "reference": "Adnotacje to metadane w formie par klucz-wartość, które służą do dołączania niestandardowych informacji do obiektów. W przeciwieństwie do etykiet, nie służą do selekcji obiektów. Są wykorzystywane przez narzędzia zewnętrzne, kontrolery lub biblioteki do przechowywania np. informacji o wersji, linków do repozytoriów czy konfiguracji dla Ingressa.",
+    "candidate": "To dodatkowe notatki dołączone do obiektów K8s. Nie używamy ich do filtrowania (jak labels), ale do przekazywania instrukcji dla systemów automatyzacji. Na przykład, adnotacja może powiedzieć zewnętrznemu load balancerowi, jak długo ma trzymać sesję (sticky sessions) albo poinformować system monitoringu, które pody mają być scrapowane."
+  },
+  {
+    "id": "q035",
+    "question": "Opisz cykl życia Poda.",
+    "reference": "Pod zaczyna w fazie Pending, czekając na scheduler i pobranie obrazów. Następnie przechodzi w fazę Running, gdy co najmniej jeden kontener działa. Jeśli wszystkie kontenery zakończą się sukcesem, pod przechodzi w stan Succeeded. Jeśli którykolwiek zakończy się błędem, przechodzi w Failed. Istnieje też faza Unknown, gdy nie można pobrać stanu poda z węzła.",
+    "candidate": "Cykl życia zaczyna się od stworzenia definicji i etapu oczekiwania (Pending). Gdy kontenery wystartują, pod jest 'Running'. Jeśli praca została wykonana poprawnie (np. w Jobie), kończy jako 'Succeeded'. Jeśli aplikacja się wywali, mamy 'Failed'. Ważne jest, że pody są efemeryczne – raz zakończone lub usunięte, nigdy nie 'ożywają' ponownie, są zastępowane nowymi."
+  },
+  {
+    "id": "q036",
+    "question": "Czym jest pod dysruption budget (PDB)?",
+    "reference": "PDB to obiekt, który pozwala zdefiniować minimalną liczbę dostępnych podów podczas dobrowolnych przerw w działaniu (np. upgrade noda lub skalowanie klastra w dół). Zapewnia to, że krytyczne aplikacje zachowają wysoką dostępność, uniemożliwiając jednoczesne wyłączenie zbyt wielu replik przez mechanizmy administracyjne.",
+    "candidate": "To polisa ubezpieczeniowa dla dostępności aplikacji. PDB mówi klasterowi: 'niezależnie od tego, co robisz z serwerami, zawsze muszą działać co najmniej 2 kopie mojej apki'. Dzięki temu, gdy administrator przeprowadza konserwację węzłów, system nie wyłączy wszystkich instancji naraz, co chroni użytkowników przed przerwami w dostępie."
+  },
+  {
+    "id": "q037",
+    "question": "Wyjaśnij różnicę między kontenerem a obrazem kontenera.",
+    "reference": "Obraz kontenera to statyczny, niemodyfikowalny plik zawierający kod aplikacji, biblioteki i zależności potrzebne do jej uruchomienia. Kontener to działająca, odizolowana instancja tego obrazu w systemie operacyjnym. Można to porównać do klasy (obraz) i obiektu (kontener) w programowaniu obiektowym.",
+    "candidate": "Obraz to po prostu paczka z plikami i instrukcjami, jak uruchomić program, przechowywana w rejestrze (np. Docker Hub). Kontener to ten program w akcji. Obraz jest tylko do odczytu, natomiast kontener posiada zapisywalną warstwę, w której może tworzyć tymczasowe pliki podczas pracy, ale po usunięciu kontenera te zmiany zazwyczaj znikają."
+  },
+  {
+    "id": "q038",
+    "question": "Co to jest Static Pod?",
+    "reference": "Static Pod to pod zarządzany bezpośrednio przez Kubeleta na konkretnym węźle, a nie przez API Server. Kubelet monitoruje pliki w specjalnym katalogu konfiguracyjnym i automatycznie tworzy lub usuwa pody na ich podstawie. Są one zazwyczaj używane do uruchamiania komponentów Control Plane (np. etcd, api-server) na węzłach typu master.",
+    "candidate": "To specjalny rodzaj poda, o którym nie decyduje scheduler. Kubelet po prostu widzi plik manifestu na dysku maszyny i go odpala. Nawet jeśli API Server padnie, taki pod będzie działał. Używa się ich głównie do stawiania samej infrastruktury Kubernetes, żeby system mógł sam siebie 'podnieść' z plików lokalnych."
+  },
+  {
+    "id": "q039",
+    "question": "Jak działa Affinity i Anti-Affinity podów?",
+    "reference": "Mechanizmy te pozwalają na precyzyjne sterowanie rozmieszczeniem podów w klastrze. Pod Affinity nakazuje schedulerowi umieszczenie poda blisko innych podów (np. w tej samej strefie dostępności). Pod Anti-Affinity wymusza rozproszenie podów (np. zakaz uruchamiania dwóch replik na tym samym węźle), co zwiększa odporność na awarie pojedynczych maszyn.",
+    "candidate": "To reguły przyciągania i odpychania. Affinity stosujemy, gdy chcemy, by dwa mikroserwisy rozmawiały ze sobą po bardzo szybkim łączu (ten sam node). Anti-affinity jest kluczowe dla High Availability – konfigurujemy je tak, by pody tej samej aplikacji lądowały na różnych serwerach, aby awaria jednego noda nie wyłączyła nam całego serwisu."
+  },
+  {
+    "id": "q040",
+    "question": "Czym jest Init Container?",
+    "reference": "Init Container to kontener, który uruchamia się i musi zakończyć sukcesem przed startem kontenerów aplikacji w tym samym podzie. Służy do zadań przygotowawczych, takich jak czekanie na dostępność bazy danych, pobieranie skryptów konfiguracyjnych lub ustawianie uprawnień do wolumenów, których główna aplikacja nie mogłaby wykonać.",
+    "candidate": "To 'kontener startowy', który wykonuje robotę przed właściwą aplikacją. Jeśli Twoja apka potrzebuje pobrać dane z sieci przed startem, robisz to w Init Containerze. Kubernetes gwarantuje, że główny kontener nie ruszy, dopóki wszystkie Init Contenery nie zakończą się powodzeniem, co zapobiega błędom startu aplikacji wynikającym z braku zależności."
+  },
+  {
+    "id": "q041",
+    "question": "Co to jest Operator Pattern?",
+    "reference": "Operator to metoda pakowania, wdrażania i zarządzania złożonymi aplikacjami przy użyciu CRD i własnych kontrolerów. Operator automatyzuje zadania operacyjne, które normalnie wykonywałby człowiek, takie jak robienie backupów bazy danych, obsługa aktualizacji schematów czy automatyczne skalowanie specyficzne dla danej technologii.",
+    "candidate": "To inteligentny kontroler, który zna się na konkretnej aplikacji, np. bazie SQL. Zamiast tylko pilnować, czy pod działa, Operator potrafi sam naprawić klaster bazy, przeprowadzić migrację danych albo obsłużyć awarię węzła master. To przeniesienie wiedzy administratora prosto do kodu Kubernetes, co pozwala na pełną automatyzację trudnych systemów."
+  },
+  {
+    "id": "q042",
+    "question": "Wyjaśnij różnicę między Dockerem a containerd.",
+    "reference": "Docker to pełna platforma dla deweloperów, zawierająca narzędzia do budowania obrazów, interfejs CLI oraz silnik uruchomieniowy. containerd to lżejszy, niskopoziomowy runtime, który pierwotnie był częścią Dockera, a teraz jest samodzielnym projektem. Kubernetes obecnie preferuje bezpośrednią komunikację z containerd, pomijając dodatkowe warstwy Dockera.",
+    "candidate": "Docker jest jak szwajcarski scyzoryk – ma wszystko do tworzenia i testowania kontenerów. Containerd to tylko to, co niezbędne do ich odpalania i zarządzania nimi na serwerze. W Kubernetesie zrezygnowano z Dockera na rzecz samego containerd, ponieważ jest on wydajniejszy, stabilniejszy i lepiej pasuje do środowisk produkcyjnych, gdzie nie budujemy obrazów, a tylko je uruchamiamy."
+  },
+  {
+    "id": "q043",
+    "question": "Jaką funkcję pełni API Server?",
+    "reference": "API Server (kube-apiserver) to centralny punkt komunikacyjny klastra i jedyny komponent, który bezpośrednio komunikuje się z bazą etcd. Udostępnia on interfejs RESTful dla użytkowników (kubectl), kontrolerów i węzłów, odpowiadając za uwierzytelnianie, autoryzację oraz walidację wszystkich żądań modyfikacji stanu klastra.",
+    "candidate": "To serce Control Plane. Wszystko, co robisz w Kubernetesie, przechodzi przez API Server. To on sprawdza, czy masz prawo coś zmienić, czy Twój plik YAML jest poprawny, a potem zapisuje te informacje w bazie danych. Można go nazwać 'strażnikiem bramy', który koordynuje współpracę wszystkich pozostałych części systemu."
+  },
+  {
+    "id": "q044",
+    "question": "Czym jest Headless Service?",
+    "reference": "Headless Service to serwis z zdefiniowanym polem clusterIP ustawionym na 'None'. W przeciwieństwie do zwykłych serwisów, nie posiada on wirtualnego adresu IP i nie wykonuje load balancingu. Zamiast tego, zapytanie DNS o taki serwis zwraca listę adresów IP wszystkich podów należących do selektora, co jest przydatne np. w systemach rozproszonych.",
+    "candidate": "To serwis bez adresu VIP. Używamy go, gdy nie chcemy, by Kubernetes rozdzielał ruch za nas, ale chcemy mieć dostęp bezpośrednio do konkretnych podów. Jest to kluczowe dla StatefulSetów, gdzie każda instancja (np. w klastrze Kafki) musi być adresowalna indywidualnie po nazwie hosta, by węzły mogły się ze sobą dogadać."
+  },
+  {
+    "id": "q045",
+    "question": "Co to jest Kustomize?",
+    "reference": "Kustomize to narzędzie do deklaratywnego zarządzania konfiguracją Kubernetes, wbudowane w kubectl. Pozwala ono na modyfikowanie bazowych plików YAML bez ich bezpośredniej edycji, poprzez nakładanie 'patchy' i warstw. Jest to alternatywa dla Helma, która nie korzysta z systemów szablonów (templating), lecz bazuje na czystym YAML-u.",
+    "candidate": "To sposób na personalizację plików YAML dla różnych środowisk. Masz bazową konfigurację i nakładasz na nią zmiany dla wersji dev lub prod (np. inne limity zasobów). Kustomize jest fajne, bo nie trzeba uczyć się nowego języka szablonów – operuje się na strukturze obiektów Kubernetes, co sprawia, że pliki są czytelne i łatwe w utrzymaniu."
+  },
+  {
+    "id": "q046",
+    "question": "Czym jest Vertical Pod Autoscaler (VPA)?",
+    "reference": "VPA automatycznie dostosowuje wartości requestów i limitów zasobów (CPU i pamięć) dla kontenerów w podzie na podstawie historycznego zużycia. Pomaga to optymalizować wykorzystanie klastra poprzez zwiększanie zasobów dla 'głodnych' aplikacji i zmniejszanie ich dla tych, które mają zbyt duże rezerwacje, co zapobiega błędom OOM.",
+    "candidate": "VPA zajmuje się skalowaniem pionowym, czyli zamiast dodawać więcej podów (jak HPA), on sprawia, że istniejące pody stają się 'większe' lub 'mniejsze'. Analizuje ile faktycznie prądu i RAMu zużywa apka i sam poprawia definicje w YAML-u, dzięki czemu nie musimy zgadywać idealnych parametrów zasobów dla naszych usług."
+  },
+  {
+    "id": "q047",
+    "question": "Wyjaśnij pojęcie 'Finalizers' w Kubernetes.",
+    "reference": "Finalizers to klucze metadanych informujące Kubernetes, że usunięcie zasobu powinno zostać wstrzymane do czasu zakończenia określonych operacji czyszczących. Gdy obiekt z finalizerem zostanie usunięty, jego stan zmienia się na 'Terminating', a kontroler odpowiedzialny za dany klucz musi posprzątać (np. usunąć zasoby w chmurze) przed ostatecznym skasowaniem obiektu.",
+    "candidate": "To mechanizm blokujący usunięcie obiektu, dopóki system nie upewni się, że wszystko dookoła zostało wyczyszczone. Jeśli masz np. serwis typu LoadBalancer, finalizer dba o to, by najpierw skasować fizyczne urządzenie w AWS, a dopiero potem wpis w Kubernetesie. Bez tego mielibyśmy w infrastrukturze mnóstwo 'osieroconych' i kosztownych zasobów."
+  },
+  {
+    "id": "q048",
+    "question": "Czym jest PriorityClass i jak wpływa na pody?",
+    "reference": "PriorityClass to obiekt definiujący wagę (priorytet) poda. Pody z wyższym priorytetem są planowane przed tymi o niższym. W przypadku braku zasobów w klastrze, scheduler może usunąć (preempt) pody o niskim priorytecie, aby zrobić miejsce dla podów o statusie krytycznym, co gwarantuje działanie najważniejszych usług.",
+    "candidate": "To system klasyfikacji ważności podów. Jeśli masz bardzo ważną usługę płatniczą i mniej ważny proces generowania raportów, nadajesz im różne PriorityClass. Gdy w klastrze zabraknie miejsca, Kubernetes 'wyrzuci' raporty, żeby zwolnić zasoby dla płatności. To mechanizm pozwalający na inteligentne zarządzanie kryzysowe zasobami."
+  },
+  {
+    "id": "q049",
+    "question": "Do czego służy VolumeMounts w specyfikacji kontenera?",
+    "reference": "VolumeMounts definiuje ścieżkę wewnątrz systemu plików kontenera, pod którą ma być zamontowany wolumen zdefiniowany w sekcji 'volumes' Poda. Pozwala to na udostępnienie kontenerowi danych z dysków zewnętrznych, ConfigMap, Secretów lub współdzielenie plików między kontenerami w tym samym Podzie.",
+    "candidate": "To instrukcja, gdzie wewnątrz działającego kontenera ma pojawić się dany dysk lub folder z danymi. Jeśli mamy wolumen z konfiguracją, VolumeMounts mówi: 'weź ten zasób i podepnij go pod /etc/config'. Dzięki temu aplikacja widzi te dane jako zwykłe pliki na swoim lokalnym dysku, mimo że fizycznie mogą one pochodzić z chmury."
+  },
+  {
+    "id": "q050",
+    "question": "Czym jest Cloud Controller Manager (CCM)?",
+    "reference": "CCM to komponent Kubernetes, który osadza logikę specyficzną dla danego dostawcy chmury (np. AWS, GCP, Azure). Odpowiada za zarządzanie zasobami poza klastrem, takimi jak instancje węzłów, trasy sieciowe w chmurze oraz balansery obciążenia, oddzielając kod klastra od kodu specyficznego dla infrastruktury dostawcy.",
+    "candidate": "Jest to łącznik między Kubernetesem a usługami chmurowymi. Dzięki CCM, klaster 'wie', jak poprosić o nowy dysk sieciowy czy jak skonfigurować routing w VPC danego dostawcy. To on sprawia, że te same komendy K8s działają tak samo dobrze na różnych chmurach, bo cała specyfika danej platformy jest ukryta właśnie w tym kontrolerze."
+  },
+  {
+    "id": "q051",
+    "question": "Wyjaśnij działanie Joba i CronJoba.",
+    "reference": "Job to kontroler, który tworzy jeden lub więcej podów i zapewnia, że określona liczba z nich zakończy się sukcesem. Jest idealny do zadań jednorazowych, jak migracje. CronJob zarządza Jobami w czasie, uruchamiając je cyklicznie zgodnie z harmonogramem zapisanym w formacie crontab (np. codzienne backupy).",
+    "candidate": "Job służy do odpalenia zadania, które ma się wykonać i skończyć – np. przeliczenie danych. Gdy praca jest gotowa, pod się wyłącza i nie jest restartowany. CronJob to po prostu Job z kalendarzem; pozwala automatycznie odpalać takie zadania co godzinę, dzień czy miesiąc, co jest super przydatne do czyszczenia bazy danych czy wysyłania mailingów."
+  },
+  {
+    "id": "q052",
+    "question": "Czym jest pod topology spread constraints?",
+    "reference": "To zaawansowany mechanizm sterowania rozproszeniem podów w klastrze na podstawie topologii, takiej jak regiony, strefy czy hosty. Pozwala zdefiniować, jak bardzo nierównomierny może być rozkład replik (maxSkew), co pomaga w budowaniu aplikacji odpornych na awarie całych centrów danych (multi-zone availability).",
+    "candidate": "To reguły, które dbają o to, by pody były rozsiane po klastrze w sprawiedliwy sposób. Możemy dzięki nim wymusić, by nasze aplikacje były rozłożone równo między różnymi serwerowniami (strefami) w chmurze. Jeśli jedna strefa padnie, dzięki tym restrykcjom mamy pewność, że pozostałe pody w innych strefach utrzymają naszą usługę przy życiu."
+  },
+  {
+    "id": "q053",
+    "question": "Co to jest Container Storage Interface (CSI)?",
+    "reference": "CSI to ustandaryzowany interfejs pozwalający dostawcom pamięci masowej (np. NetApp, Ceph, AWS EBS) na tworzenie wtyczek do Kubernetes poza jego głównym kodem źródłowym. Dzięki CSI klaster może obsługiwać dowolne systemy plików i macierze dyskowe, o ile dostawca dostarczy sterownik zgodny ze specyfikacją.",
+    "candidate": "To wspólny język dla systemów dyskowych w Kubernetes. Dawniej obsługa dysków była na sztywno wpisana w kod K8s, co utrudniało aktualizacje. Teraz, dzięki CSI, każdy producent dysków może napisać własny sterownik, który wystarczy zainstalować w klastrze, by móc korzystać z jego specyficznych funkcji przechowywania danych w kontenerach."
+  },
+  {
+    "id": "q054",
+    "question": "Do czego służą etykiety (Labels) w Kubernetes?",
+    "reference": "Labels to pary klucz-wartość przypisane do obiektów, które służą do ich organizowania i selekcji. Są kluczowe dla działania serwisów, kontrolerów i innych mechanizmów klastra, ponieważ pozwalają na grupowanie zasobów w sposób logiczny (np. 'env: prod', 'tier: frontend') bez względu na ich hierarchię w API.",
+    "candidate": "Etykiety to podstawowy sposób tagowania wszystkiego w klastrze. Pozwalają nam powiedzieć: 'to są pody z wersji testowej', a tamte to 'pody obsługujące bazę danych'. Są niezwykle ważne, bo to właśnie na nich opierają się selektory w serwisach czy reguły w Network Policy, spinając różne luźne elementy w jeden działający system."
+  },
+  {
+    "id": "q055",
+    "question": "Wyjaśnij pojęcie 'EmptyDir' w kontekście wolumenów.",
+    "reference": "EmptyDir to tymczasowy wolumen tworzony w momencie przypisania Poda do węzła. Istnieje on tak długo, jak Pod działa na danej maszynie. Wszystkie kontenery wewnątrz Poda mogą czytać i zapisywać dane w tym samym katalogu. Po usunięciu Poda, zawartość EmptyDir jest bezpowrotnie kasowana z dysku węzła.",
+    "candidate": "To najprostszy rodzaj dysku w Kubernetes, który jest 'pusty' na starcie i żyje tylko tyle, co sam pod. Jest świetny jako cache albo miejsce na pliki tymczasowe, które muszą być dzielone między dwoma kontenerami w tym samym podzie. Trzeba jednak pamiętać, że jeśli pod zostanie zrestartowany na innym nodzie, dane z EmptyDir przepadną."
+  },
+  {
+    "id": "q056",
+    "question": "Czym jest Admission Controller?",
+    "reference": "Admission Controller to fragment kodu, który przechwytuje żądania do API Servera po uwierzytelnieniu użytkownika, ale przed zapisaniem obiektu w etcd. Może on modyfikować żądania (mutating) lub je odrzucać (validating) na podstawie specyficznych reguł, np. wymuszając limity zasobów lub sprawdzając bezpieczeństwo obrazów.",
+    "candidate": "To taki 'celnik' na granicy API Kubernetes. Kiedy wysyłasz YAML-a, Admission Controller sprawdza, czy wszystko jest zgodne z polityką firmy – np. czy nie próbujesz odpalić kontenera jako root albo czy dodałeś wymagane etykiety. Może też automatycznie coś 'naprawić' w Twoim żądaniu przed jego ostatecznym zatwierdzeniem."
+  },
+  {
+    "id": "q057",
+    "question": "Jaką rolę pełni Kube-Controller-Manager?",
+    "reference": "To demon, w którym działają podstawowe pętle kontrolne Kubernetes. Każdy kontroler (np. Node Controller, Route Controller, ServiceAccount Controller) stara się doprowadzić aktualny stan klastra do stanu pożądanego, reagując na zmiany zgłaszane przez API Server i podejmując odpowiednie akcje naprawcze.",
+    "candidate": "To wielki zarządca, który pilnuje porządku. Składa się z wielu mniejszych kontrolerów, z których każdy ma jedno zadanie: np. jeden patrzy, czy nody działają, inny dba o to, by serwisy miały swoje endpointy. To on jest odpowiedzialny za to, by deklaratywne życzenia użytkownika zapisane w YAML stały się rzeczywistością w klastrze."
+  },
+  {
+    "id": "q058",
+    "question": "Co to jest Graceful Termination?",
+    "reference": "Graceful Termination to proces bezpiecznego zamykania Poda. Po otrzymaniu sygnału SIGTERM, aplikacja ma określoną ilość czasu (domyślnie 30s), aby dokończyć obsługę bieżących żądań, zapisać stan i zamknąć połączenia z bazą danych. Jeśli po tym czasie kontenery wciąż działają, są zabijane siłowo sygnałem SIGKILL.",
+    "candidate": "To 'kulturalne' wyłączanie aplikacji. Zamiast nagłego odcięcia prądu, Kubernetes mówi podowi: 'kończymy pracę, masz pół minuty na posprzątanie'. Pozwala to uniknąć błędów u użytkowników, bo aplikacja przestaje przyjmować nowe zadania i spokojnie domyka te, które już zaczęła procesować przed zniknięciem z klastra."
+  },
+  {
+    "id": "q059",
+    "question": "Czym są Resource Limits Throttling?",
+    "reference": "Throttling występuje, gdy kontener próbuje zużyć więcej procesora (CPU) niż wynosi jego limit. W przeciwieństwie do pamięci RAM, przekroczenie limitu CPU nie powoduje zabicia kontenera, lecz system operacyjny ogranicza mu dostęp do cykli procesora, co skutkuje znacznym spowolnieniem działania aplikacji i wzrostem opóźnień.",
+    "candidate": "To dławienie wydajności kontenera, gdy ten staje się zbyt zachłanny na procesor. Kubernetes nie restartuje takiej apki, ale ucina jej moc obliczeniową. W praktyce wygląda to tak, że Twoja aplikacja nagle zaczyna działać bardzo wolno, bo system operacyjny nakłada na nią 'kaganiec', by nie przeszkadzała innym procesom na tej samej maszynie."
+  },
+  {
+    "id": "q060",
+    "question": "Co to jest Out Of Memory (OOM) Killer?",
+    "reference": "OOM Killer to mechanizm jądra Linux, który w kontekście Kubernetes monitoruje zużycie pamięci przez kontenery. Jeśli kontener przekroczy swój zdefiniowany limit pamięci (Memory Limit) lub gdy na węźle zabraknie wolnego RAM-u, OOM Killer wybiera i natychmiast zabija procesy, co skutkuje statusem OOMKilled w Podzie.",
+    "candidate": "To systemowy 'kat', który wkracza, gdy kończy się pamięć RAM. Jeśli kontener obiecał, że nie weźmie więcej niż 1GB, a spróbuje wziąć 1.1GB, zostanie natychmiast uśmiercony przez system. W logach Kubernetes zobaczymy wtedy błąd OOMKilled. To brutalny, ale skuteczny sposób na ochronę całego serwera przed całkowitym zawieszeniem z braku pamięci."
+  },
+  {
+    "id": "q061",
+    "question": "Wyjaśnij pojęcie 'Self-healing' w Kubernetes.",
+    "reference": "Self-healing to zdolność klastra do automatycznej naprawy awarii. Obejmuje restartowanie kontenerów, które uległy awarii, zastępowanie podów w przypadku awarii węzła, zabijanie kontenerów, które nie odpowiadają na sondy zdrowia oraz automatyczne usuwanie podów z endpointów serwisu, dopóki nie będą gotowe do pracy.",
+    "candidate": "To 'samoleczenie' infrastruktury. Jeśli Twoja aplikacja się zawiesi, Kubernetes sam ją zrestartuje. Jeśli spłonie cały serwer w chmurze, system wykryje, że pody zniknęły i postawi je na innych, sprawnych maszynach. Dzięki temu administratorzy mogą spać spokojnie, bo system sam dąży do utrzymania zdefiniowanej dostępności bez ręcznej ingerencji."
+  },
+  {
+    "id": "q062",
+    "question": "Czym jest pod priority i preemption?",
+    "reference": "Pod priority pozwala przypisać wagę podom, a preemption to proces usuwania podów o niższym priorytecie przez scheduler, aby zrobić miejsce dla podów o wyższym priorytecie. Dzieje się to w sytuacji, gdy na żadnym węźle nie ma wystarczających zasobów, aby uruchomić ważniejsze zadanie (np. krytyczny komponent systemu).",
+    "candidate": "To mechanizm 'prawa silniejszego'. Jeśli mamy ważnego poda, który musi wystartować, a klaster jest pełny, Kubernetes może wyrzucić (zabić) mniej ważne pody, aby zwolnić dla niego miejsce. Pozwala to na hierarchizację zadań, gdzie kluczowe procesy biznesowe mają zawsze pierwszeństwo przed np. zadaniami analitycznymi w tle."
+  },
+  {
+    "id": "q063",
+    "question": "Do czego służy pole 'imagePullPolicy'?",
+    "reference": "imagePullPolicy określa, kiedy kubelet powinien pobierać obraz kontenera z rejestru. Może przyjmować wartości: 'Always' (zawsze pobieraj), 'Never' (używaj tylko lokalnego) lub 'IfNotPresent' (pobierz tylko, jeśli nie ma go na węźle). Jest to istotne przy używaniu tagów takich jak 'latest' lub podczas testowania nowych wersji obrazów.",
+    "candidate": "Ta opcja mówi klasterowi, jak często ma sprawdzać, czy w rejestrze jest nowa wersja obrazu. Ustawienie 'Always' jest bezpieczne na testach, bo za każdym razem pobiera świeży kod. Na produkcji często używa się 'IfNotPresent', żeby zaoszczędzić czas i transfer danych, zakładając, że raz pobrany obraz o konkretnym tagu (wersji) nie powinien się zmieniać."
+  },
+  {
+    "id": "q064",
+    "question": "Czym jest Sidecar w architekturze mikroserwisów?",
+    "reference": "Sidecar to wzorzec, w którym dodatkowy kontener jest dołączany do głównego procesu aplikacji w tym samym podzie, aby rozszerzyć jego funkcjonalność. Najczęstsze zastosowania to proxy sieciowe (np. w Service Mesh), agregatory logów, agenty monitoringu lub kontenery do synchronizacji konfiguracji, co pozwala odseparować te zadania od kodu aplikacji.",
+    "candidate": "To kontener 'przyczepka'. Działa ramię w ramię z główną aplikacją w jednym podzie, dzieląc z nią sieć i dyski. Dzięki temu możemy np. dodać logowanie do starej aplikacji bez zmieniania ani jednej linii jej kodu – po prostu dostawiamy obok kontener, który czyta jej logi i wysyła je do ElasticSearcha. Jest to bardzo wygodny sposób na modułową rozbudowę funkcji."
+  },
+  {
+    "id": "q065",
+    "question": "Opisz mechanizm Service Discovery w Kubernetes.",
+    "reference": "Service Discovery pozwala podom znajdować inne usługi w klastrze bez znajomości ich adresów IP. Kubernetes realizuje to poprzez automatyczne wpisy w DNS oraz zmienne środowiskowe. Gdy tworzony jest serwis, otrzymuje on stałą nazwę domenową, która jest rozwiązywana na adres IP serwisu, kierując ruch do aktualnie zdrowych replik podów.",
+    "candidate": "To sposób, w jaki pody 'odnajdują się' w gąszczu klastra. Zamiast wpisywać IP na sztywno, aplikacja pyta o 'service-a'. Kubernetes, dzięki wbudowanemu serwerowi DNS, podpowiada aktualne namiary na tę usługę. To kluczowe, bo w świecie kontenerów wszystko jest dynamiczne – pody powstają i giną, ale dzięki Service Discovery komunikacja między nimi pozostaje stabilna."
   }
 ]
