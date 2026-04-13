@@ -9,14 +9,10 @@ import (
 	"github.com/mikolajsemeniuk/llmbench"
 )
 
-var (
-	input  string
-	output string
-)
+var input string
 
 func main() {
 	flag.StringVar(&input, "input", "../../model_annotations.aligned.scored.jsonl", "path to SummEval dataset JSON/JSONL file")
-	flag.StringVar(&output, "output", "bleu.json", "path to write report JSON (- for stdout)")
 	flag.Parse()
 
 	dataset, err := llmbench.NewDataset(input)
@@ -25,20 +21,19 @@ func main() {
 	}
 
 	var scores, relevance, coherence, fluency, consistency []float64
-
 	for _, entry := range dataset {
-		for i, v := range entry.MachineSummaries {
-			m := llmbench.MaxBLEU(entry.HumanSummaries, v)
-			scores = append(scores, m)
-			relevance = append(relevance, entry.Relevance[i])
-			coherence = append(coherence, entry.Coherence[i])
-			fluency = append(fluency, entry.Fluency[i])
-			consistency = append(consistency, entry.Consistency[i])
+		for mi, machSumm := range entry.MachineSummaries {
+			s := llmbench.MaxMETEOR(entry.HumanSummaries, machSumm)
+			scores = append(scores, s)
+			relevance = append(relevance, entry.Relevance[mi])
+			coherence = append(coherence, entry.Coherence[mi])
+			fluency = append(fluency, entry.Fluency[mi])
+			consistency = append(consistency, entry.Consistency[mi])
 		}
 	}
 
 	fmt.Fprintf(os.Stderr, "samples: %d\n\n", len(scores))
-	fmt.Fprintf(os.Stderr, "BLEU-4 summary-level correlations:\n")
+	fmt.Fprintf(os.Stderr, "METEOR summary-level correlations:\n")
 	fmt.Fprintf(os.Stderr, "%-15s %10s %10s\n", "dimension", "spearman", "pearson")
 	fmt.Fprintf(os.Stderr, "%-15s %10s %10s\n", "---------", "--------", "-------")
 
@@ -52,10 +47,12 @@ func main() {
 		{"relevance", relevance},
 	}
 
-	for _, d := range dims {
+	results := make([]llmbench.Result, len(dims))
+	for i, d := range dims {
 		sp := llmbench.SpearmanCorrelation(scores, d.vals)
 		pe := llmbench.PearsonCorrelation(scores, d.vals)
 		fmt.Fprintf(os.Stderr, "%-15s %10.4f %10.4f\n", d.name, sp, pe)
+		results[i] = llmbench.Result{ID: d.name, Score: sp}
 	}
 
 	fmt.Println()

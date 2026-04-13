@@ -103,3 +103,32 @@ curl -X POST http://localhost:8010/v1/rerank \
        "top_n": 3
      }'
 ```
+
+
+Bez sieci neuronowych:    BLEU, ROUGE, METEOR, chrF
+                          └── porównanie n-gramów / stringów
+
+Encoder (BERT-scale):     BERTScore, MoverScore, BLEURT, AlignScore, UniEval
+                          └── embeddingi + similarity / fine-tuned regresja / Boolean QA
+
+Hybrydowe:                SMART (string lub model), BARTScore (seq2seq scoring)
+                          └── formuła + opcjonalny model
+
+LLM (scoring):            GPTScore
+                          └── log-probability generowania
+
+LLM (judge):              G-Eval, Fusion-Eval, Prometheus 1/2, MT-Bench
+                          └── prompt → ocena / feedback
+
+LLM (atomowa):            FActScore
+                          └── dekompozycja → retrieval → weryfikacja
+
+Fuzja:                    Faithfulness Metric Fusion, Multi-Layered Evaluation
+                          └── model drzewiasty / voting na wyjściach różnych metryk
+
+
+| Metryka  | Coherence    | Consistency  | Fluency      | Relevance    |
+|          |   ρ   |  τ   |   ρ   |  τ   |   ρ   |  τ   |   ρ   |  τ   |
+|----------|-------|------|-------|------|-------|------|-------|------|
+| BLEU-4   | 0.102 | 0.08 | 0.137 | 0.10 | 0.066 | 0.05 | 0.206 | 0.16 |
+| ROUGE-L  | 0.163 | 0.12 | 0.140 | 0.11 | 0.108 | 0.08 | 0.202 | 0.15 |

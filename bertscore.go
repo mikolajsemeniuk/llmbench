@@ -6,14 +6,6 @@ import (
 	"math"
 )
 
-// BERTScore computes a simplified BERTScore by embedding both texts with
-// the given Ollama embedding model and returning cosine similarity.
-//
-// The canonical BERTScore computes token-level pairwise cosine similarity and
-// then greedy-matches tokens. This simplified version uses sentence-level
-// embeddings, which is a common practical approximation and sufficient for
-// our evaluation framework. The difference is discussed in the paper's
-// methodology section.
 type BERTScorer struct {
 	Provider *Ollama
 	Model    string
@@ -40,7 +32,6 @@ func (b *BERTScorer) Score(ctx context.Context, reference, candidate string) (fl
 	return cosineSimilarity(ref.Embeddings[0], cand.Embeddings[0]), nil
 }
 
-// cosineSimilarity returns the cosine similarity of two vectors.
 func cosineSimilarity(a, b []float64) float64 {
 	if len(a) != len(b) || len(a) == 0 {
 		return 0

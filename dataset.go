@@ -1,13 +1,13 @@
 package llmbench
 
 import (
-	"bufio"
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"os"
 )
 
-type Dataset struct {
+type Entry struct {
 	ID               string    `json:"id"`
 	Text             string    `json:"text"`
 	MachineSummaries []string  `json:"machine_summaries"`
@@ -18,34 +18,47 @@ type Dataset struct {
 	Consistency      []float64 `json:"consistency"`
 }
 
-func NewDataset(filePath string) ([]Dataset, error) {
-	file, err := os.Open(filePath)
+func NewDataset(path string) ([]Entry, error) {
+	data, err := os.ReadFile(path)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("dataset: %w", err)
 	}
-	defer file.Close()
 
-	var results []Dataset
-	scanner := bufio.NewScanner(file)
+	var ds []Entry
 
-	// SummEval ma bardzo długie teksty (artykuły CNN),
-	// więc ustawiamy duży bufor (np. 2MB), aby uniknąć błędu "token too long"
-	const maxCapacity = 2 * 1024 * 1024
-	buf := make([]byte, maxCapacity)
-	scanner.Buffer(buf, maxCapacity)
-
-	for scanner.Scan() {
-		var record Dataset
-		if err := json.Unmarshal(scanner.Bytes(), &record); err != nil {
-			return nil, fmt.Errorf("error unmarshaling line: %v", err)
+	// Try JSON array first, fall back to JSONL.
+	if json.Unmarshal(data, &ds) != nil {
+		dec := json.NewDecoder(bytes.NewReader(data))
+		for dec.More() {
+			var e Entry
+			if err := dec.Decode(&e); err != nil {
+				return nil, fmt.Errorf("dataset: %w", err)
+			}
+			ds = append(ds, e)
 		}
-
-		results = append(results, record)
 	}
 
-	if err := scanner.Err(); err != nil {
-		return nil, err
-	}
+	return ds, nil
+}
 
-	return results, nil
+// MaxBLEU returns the best BLEU score of candidate against all references.
+func MaxBLEU(references []string, candidate string) float64 {
+	best := 0.0
+	for _, ref := range references {
+		if s := BLEU(ref, candidate); s > best {
+			best = s
+		}
+	}
+	return best
+}
+
+// MaxROUGEL returns the best ROUGE-L score of candidate against all references.
+func MaxROUGEL(references []string, candidate string) float64 {
+	best := 0.0
+	for _, ref := range references {
+		if s := ROUGEL(ref, candidate); s > best {
+			best = s
+		}
+	}
+	return best
 }
