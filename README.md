@@ -49,6 +49,9 @@ docker run --rm -p 9090:9090 -v ~/.kube:/home/nonroot/.kube:ro quay.io/container
 docker run --rm -p 6274:6274 -p 6277:6277 -e HOST=0.0.0.0 -e MCP_PROXY_HOST=0.0.0.0 ghcr.io/modelcontextprotocol/inspector
 ```
 
+### Dataset
+
+https://huggingface.co/datasets/mteb/summeval
 
 ### Temp
 
