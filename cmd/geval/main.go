@@ -43,11 +43,19 @@ func main() {
 	done := 0
 	for _, entry := range dataset {
 		for mi, machSumm := range entry.MachineSummaries {
-			score, err := eval.Score(ctx, entry.Text, entry.HumanSummaries[0], machSumm)
-			if err != nil {
-				log.Fatalf("entry %s model %d: %v", entry.ID, mi, err)
+			best := 0.0
+			first := true
+			for _, humanSumm := range entry.HumanSummaries {
+				s, err := eval.Score(ctx, entry.Text, humanSumm, machSumm)
+				if err != nil {
+					log.Fatalf("entry %s model %d: %v", entry.ID, mi, err)
+				}
+				if first || s > best {
+					best = s
+					first = false
+				}
 			}
-			scores = append(scores, score)
+			scores = append(scores, best)
 			relevance = append(relevance, entry.Relevance[mi])
 			coherence = append(coherence, entry.Coherence[mi])
 			fluency = append(fluency, entry.Fluency[mi])

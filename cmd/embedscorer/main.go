@@ -53,7 +53,7 @@ func main() {
 			consistency = append(consistency, entry.Consistency[mi])
 
 			done++
-			fmt.Fprintf(os.Stderr, "\r[ECS] %d/%d", done, total)
+			fmt.Fprintf(os.Stderr, "\r[EmbedScorer] %d/%d", done, total)
 		}
 	}
 

@@ -52,6 +52,4 @@ func main() {
 		pe := llmbench.PearsonCorrelation(scores, d.vals)
 		fmt.Fprintf(os.Stderr, "%-15s %10.4f %10.4f\n", d.name, sp, pe)
 	}
-
-	fmt.Println()
 }

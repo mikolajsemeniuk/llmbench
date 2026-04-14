@@ -10,18 +10,18 @@ docker compose up --build -d
 
 ## Metrics (CLI)
 
-All commands accept `-input` (path to SummEval JSONL) and `-output` (path for JSON report, `-` for stdout).
+All commands accept `-input` (path to SummEval JSONL). Results (Spearman ρ + Pearson r per dimension) are printed to stderr.
 
 ### BLEU
 
 ```sh
-go run ./cmd/bleu -input model_annotations.aligned.scored.jsonl -output output/bleu.json
+go run ./cmd/bleu -input model_annotations.aligned.scored.jsonl
 ```
 
 ### ROUGE
 
 ```sh
-go run ./cmd/rouge -input model_annotations.aligned.scored.jsonl -output output/rouge.json
+go run ./cmd/rouge -input model_annotations.aligned.scored.jsonl
 ```
 
 ### METEOR
@@ -57,45 +57,47 @@ go run ./cmd/embedscorer -input model_annotations.aligned.scored.jsonl -host htt
 ### BARTScore (log-probability via Ollama)
 
 ```sh
-go run ./cmd/bartscorer -input model_annotations.aligned.scored.jsonl -host http://localhost:11434 -model qwen2.5:3b-instruct -output output/bartscorer.json
+go run ./cmd/bartscorer -input model_annotations.aligned.scored.jsonl -host http://localhost:11434 -model qwen2.5:3b-instruct
 ```
 
 ### BERTScore (canonical RoBERTa-large via metrics server)
 
 ```sh
-go run ./cmd/bertscorer -input model_annotations.aligned.scored.jsonl -host http://localhost:9200 -output output/bertscorer.json
+go run ./cmd/bertscorer -input model_annotations.aligned.scored.jsonl -host http://localhost:9200
 ```
 
 ### MoverScore (Word Mover's Distance via metrics server)
 
 ```sh
-go run ./cmd/moverscorer -input model_annotations.aligned.scored.jsonl -host http://localhost:9200 -output output/moverscorer.json
+go run ./cmd/moverscorer -input model_annotations.aligned.scored.jsonl -host http://localhost:9200
 ```
 
 ### UniEval (T5-based Boolean QA via metrics server)
 
 ```sh
-go run ./cmd/unieval -input model_annotations.aligned.scored.jsonl -host http://localhost:9200 -dimension overall -output output/unieval.json
+go run ./cmd/unieval -input model_annotations.aligned.scored.jsonl -host http://localhost:9200 -dimension overall
 ```
 
-### GPTScore (log-probability via metrics server)
+### GPTScore (GPT-2 log-probability via metrics server)
 
 ```sh
-go run ./cmd/gptscorer -input model_annotations.aligned.scored.jsonl -host http://localhost:9200 -output output/gptscorer.json
+go run ./cmd/gptscorer -input model_annotations.aligned.scored.jsonl -host http://localhost:9200
 ```
 
 ### G-Eval (LLM-as-judge via Ollama)
 
 ```sh
-go run ./cmd/geval -input model_annotations.aligned.scored.jsonl -host http://localhost:11434 -judge qwen2.5:7b-instruct-q4_K_M -output output/geval.json
+go run ./cmd/geval -input model_annotations.aligned.scored.jsonl -host http://localhost:11434 -judge qwen2.5:7b-instruct-q4_K_M
 ```
 
-### GPTScore
+---
+
+## Metrics server endpoints (port 9200)
+
+### Health check
 
 ```sh
-curl -X POST http://localhost:9200/gptscore \
-  -H "Content-Type: application/json" \
-  -d '{"reference": "A Pod is the smallest deployable unit in Kubernetes. It can contain one or more containers that share storage and network resources.", "candidate": "A Pod is the smallest unit of deployment in Kubernetes. It represents a group of one or more containers with shared storage and network."}'
+curl http://localhost:9200/health
 ```
 
 ### BERTScore
@@ -129,15 +131,15 @@ curl -X POST http://localhost:9200/unieval \
      -d '{"reference": "A ReplicaSet ensures a specified number of pod replicas are running at any given time.", "candidate": "ReplicaSets maintain a stable set of replica Pods running at all times.", "dimension": "all"}'
 ```
 
-### AlignScore
-Unified alignment scoring (NLI+QA based). Returns similarity score [0, 1].
+### GPTScore
+GPT-2 log-probability scoring normalized to [0, 1]. Returns similarity score.
 ```sh
-curl -X POST http://localhost:9200/alignscore \
+curl -X POST http://localhost:9200/gptscore \
      -H "Content-Type: application/json" \
-     -d '{"reference": "A Pod is the smallest deployable unit in Kubernetes.", "candidate": "Pods are the basic building blocks of Kubernetes workloads."}'
+     -d '{"reference": "A Pod is the smallest deployable unit in Kubernetes. It can contain one or more containers that share storage and network resources.", "candidate": "A Pod is the smallest unit of deployment in Kubernetes. It represents a group of one or more containers with shared storage and network."}'
 ```
 
-## Reranker endpoint
+## Reranker endpoint (port 8010)
 Cross-encoder reranker for semantic relevance scoring.
 ```sh
 curl -X POST http://localhost:8010/v1/rerank \

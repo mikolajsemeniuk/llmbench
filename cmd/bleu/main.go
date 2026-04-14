@@ -23,13 +23,13 @@ func main() {
 	var scores, relevance, coherence, fluency, consistency []float64
 
 	for _, entry := range dataset {
-		for i, v := range entry.MachineSummaries {
-			m := llmbench.MaxBLEU(entry.HumanSummaries, v)
-			scores = append(scores, m)
-			relevance = append(relevance, entry.Relevance[i])
-			coherence = append(coherence, entry.Coherence[i])
-			fluency = append(fluency, entry.Fluency[i])
-			consistency = append(consistency, entry.Consistency[i])
+		for mi, machSumm := range entry.MachineSummaries {
+			s := llmbench.MaxBLEU(entry.HumanSummaries, machSumm)
+			scores = append(scores, s)
+			relevance = append(relevance, entry.Relevance[mi])
+			coherence = append(coherence, entry.Coherence[mi])
+			fluency = append(fluency, entry.Fluency[mi])
+			consistency = append(consistency, entry.Consistency[mi])
 		}
 	}
 
@@ -53,6 +53,4 @@ func main() {
 		pe := llmbench.PearsonCorrelation(scores, d.vals)
 		fmt.Fprintf(os.Stderr, "%-15s %10.4f %10.4f\n", d.name, sp, pe)
 	}
-
-	fmt.Println()
 }
