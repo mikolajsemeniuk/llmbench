@@ -81,3 +81,21 @@ func MaxChrF(references []string, candidate string) float64 {
 	}
 	return best
 }
+
+type ChrFScorer struct{}
+
+func NewChrFScorer() *ChrFScorer { return &ChrFScorer{} }
+
+func (s *ChrFScorer) Score(entries []Entry) (ScoreOutput, error) {
+	var out ScoreOutput
+	for _, e := range entries {
+		for mi, mach := range e.MachineSummaries {
+			out.Scores = append(out.Scores, MaxChrF(e.HumanSummaries, mach))
+			out.Relevance = append(out.Relevance, e.Relevance[mi])
+			out.Coherence = append(out.Coherence, e.Coherence[mi])
+			out.Fluency = append(out.Fluency, e.Fluency[mi])
+			out.Consistency = append(out.Consistency, e.Consistency[mi])
+		}
+	}
+	return out, nil
+}

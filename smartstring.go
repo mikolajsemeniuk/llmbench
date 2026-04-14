@@ -56,6 +56,24 @@ func MaxSMARTString(references []string, candidate string) float64 {
 	return best
 }
 
+type SMARTStringScorer struct{}
+
+func NewSMARTStringScorer() *SMARTStringScorer { return &SMARTStringScorer{} }
+
+func (s *SMARTStringScorer) Score(entries []Entry) (ScoreOutput, error) {
+	var out ScoreOutput
+	for _, e := range entries {
+		for mi, mach := range e.MachineSummaries {
+			out.Scores = append(out.Scores, MaxSMARTString(e.HumanSummaries, mach))
+			out.Relevance = append(out.Relevance, e.Relevance[mi])
+			out.Coherence = append(out.Coherence, e.Coherence[mi])
+			out.Fluency = append(out.Fluency, e.Fluency[mi])
+			out.Consistency = append(out.Consistency, e.Consistency[mi])
+		}
+	}
+	return out, nil
+}
+
 // splitSentences splits text into sentences on '.', '!', '?'.
 func splitSentences(text string) []string {
 	var sents []string

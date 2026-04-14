@@ -234,3 +234,21 @@ func fixStem(s string) string {
 	}
 	return s
 }
+
+type METEORScorer struct{}
+
+func NewMETEORScorer() *METEORScorer { return &METEORScorer{} }
+
+func (s *METEORScorer) Score(entries []Entry) (ScoreOutput, error) {
+	var out ScoreOutput
+	for _, e := range entries {
+		for mi, mach := range e.MachineSummaries {
+			out.Scores = append(out.Scores, MaxMETEOR(e.HumanSummaries, mach))
+			out.Relevance = append(out.Relevance, e.Relevance[mi])
+			out.Coherence = append(out.Coherence, e.Coherence[mi])
+			out.Fluency = append(out.Fluency, e.Fluency[mi])
+			out.Consistency = append(out.Consistency, e.Consistency[mi])
+		}
+	}
+	return out, nil
+}

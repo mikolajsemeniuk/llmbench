@@ -84,3 +84,23 @@ func ngrams(tokens []string, n int) map[string]int {
 	}
 	return m
 }
+
+// BLEUScorer implements Scorer using BLEU-4.
+type BLEUScorer struct{}
+
+func NewBLEUScorer() *BLEUScorer { return &BLEUScorer{} }
+
+func (s *BLEUScorer) Score(entries []Entry) (ScoreOutput, error) {
+	var out ScoreOutput
+	for _, e := range entries {
+		for mi, mach := range e.MachineSummaries {
+			out.Scores = append(out.Scores, MaxBLEU(e.HumanSummaries, mach))
+			out.Relevance = append(out.Relevance, e.Relevance[mi])
+			out.Coherence = append(out.Coherence, e.Coherence[mi])
+			out.Fluency = append(out.Fluency, e.Fluency[mi])
+			out.Consistency = append(out.Consistency, e.Consistency[mi])
+		}
+	}
+
+	return out, nil
+}

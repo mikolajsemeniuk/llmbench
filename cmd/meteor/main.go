@@ -2,54 +2,27 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"log"
-	"os"
 
 	"github.com/mikolajsemeniuk/llmbench"
 )
 
-var input string
-
 func main() {
-	flag.StringVar(&input, "input", "../../model_annotations.aligned.scored.jsonl", "path to SummEval dataset JSON/JSONL file")
+	input := flag.String("input", "../../model_annotations.aligned.scored.jsonl", "path to SummEval dataset JSON/JSONL file")
+	n := flag.Int("n", 0, "entries limit (0=all)")
 	flag.Parse()
 
-	dataset, err := llmbench.NewDataset(input)
+	var opts []llmbench.DatasetOption
+	if *n > 0 {
+		opts = append(opts, llmbench.WithDatasetSize(*n))
+	}
+	dataset, err := llmbench.NewDataset(*input, opts...)
 	if err != nil {
-		log.Fatalf("load dataset: %v", err)
+		log.Fatal(err)
 	}
-
-	var scores, relevance, coherence, fluency, consistency []float64
-	for _, entry := range dataset {
-		for mi, machSumm := range entry.MachineSummaries {
-			s := llmbench.MaxMETEOR(entry.HumanSummaries, machSumm)
-			scores = append(scores, s)
-			relevance = append(relevance, entry.Relevance[mi])
-			coherence = append(coherence, entry.Coherence[mi])
-			fluency = append(fluency, entry.Fluency[mi])
-			consistency = append(consistency, entry.Consistency[mi])
-		}
+	out, err := llmbench.NewMETEORScorer().Score(dataset)
+	if err != nil {
+		log.Fatal(err)
 	}
-
-	fmt.Fprintf(os.Stderr, "samples: %d\n\n", len(scores))
-	fmt.Fprintf(os.Stderr, "METEOR summary-level correlations:\n")
-	fmt.Fprintf(os.Stderr, "%-15s %10s %10s\n", "dimension", "spearman", "pearson")
-	fmt.Fprintf(os.Stderr, "%-15s %10s %10s\n", "---------", "--------", "-------")
-
-	dims := []struct {
-		name string
-		vals []float64
-	}{
-		{"coherence", coherence},
-		{"consistency", consistency},
-		{"fluency", fluency},
-		{"relevance", relevance},
-	}
-
-	for _, d := range dims {
-		sp := llmbench.SpearmanCorrelation(scores, d.vals)
-		pe := llmbench.PearsonCorrelation(scores, d.vals)
-		fmt.Fprintf(os.Stderr, "%-15s %10.4f %10.4f\n", d.name, sp, pe)
-	}
+	llmbench.PrintResult("METEOR", out, llmbench.Correlation(out))
 }

@@ -30,6 +30,25 @@ func MaxROUGEL(references []string, candidate string) float64 {
 	return best
 }
 
+// ROUGELScorer implements Scorer using ROUGE-L.
+type ROUGELScorer struct{}
+
+func NewROUGELScorer() *ROUGELScorer { return &ROUGELScorer{} }
+
+func (s *ROUGELScorer) Score(entries []Entry) (ScoreOutput, error) {
+	var out ScoreOutput
+	for _, e := range entries {
+		for mi, mach := range e.MachineSummaries {
+			out.Scores = append(out.Scores, MaxROUGEL(e.HumanSummaries, mach))
+			out.Relevance = append(out.Relevance, e.Relevance[mi])
+			out.Coherence = append(out.Coherence, e.Coherence[mi])
+			out.Fluency = append(out.Fluency, e.Fluency[mi])
+			out.Consistency = append(out.Consistency, e.Consistency[mi])
+		}
+	}
+	return out, nil
+}
+
 func lcs(a, b []string) int {
 	m, n := len(a), len(b)
 	prev := make([]int, n+1)

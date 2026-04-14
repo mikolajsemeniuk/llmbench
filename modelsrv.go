@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 )
 
 // ModelServer is a client for the Python modelserver container.
@@ -110,4 +111,127 @@ func (m *ModelServer) UniEval(ctx context.Context, reference, candidate, dimensi
 		return 0, err
 	}
 	return resp.Score, nil
+}
+
+// --- Scorer wrappers ---
+
+type BERTScorer struct {
+	ctx    context.Context
+	server *ModelServer
+}
+
+func NewBERTScorer(ctx context.Context, host string) *BERTScorer {
+	return &BERTScorer{ctx: ctx, server: NewModelServer(host)}
+}
+
+func (b *BERTScorer) Score(entries []Entry) (ScoreOutput, error) {
+	var out ScoreOutput
+	total := 0
+	for _, e := range entries {
+		total += len(e.MachineSummaries)
+	}
+	done := 0
+	for _, e := range entries {
+		for mi, mach := range e.MachineSummaries {
+			best := 0.0
+			for _, ref := range e.HumanSummaries {
+				s, err := b.server.BERTScoreCanonical(b.ctx, ref, mach)
+				if err != nil {
+					return ScoreOutput{}, err
+				}
+				if s > best {
+					best = s
+				}
+			}
+			out.Scores = append(out.Scores, best)
+			out.Relevance = append(out.Relevance, e.Relevance[mi])
+			out.Coherence = append(out.Coherence, e.Coherence[mi])
+			out.Fluency = append(out.Fluency, e.Fluency[mi])
+			out.Consistency = append(out.Consistency, e.Consistency[mi])
+			done++
+			fmt.Fprintf(os.Stderr, "\r[BERTScore] %d/%d", done, total)
+		}
+	}
+	return out, nil
+}
+
+type MoverScorer struct {
+	ctx    context.Context
+	server *ModelServer
+}
+
+func NewMoverScorer(ctx context.Context, host string) *MoverScorer {
+	return &MoverScorer{ctx: ctx, server: NewModelServer(host)}
+}
+
+func (m *MoverScorer) Score(entries []Entry) (ScoreOutput, error) {
+	var out ScoreOutput
+	total := 0
+	for _, e := range entries {
+		total += len(e.MachineSummaries)
+	}
+	done := 0
+	for _, e := range entries {
+		for en, mach := range e.MachineSummaries {
+			best := 0.0
+			for _, ref := range e.HumanSummaries {
+				s, err := m.server.MoverScore(m.ctx, ref, mach)
+				if err != nil {
+					return ScoreOutput{}, err
+				}
+				if s > best {
+					best = s
+				}
+			}
+			out.Scores = append(out.Scores, best)
+			out.Relevance = append(out.Relevance, e.Relevance[en])
+			out.Coherence = append(out.Coherence, e.Coherence[en])
+			out.Fluency = append(out.Fluency, e.Fluency[en])
+			out.Consistency = append(out.Consistency, e.Consistency[en])
+			done++
+			fmt.Fprintf(os.Stderr, "\r[MoverScore] %d/%d", done, total)
+		}
+	}
+	return out, nil
+}
+
+type UniEvalScorer struct {
+	ctx       context.Context
+	server    *ModelServer
+	dimension string
+}
+
+func NewUniEvalScorer(ctx context.Context, host, dimension string) *UniEvalScorer {
+	return &UniEvalScorer{ctx: ctx, server: NewModelServer(host), dimension: dimension}
+}
+
+func (u *UniEvalScorer) Score(entries []Entry) (ScoreOutput, error) {
+	var out ScoreOutput
+	total := 0
+	for _, e := range entries {
+		total += len(e.MachineSummaries)
+	}
+	done := 0
+	for _, e := range entries {
+		for mi, mach := range e.MachineSummaries {
+			best := 0.0
+			for _, ref := range e.HumanSummaries {
+				s, err := u.server.UniEval(u.ctx, ref, mach, u.dimension)
+				if err != nil {
+					return ScoreOutput{}, err
+				}
+				if s > best {
+					best = s
+				}
+			}
+			out.Scores = append(out.Scores, best)
+			out.Relevance = append(out.Relevance, e.Relevance[mi])
+			out.Coherence = append(out.Coherence, e.Coherence[mi])
+			out.Fluency = append(out.Fluency, e.Fluency[mi])
+			out.Consistency = append(out.Consistency, e.Consistency[mi])
+			done++
+			fmt.Fprintf(os.Stderr, "\r[UniEval/%s] %d/%d", u.dimension, done, total)
+		}
+	}
+	return out, nil
 }
