@@ -16,4 +16,10 @@ from transformers import AutoModelForSeq2SeqLM
 AutoTokenizer.from_pretrained("MingZhong/unieval-sum")
 AutoModelForSeq2SeqLM.from_pretrained("MingZhong/unieval-sum")
 
+print("Downloading GPT-2 (GPTScore)...")
+from transformers import GPT2LMHeadModel, GPT2Tokenizer
+
+GPT2Tokenizer.from_pretrained("gpt2")
+GPT2LMHeadModel.from_pretrained("gpt2")
+
 print("All models downloaded.")

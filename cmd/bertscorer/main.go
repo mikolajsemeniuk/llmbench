@@ -7,7 +7,6 @@ import (
 	"log"
 	"os"
 	"os/signal"
-	"time"
 
 	"github.com/mikolajsemeniuk/llmbench"
 )
@@ -18,39 +17,71 @@ var (
 )
 
 func main() {
-	flag.StringVar(&input, "input", "testdata/samples.json", "path to samples JSON file")
+	flag.StringVar(&input, "input", "../../model_annotations.aligned.scored.jsonl", "path to SummEval dataset JSON/JSONL file")
 	flag.StringVar(&host, "host", "http://localhost:9200", "model server host")
 	flag.Parse()
 
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
 
-	samples, err := llmbench.NewSamples(input)
+	dataset, err := llmbench.NewDataset(input)
 	if err != nil {
-		log.Fatalf("load samples: %v", err)
+		log.Fatalf("load dataset: %v", err)
 	}
 
 	ms := llmbench.NewModelServer(host)
-	n := len(samples)
-	fmt.Fprintf(os.Stderr, "=== BERTScore canonical (%d samples) ===\n\n", n)
 
-	scores := make([]float64, n)
-	var sum float64
-	start := time.Now()
+	var scores, relevance, coherence, fluency, consistency []float64
 
-	for i, s := range samples {
-		score, err := ms.BERTScoreCanonical(ctx, s.Reference, s.Candidate)
-		if err != nil {
-			log.Fatalf("sample %s: %v", s.ID, err)
-		}
-		scores[i] = score
-		sum += score
-		fmt.Fprintf(os.Stderr, "  [%s] %.4f\n", s.ID, score)
+	total := 0
+	for _, entry := range dataset {
+		total += len(entry.MachineSummaries)
 	}
 
-	total := time.Since(start)
-	mean := sum / float64(n)
-	avg := total / time.Duration(n)
+	done := 0
+	for _, entry := range dataset {
+		for mi, machSumm := range entry.MachineSummaries {
+			best := 0.0
+			first := true
+			for _, humanSumm := range entry.HumanSummaries {
+				s, err := ms.BERTScoreCanonical(ctx, humanSumm, machSumm)
+				if err != nil {
+					log.Fatalf("entry %s model %d: %v", entry.ID, mi, err)
+				}
+				if first || s > best {
+					best = s
+					first = false
+				}
+			}
+			scores = append(scores, best)
+			relevance = append(relevance, entry.Relevance[mi])
+			coherence = append(coherence, entry.Coherence[mi])
+			fluency = append(fluency, entry.Fluency[mi])
+			consistency = append(consistency, entry.Consistency[mi])
 
-	fmt.Fprintf(os.Stderr, "\nMEAN: %.4f  TOTAL: %s  AVG: %s\n", mean, total.Round(time.Millisecond), avg.Round(time.Millisecond))
+			done++
+			fmt.Fprintf(os.Stderr, "\r[BERTScore] %d/%d", done, total)
+		}
+	}
+
+	fmt.Fprintf(os.Stderr, "\nsamples: %d\n\n", len(scores))
+	fmt.Fprintf(os.Stderr, "BERTScore summary-level correlations:\n")
+	fmt.Fprintf(os.Stderr, "%-15s %10s %10s\n", "dimension", "spearman", "pearson")
+	fmt.Fprintf(os.Stderr, "%-15s %10s %10s\n", "---------", "--------", "-------")
+
+	dims := []struct {
+		name string
+		vals []float64
+	}{
+		{"coherence", coherence},
+		{"consistency", consistency},
+		{"fluency", fluency},
+		{"relevance", relevance},
+	}
+
+	for _, d := range dims {
+		sp := llmbench.SpearmanCorrelation(scores, d.vals)
+		pe := llmbench.PearsonCorrelation(scores, d.vals)
+		fmt.Fprintf(os.Stderr, "%-15s %10.4f %10.4f\n", d.name, sp, pe)
+	}
 }

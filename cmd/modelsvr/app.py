@@ -1,22 +1,23 @@
 """
-NLG Metrics Server — BERTScore, MoverScore, UniEval, AlignScore.
+Model Server — BERTScore, MoverScore, UniEval, GPTScore.
 
 All models are PyTorch-based. Loaded lazily on first request per metric.
 Shares RoBERTa weights between BERTScore and MoverScore.
 
 Usage:
-    docker build -t metrics-server .
-    docker run -p 9200:9200 metrics-server
+    docker build -t modelserver .
+    docker run -p 9200:9200 modelserver
 
 Endpoints:
     POST /bertscore      — canonical token-level BERTScore (F1)
     POST /moverscore     — Word Mover's Distance with contextual embeddings
     POST /unieval        — T5-based multi-dimensional Boolean QA evaluator
-    POST /alignscore     — unified alignment function (NLI+QA based)
+    POST /gptscore       — generative log-probability scoring (GPT-2)
     GET  /health         — health check + loaded models
 """
 
 import logging
+import math
 import os
 
 import numpy as np
@@ -31,10 +32,23 @@ app = Flask(__name__)
 _cache = {}
 
 BERTSCORE_MODEL = os.environ.get("BERTSCORE_MODEL", "roberta-large")
-DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
 
-# ── BERTScore (canonical) ──────────────────────────────────────────────
+def _detect_device():
+    override = os.environ.get("METRICS_DEVICE", "")
+    if override:
+        return override
+    if torch.cuda.is_available():
+        return "cuda"
+    if torch.backends.mps.is_available():
+        return "mps"
+    return "cpu"
+
+
+DEVICE = _detect_device()
+
+
+# ── BERTScore ──────────────────────────────────────────────────────────
 
 
 def get_bertscore_scorer():
@@ -205,45 +219,80 @@ def unieval():
         return jsonify({"score": round(score, 6), "dimension": dimension})
 
 
-# ── AlignScore ─────────────────────────────────────────────────────────
+# ── GPTScore ───────────────────────────────────────────────────────────
 
 
-def get_alignscore_model():
-    if "alignscore" not in _cache:
-        logger.info("Loading AlignScore...")
-        try:
-            from alignscore import AlignScore
+def get_gptscore_model():
+    if "gptscore" not in _cache:
+        logger.info("Loading GPT-2 for GPTScore...")
+        from transformers import GPT2LMHeadModel, GPT2Tokenizer
 
-            _cache["alignscore"] = AlignScore(
-                model="roberta-base",
-                batch_size=8,
-                device=DEVICE,
-                evaluation_mode="nli_sp",
-            )
-            logger.info("AlignScore loaded.")
-        except Exception as e:
-            logger.error(f"AlignScore failed to load: {e}")
-            _cache["alignscore"] = None
-    return _cache["alignscore"]
+        _cache["gptscore_tokenizer"] = GPT2Tokenizer.from_pretrained("gpt2")
+        _cache["gptscore_model"] = GPT2LMHeadModel.from_pretrained("gpt2").to(DEVICE)
+        _cache["gptscore_model"].eval()
+        logger.info("GPTScore model loaded.")
+    return _cache["gptscore_tokenizer"], _cache["gptscore_model"]
 
 
-@app.route("/alignscore", methods=["POST"])
-def alignscore():
+def _gptscore(reference, candidate, tokenizer, model):
+    """
+    GPTScore: average conditional log-probability of candidate tokens
+    given reference as context.
+
+    Score = sigmoid( (1/m) * Σ log P(cand_i | cand_<i, reference) + 3 )
+
+    Returns a score in [0, 1].
+    """
+    prompt = f"Reference: {reference}\nResponse: {candidate}"
+
+    inputs = tokenizer(
+        prompt, return_tensors="pt", truncation=True, max_length=1024
+    ).to(DEVICE)
+    input_ids = inputs["input_ids"]
+
+    ref_prompt = f"Reference: {reference}\nResponse: "
+    ref_ids = tokenizer(
+        ref_prompt, return_tensors="pt", truncation=True, max_length=1024
+    )["input_ids"]
+    cand_start = ref_ids.shape[1]
+
+    if cand_start >= input_ids.shape[1]:
+        return 0.0
+
+    with torch.no_grad():
+        outputs = model(input_ids, labels=input_ids)
+        logits = outputs.logits
+        log_probs = torch.log_softmax(logits, dim=-1)
+
+        total_log_prob = 0.0
+        n_tokens = 0
+
+        for i in range(cand_start, input_ids.shape[1]):
+            token_id = input_ids[0, i].item()
+            if i > 0:
+                token_log_prob = log_probs[0, i - 1, token_id].item()
+                total_log_prob += token_log_prob
+                n_tokens += 1
+
+    if n_tokens == 0:
+        return 0.0
+
+    avg_log_prob = total_log_prob / n_tokens
+    score = 1.0 / (1.0 + math.exp(-(avg_log_prob + 3)))
+    return score
+
+
+@app.route("/gptscore", methods=["POST"])
+def gptscore():
     data = request.json
     ref = data.get("reference", "")
     cand = data.get("candidate", "")
     if not ref or not cand:
         return jsonify({"error": "reference and candidate required"}), 400
 
-    scorer = get_alignscore_model()
-    if scorer is None:
-        return jsonify({"error": "AlignScore not available — check logs"}), 503
-
-    try:
-        scores = scorer.score(contexts=[ref], claims=[cand])
-        return jsonify({"score": round(float(scores[0]), 6)})
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    tokenizer, model = get_gptscore_model()
+    score = _gptscore(ref, cand, tokenizer, model)
+    return jsonify({"score": round(score, 6)})
 
 
 # ── Health ─────────────────────────────────────────────────────────────
@@ -259,12 +308,12 @@ def health():
             "status": "ok",
             "device": DEVICE,
             "loaded_models": loaded,
-            "available": ["bertscore", "moverscore", "unieval", "alignscore"],
+            "available": ["bertscore", "moverscore", "unieval", "gptscore"],
         }
     )
 
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 9200))
-    logger.info(f"Metrics server starting on :{port} (device: {DEVICE})")
+    logger.info(f"Model server starting on :{port} (device: {DEVICE})")
     app.run(host="0.0.0.0", port=port)

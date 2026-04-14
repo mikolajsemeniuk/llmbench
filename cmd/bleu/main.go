@@ -9,14 +9,10 @@ import (
 	"github.com/mikolajsemeniuk/llmbench"
 )
 
-var (
-	input  string
-	output string
-)
+var input string
 
 func main() {
 	flag.StringVar(&input, "input", "../../model_annotations.aligned.scored.jsonl", "path to SummEval dataset JSON/JSONL file")
-	flag.StringVar(&output, "output", "bleu.json", "path to write report JSON (- for stdout)")
 	flag.Parse()
 
 	dataset, err := llmbench.NewDataset(input)

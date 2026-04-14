@@ -9,14 +9,10 @@ import (
 	"github.com/mikolajsemeniuk/llmbench"
 )
 
-var (
-	input  string
-	output string
-)
+var input string
 
 func main() {
 	flag.StringVar(&input, "input", "../../model_annotations.aligned.scored.jsonl", "path to SummEval dataset JSON/JSONL file")
-	flag.StringVar(&output, "output", "-", "path to write report JSON (- for stdout)")
 	flag.Parse()
 
 	dataset, err := llmbench.NewDataset(input)
@@ -52,13 +48,9 @@ func main() {
 		{"relevance", relevance},
 	}
 
-	results := make([]llmbench.Result, len(dims))
-	for i, d := range dims {
+	for _, d := range dims {
 		sp := llmbench.SpearmanCorrelation(scores, d.vals)
 		pe := llmbench.PearsonCorrelation(scores, d.vals)
 		fmt.Fprintf(os.Stderr, "%-15s %10.4f %10.4f\n", d.name, sp, pe)
-		results[i] = llmbench.Result{ID: d.name, Score: sp}
 	}
-
-	fmt.Println()
 }

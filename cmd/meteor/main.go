@@ -47,13 +47,9 @@ func main() {
 		{"relevance", relevance},
 	}
 
-	results := make([]llmbench.Result, len(dims))
-	for i, d := range dims {
+	for _, d := range dims {
 		sp := llmbench.SpearmanCorrelation(scores, d.vals)
 		pe := llmbench.PearsonCorrelation(scores, d.vals)
 		fmt.Fprintf(os.Stderr, "%-15s %10.4f %10.4f\n", d.name, sp, pe)
-		results[i] = llmbench.Result{ID: d.name, Score: sp}
 	}
-
-	fmt.Println()
 }

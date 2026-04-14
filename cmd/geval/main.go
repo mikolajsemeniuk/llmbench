@@ -12,42 +12,70 @@ import (
 )
 
 var (
-	input  string
-	output string
-	host   string
-	judge  string
+	input string
+	host  string
+	judge string
 )
 
 func main() {
-	flag.StringVar(&input, "input", "", "path to samples JSON file")
-	flag.StringVar(&output, "output", "-", "path to write report JSON (- for stdout)")
+	flag.StringVar(&input, "input", "../../model_annotations.aligned.scored.jsonl", "path to SummEval dataset JSON/JSONL file")
 	flag.StringVar(&host, "host", "http://localhost:11434", "Ollama host URL")
-	flag.StringVar(&judge, "judge", "qwen2.5:7b", "Ollama model used as evaluator")
+	flag.StringVar(&judge, "judge", "qwen2.5:7b-instruct-q4_K_M", "Ollama model used as evaluator")
 	flag.Parse()
 
-	ctx := context.Background()
-	ctx, cancel := signal.NotifyContext(ctx, os.Interrupt)
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
 
-	samples, err := llmbench.NewSamples(input)
+	dataset, err := llmbench.NewDataset(input)
 	if err != nil {
-		log.Fatalf("load samples: %v", err)
+		log.Fatalf("load dataset: %v", err)
 	}
 
 	eval := llmbench.NewGEval(host, judge)
 
-	results := make([]llmbench.Result, len(samples))
-	for i, s := range samples {
-		score, err := eval.Score(ctx, s.Question, s.Reference, s.Candidate)
-		if err != nil {
-			log.Fatalf("sample %s: %v", s.ID, err)
-		}
-		results[i] = llmbench.Result{ID: s.ID, Score: score}
-		fmt.Fprintf(os.Stderr, "[G-Eval] %s: %.2f (raw: %.1f/10)\n", s.ID, score, score*10)
+	var scores, relevance, coherence, fluency, consistency []float64
+
+	total := 0
+	for _, entry := range dataset {
+		total += len(entry.MachineSummaries)
 	}
 
-	report := llmbench.NewReport("G-Eval", results)
-	if err := report.WriteJSON(output); err != nil {
-		log.Fatalf("write report: %v", err)
+	done := 0
+	for _, entry := range dataset {
+		for mi, machSumm := range entry.MachineSummaries {
+			score, err := eval.Score(ctx, entry.Text, entry.HumanSummaries[0], machSumm)
+			if err != nil {
+				log.Fatalf("entry %s model %d: %v", entry.ID, mi, err)
+			}
+			scores = append(scores, score)
+			relevance = append(relevance, entry.Relevance[mi])
+			coherence = append(coherence, entry.Coherence[mi])
+			fluency = append(fluency, entry.Fluency[mi])
+			consistency = append(consistency, entry.Consistency[mi])
+
+			done++
+			fmt.Fprintf(os.Stderr, "\r[G-Eval] %d/%d", done, total)
+		}
+	}
+
+	fmt.Fprintf(os.Stderr, "\nsamples: %d\n\n", len(scores))
+	fmt.Fprintf(os.Stderr, "G-Eval summary-level correlations:\n")
+	fmt.Fprintf(os.Stderr, "%-15s %10s %10s\n", "dimension", "spearman", "pearson")
+	fmt.Fprintf(os.Stderr, "%-15s %10s %10s\n", "---------", "--------", "-------")
+
+	dims := []struct {
+		name string
+		vals []float64
+	}{
+		{"coherence", coherence},
+		{"consistency", consistency},
+		{"fluency", fluency},
+		{"relevance", relevance},
+	}
+
+	for _, d := range dims {
+		sp := llmbench.SpearmanCorrelation(scores, d.vals)
+		pe := llmbench.PearsonCorrelation(scores, d.vals)
+		fmt.Fprintf(os.Stderr, "%-15s %10.4f %10.4f\n", d.name, sp, pe)
 	}
 }
