@@ -20,6 +20,16 @@ func ROUGEL(reference, candidate string) float64 {
 	return f1
 }
 
+func MaxROUGEL(references []string, candidate string) float64 {
+	best := 0.0
+	for _, ref := range references {
+		if s := ROUGEL(ref, candidate); s > best {
+			best = s
+		}
+	}
+	return best
+}
+
 func lcs(a, b []string) int {
 	m, n := len(a), len(b)
 	prev := make([]int, n+1)

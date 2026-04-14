@@ -24,41 +24,16 @@ func NewDataset(path string) ([]Entry, error) {
 		return nil, fmt.Errorf("dataset: %w", err)
 	}
 
-	var ds []Entry
-
-	// Try JSON array first, fall back to JSONL.
-	if json.Unmarshal(data, &ds) != nil {
-		dec := json.NewDecoder(bytes.NewReader(data))
-		for dec.More() {
-			var e Entry
-			if err := dec.Decode(&e); err != nil {
-				return nil, fmt.Errorf("dataset: %w", err)
-			}
-			ds = append(ds, e)
+	var out []Entry
+	dec := json.NewDecoder(bytes.NewReader(data))
+	for dec.More() {
+		var e Entry
+		if err := dec.Decode(&e); err != nil {
+			return nil, fmt.Errorf("dataset: %w", err)
 		}
+
+		out = append(out, e)
 	}
 
-	return ds, nil
-}
-
-// MaxBLEU returns the best BLEU score of candidate against all references.
-func MaxBLEU(references []string, candidate string) float64 {
-	best := 0.0
-	for _, ref := range references {
-		if s := BLEU(ref, candidate); s > best {
-			best = s
-		}
-	}
-	return best
-}
-
-// MaxROUGEL returns the best ROUGE-L score of candidate against all references.
-func MaxROUGEL(references []string, candidate string) float64 {
-	best := 0.0
-	for _, ref := range references {
-		if s := ROUGEL(ref, candidate); s > best {
-			best = s
-		}
-	}
-	return best
+	return out, nil
 }

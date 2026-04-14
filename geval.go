@@ -7,16 +7,6 @@ import (
 	"strings"
 )
 
-// GEval implements the G-Eval framework (Liu et al., 2023) where an LLM
-// rates answer quality on a 1–5 scale. The score is normalised to [0, 1].
-//
-// We evaluate two dimensions:
-//   - Correctness: are the facts in the candidate answer accurate
-//     relative to the reference?
-//   - Completeness: does the candidate cover the key information in
-//     the reference?
-//
-// The final score is the average of both dimensions, divided by 5.
 type GEval struct {
 	Provider *Ollama
 	Model    string
@@ -56,7 +46,16 @@ Do not include any other text.`
 func (g *GEval) Score(ctx context.Context, question, reference, candidate string) (float64, error) {
 	prompt := fmt.Sprintf(gevalPrompt, question, reference, candidate)
 
-	res, err := g.Provider.Chat(ctx, ChatInput{Model: g.Model, Prompt: prompt, Stream: false})
+	input := ChatInput{
+		Model:  g.Model,
+		Prompt: prompt,
+		Stream: false,
+		Options: ChatOptions{
+			Temperature: 0,
+			Seed:        42,
+		},
+	}
+	res, err := g.Provider.Chat(ctx, input)
 	if err != nil {
 		return 0, fmt.Errorf("geval: completion: %w", err)
 	}

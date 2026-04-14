@@ -56,6 +56,16 @@ func BLEU(reference, candidate string) float64 {
 	return bp * math.Exp(logAvg)
 }
 
+func MaxBLEU(references []string, candidate string) float64 {
+	best := 0.0
+	for _, ref := range references {
+		if s := BLEU(ref, candidate); s > best {
+			best = s
+		}
+	}
+	return best
+}
+
 func tokenize(s string) []string {
 	s = strings.ToLower(s)
 	for _, p := range []string{".", ",", "!", "?", ";", ":", "(", ")", "\"", "'"} {
