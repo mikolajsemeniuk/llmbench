@@ -19,11 +19,6 @@ type Entry struct {
 	Consistency      []float64 `json:"consistency"`
 }
 
-// Scorer is implemented by every metric that can evaluate a full dataset.
-type Scorer interface {
-	Score(entries []Entry) (ScoreOutput, error)
-}
-
 // DatasetOption configures NewDataset behaviour.
 type DatasetOption func(*datasetConfig)
 

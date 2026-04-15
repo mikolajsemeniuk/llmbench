@@ -12,6 +12,12 @@ docker compose up --build -d
 
 All commands accept `-input` (path to SummEval JSONL). Results (Spearman ρ + Pearson r per dimension) are printed to stderr.
 
+### Benchmark
+
+```sh
+go run ./cmd/benchmark --bleu4 --chrf --rougel
+```
+
 ### BLEU
 
 ```sh
