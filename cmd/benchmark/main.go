@@ -111,21 +111,6 @@ func main() {
 		out = append(out, result{name: name, score: score, corr: llmbench.Correlation(score)})
 	}
 
-	if bleu4 {
-		wg.Go(func() { run("bleu4", llmbench.NewBLEUScorer()) })
-	}
-	if rougel {
-		wg.Go(func() { run("rougel", llmbench.NewROUGELScorer()) })
-	}
-	if chrf {
-		wg.Go(func() { run("chrf", llmbench.NewChrFScorer()) })
-	}
-	if meteor {
-		wg.Go(func() { run("meteor", llmbench.NewMETEORScorer()) })
-	}
-	if smartstring {
-		wg.Go(func() { run("smartstring", llmbench.NewSMARTStringScorer()) })
-	}
 	if bartscore {
 		wg.Go(func() { run("bartscore", llmbench.NewBARTScorer(ctx, host, model)) })
 	}

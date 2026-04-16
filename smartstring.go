@@ -45,36 +45,6 @@ func SMARTString(reference, candidate string) float64 {
 	return 2 * precision * recall / (precision + recall)
 }
 
-// MaxSMARTString returns the best SMART-String score of candidate against all references.
-func MaxSMARTString(references []string, candidate string) float64 {
-	best := 0.0
-	for _, ref := range references {
-		if s := SMARTString(ref, candidate); s > best {
-			best = s
-		}
-	}
-	return best
-}
-
-type SMARTStringScorer struct{}
-
-func NewSMARTStringScorer() *SMARTStringScorer { return &SMARTStringScorer{} }
-
-func (s *SMARTStringScorer) Score(entries []Entry) (ScoreOutput, error) {
-	var out ScoreOutput
-	for _, e := range entries {
-		for mi, mach := range e.MachineSummaries {
-			out.Scores = append(out.Scores, MaxSMARTString(e.HumanSummaries, mach))
-			out.Relevance = append(out.Relevance, e.Relevance[mi])
-			out.Coherence = append(out.Coherence, e.Coherence[mi])
-			out.Fluency = append(out.Fluency, e.Fluency[mi])
-			out.Consistency = append(out.Consistency, e.Consistency[mi])
-		}
-	}
-	return out, nil
-}
-
-// splitSentences splits text into sentences on '.', '!', '?'.
 func splitSentences(text string) []string {
 	var sents []string
 	var current strings.Builder
@@ -90,7 +60,7 @@ func splitSentences(text string) []string {
 			current.Reset()
 		}
 	}
-	// Remaining text without terminal punctuation.
+
 	if s := strings.TrimSpace(current.String()); len(s) > 0 {
 		sents = append(sents, s)
 	}

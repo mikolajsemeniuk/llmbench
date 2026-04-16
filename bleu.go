@@ -15,9 +15,8 @@ func BLEU(reference, candidate string) float64 {
 	}
 
 	maxN := 4
-	if len(candTokens) < maxN {
-		maxN = len(candTokens)
-	}
+	maxN = max(len(candTokens), maxN)
+
 	if maxN == 0 {
 		return 0
 	}
@@ -34,9 +33,10 @@ func BLEU(reference, candidate string) float64 {
 			refCnt := refNgrams[ng]
 			if refCnt < cnt {
 				clipped += refCnt
-			} else {
-				clipped += cnt
+				continue
 			}
+
+			clipped += cnt
 		}
 
 		total := len(candTokens) - n + 1
@@ -56,24 +56,13 @@ func BLEU(reference, candidate string) float64 {
 	return bp * math.Exp(logAvg)
 }
 
-func MaxBLEU(references []string, candidate string) float64 {
-	best := 0.0
-	for _, ref := range references {
-		if s := BLEU(ref, candidate); s > best {
-			best = s
-		}
-	}
-	return best
-}
-
 func tokenize(s string) []string {
 	s = strings.ToLower(s)
 	for _, p := range []string{".", ",", "!", "?", ";", ":", "(", ")", "\"", "'"} {
 		s = strings.ReplaceAll(s, p, " "+p+" ")
 	}
 
-	fields := strings.Fields(s)
-	return fields
+	return strings.Fields(s)
 }
 
 func ngrams(tokens []string, n int) map[string]int {
@@ -82,25 +71,6 @@ func ngrams(tokens []string, n int) map[string]int {
 		key := strings.Join(tokens[i:i+n], " ")
 		m[key]++
 	}
+
 	return m
-}
-
-// BLEUScorer implements Scorer using BLEU-4.
-type BLEUScorer struct{}
-
-func NewBLEUScorer() *BLEUScorer { return &BLEUScorer{} }
-
-func (s *BLEUScorer) Score(entries []Entry) (ScoreOutput, error) {
-	var out ScoreOutput
-	for _, e := range entries {
-		for mi, mach := range e.MachineSummaries {
-			out.Scores = append(out.Scores, MaxBLEU(e.HumanSummaries, mach))
-			out.Relevance = append(out.Relevance, e.Relevance[mi])
-			out.Coherence = append(out.Coherence, e.Coherence[mi])
-			out.Fluency = append(out.Fluency, e.Fluency[mi])
-			out.Consistency = append(out.Consistency, e.Consistency[mi])
-		}
-	}
-
-	return out, nil
 }

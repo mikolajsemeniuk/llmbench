@@ -83,9 +83,10 @@ type ScoreOutput struct {
 // DimCorrelation is the Spearman and Pearson correlation of metric scores
 // against a single human-annotation dimension.
 type DimCorrelation struct {
-	Dimension string
-	Spearman  float64
-	Pearson   float64
+	Dimension  string
+	Spearman   float64
+	Pearson    float64
+	KendallTau float64
 }
 
 // CorrelationOutput groups correlations for all four SummEval dimensions.

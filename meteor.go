@@ -108,16 +108,6 @@ func countChunks(matched []bool) int {
 	return chunks
 }
 
-func MaxMETEOR(references []string, candidate string) float64 {
-	best := 0.0
-	for _, ref := range references {
-		if s := METEOR(ref, candidate); s > best {
-			best = s
-		}
-	}
-	return best
-}
-
 func stem(word string) string {
 	w := strings.ToLower(word)
 	if len(w) <= 3 {
@@ -233,22 +223,4 @@ func fixStem(s string) string {
 		}
 	}
 	return s
-}
-
-type METEORScorer struct{}
-
-func NewMETEORScorer() *METEORScorer { return &METEORScorer{} }
-
-func (s *METEORScorer) Score(entries []Entry) (ScoreOutput, error) {
-	var out ScoreOutput
-	for _, e := range entries {
-		for mi, mach := range e.MachineSummaries {
-			out.Scores = append(out.Scores, MaxMETEOR(e.HumanSummaries, mach))
-			out.Relevance = append(out.Relevance, e.Relevance[mi])
-			out.Coherence = append(out.Coherence, e.Coherence[mi])
-			out.Fluency = append(out.Fluency, e.Fluency[mi])
-			out.Consistency = append(out.Consistency, e.Consistency[mi])
-		}
-	}
-	return out, nil
 }
