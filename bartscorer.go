@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 	"strings"
 )
 
@@ -28,7 +27,7 @@ const bartSep = "\nSummary:\n"
 
 // score computes BARTScore: average log P(candidate_token | reference, preceding tokens).
 // Higher score = model finds candidate more likely given reference = better summary.
-func (b *BARTScorer) score(ctx context.Context, reference, candidate string) (float64, error) {
+func (b *BARTScorer) Score(ctx context.Context, reference, candidate string) (float64, error) {
 	prompt := reference + bartSep + candidate
 
 	logprobs, err := b.completionLogprobs(ctx, prompt)
@@ -64,52 +63,6 @@ func (b *BARTScorer) score(ctx context.Context, reference, candidate string) (fl
 	}
 	return sum / float64(count), nil
 }
-
-// maxScore returns the best BARTScore of candidate against all references.
-func (b *BARTScorer) maxScore(ctx context.Context, references []string, candidate string) (float64, error) {
-	// BARTScore is negative (log probs), so "best" = closest to 0 = maximum.
-	first := true
-	best := 0.0
-	for _, ref := range references {
-		s, err := b.score(ctx, ref, candidate)
-		if err != nil {
-			return 0, err
-		}
-		if first || s > best {
-			best = s
-			first = false
-		}
-	}
-	return best, nil
-}
-
-// Score implements Scorer: scores every (entry, machine-summary) pair against all human summaries.
-func (b *BARTScorer) Score(entries []Entry) (ScoreOutput, error) {
-	var out ScoreOutput
-	total := 0
-	for _, e := range entries {
-		total += len(e.MachineSummaries)
-	}
-	done := 0
-	for _, e := range entries {
-		for mi, mach := range e.MachineSummaries {
-			s, err := b.maxScore(b.ctx, e.HumanSummaries, mach)
-			if err != nil {
-				return ScoreOutput{}, err
-			}
-			out.Scores = append(out.Scores, s)
-			out.Relevance = append(out.Relevance, e.Relevance[mi])
-			out.Coherence = append(out.Coherence, e.Coherence[mi])
-			out.Fluency = append(out.Fluency, e.Fluency[mi])
-			out.Consistency = append(out.Consistency, e.Consistency[mi])
-			done++
-			fmt.Fprintf(os.Stderr, "\r[BARTScore] %d/%d", done, total)
-		}
-	}
-	return out, nil
-}
-
-// --- Ollama OpenAI-compatible completions with logprobs ---
 
 type completionRequest struct {
 	Model     string `json:"model"`
@@ -177,8 +130,10 @@ func (b *BARTScorer) completionLogprobs(ctx context.Context, prompt string) (*lo
 	}
 
 	lp := cr.Choices[0].Logprobs
-	return &logprobsResult{
+	out := &logprobsResult{
 		Tokens:        lp.Tokens,
 		TokenLogprobs: lp.TokenLogprobs,
-	}, nil
+	}
+
+	return out, nil
 }

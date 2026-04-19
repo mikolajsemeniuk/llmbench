@@ -14,6 +14,7 @@ import (
 
 var (
 	input     string
+	output    string
 	host      string
 	server    string
 	judge     string
@@ -21,6 +22,7 @@ var (
 	embed     string
 	dimension string
 	norm      string
+	format    string
 	n         int
 
 	bleu4       bool
@@ -40,6 +42,7 @@ var (
 
 func main() {
 	flag.StringVar(&input, "input", "", "path to dataset JSON/JSONL file")
+	flag.StringVar(&output, "output", "", "write results to file instead of stdout")
 	flag.StringVar(&host, "host", "http://localhost:11434", "Ollama host URL")
 	flag.StringVar(&server, "server", "http://localhost:9200", "model server host")
 	flag.StringVar(&judge, "judge", "qwen2.5:7b-instruct-q4_K_M", "judge model for G-Eval")
@@ -47,6 +50,7 @@ func main() {
 	flag.StringVar(&embed, "embed", "nomic-embed-text", "embedding model for EmbedScorer / SMART-Model")
 	flag.StringVar(&dimension, "dimension", "overall", "UniEval dimension: coherence|consistency|fluency|relevance|overall|all")
 	flag.StringVar(&norm, "norm", "max", "normalization method for BARTScore: max|mean")
+	flag.StringVar(&format, "format", "table", "output format: table|json|latex")
 	flag.IntVar(&n, "n", 0, "entries limit (0 = all)")
 
 	flag.BoolVar(&bleu4, "bleu4", false, "run BLEU-4")
@@ -92,33 +96,32 @@ func main() {
 		fn = llmbench.Mean
 	}
 
+	var opts []llmbench.MetricOption
 	if bleu4 {
-		scores := llmbench.Score(ctx, dataset, llmbench.BLEU, fn)
-		corr := llmbench.CorrelationV2(dataset, scores)
-		llmbench.PrintResultV2("bleu4", len(scores), corr)
+		opts = append(opts, llmbench.WithBLEU())
 	}
-
 	if rougel {
-		scores := llmbench.Score(ctx, dataset, llmbench.ROUGEL, fn)
-		corr := llmbench.CorrelationV2(dataset, scores)
-		llmbench.PrintResultV2("rougel", len(scores), corr)
+		opts = append(opts, llmbench.WithROUGEL())
 	}
-
 	if chrf {
-		scores := llmbench.Score(ctx, dataset, llmbench.ChrF, fn)
-		corr := llmbench.CorrelationV2(dataset, scores)
-		llmbench.PrintResultV2("chrf", len(scores), corr)
+		opts = append(opts, llmbench.WithChrF())
 	}
-
 	if meteor {
-		scores := llmbench.Score(ctx, dataset, llmbench.METEOR, fn)
-		corr := llmbench.CorrelationV2(dataset, scores)
-		llmbench.PrintResultV2("meteor", len(scores), corr)
+		opts = append(opts, llmbench.WithMETEOR())
+	}
+	if smartstring {
+		opts = append(opts, llmbench.WithSMARTString())
+	}
+	if gptscore {
+		opts = append(opts, llmbench.WithGPTScore(server))
 	}
 
-	if smartstring {
-		scores := llmbench.Score(ctx, dataset, llmbench.SMARTString, fn)
-		corr := llmbench.CorrelationV2(dataset, scores)
-		llmbench.PrintResultV2("smartstring", len(scores), corr)
+	results, err := llmbench.NewResults(ctx, dataset, fn, opts...)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if err := llmbench.NewReport(output, format).Write(results); err != nil {
+		log.Fatal(err)
 	}
 }

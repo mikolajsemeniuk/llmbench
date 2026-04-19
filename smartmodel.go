@@ -3,7 +3,6 @@ package llmbench
 import (
 	"context"
 	"fmt"
-	"os"
 )
 
 // SMARTModelScorer computes the SMART metric using embedding cosine similarity
@@ -23,7 +22,7 @@ func NewSMARTModelScorer(ctx context.Context, host, model string) *SMARTModelSco
 }
 
 // score computes SMART with model-based sentence matching.
-func (s *SMARTModelScorer) score(ctx context.Context, reference, candidate string) (float64, error) {
+func (s *SMARTModelScorer) Score(ctx context.Context, reference, candidate string) (float64, error) {
 	refSents := splitSentences(reference)
 	candSents := splitSentences(candidate)
 
@@ -70,47 +69,6 @@ func (s *SMARTModelScorer) score(ctx context.Context, reference, candidate strin
 		return 0, nil
 	}
 	return 2 * precision * recall / (precision + recall), nil
-}
-
-// maxScore returns the best SMART-Model score of candidate against all references.
-func (s *SMARTModelScorer) maxScore(ctx context.Context, references []string, candidate string) (float64, error) {
-	best := 0.0
-	for _, ref := range references {
-		sc, err := s.score(ctx, ref, candidate)
-		if err != nil {
-			return 0, err
-		}
-		if sc > best {
-			best = sc
-		}
-	}
-	return best, nil
-}
-
-// Score implements Scorer.
-func (s *SMARTModelScorer) Score(entries []Entry) (ScoreOutput, error) {
-	var out ScoreOutput
-	total := 0
-	for _, e := range entries {
-		total += len(e.MachineSummaries)
-	}
-	done := 0
-	for _, e := range entries {
-		for mi, mach := range e.MachineSummaries {
-			sc, err := s.maxScore(s.ctx, e.HumanSummaries, mach)
-			if err != nil {
-				return ScoreOutput{}, err
-			}
-			out.Scores = append(out.Scores, sc)
-			out.Relevance = append(out.Relevance, e.Relevance[mi])
-			out.Coherence = append(out.Coherence, e.Coherence[mi])
-			out.Fluency = append(out.Fluency, e.Fluency[mi])
-			out.Consistency = append(out.Consistency, e.Consistency[mi])
-			done++
-			fmt.Fprintf(os.Stderr, "\r[SMART-Model] %d/%d", done, total)
-		}
-	}
-	return out, nil
 }
 
 func (s *SMARTModelScorer) embedAll(ctx context.Context, sentences []string) ([][]float64, error) {

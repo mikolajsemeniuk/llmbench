@@ -1,10 +1,104 @@
 package llmbench
 
 import (
-	"fmt"
 	"math"
-	"os"
 )
+
+func NewCorrelation(samples []Sample, scores []float64) Correlation {
+	dims := []struct {
+		name string
+		vals func(Sample) float64
+	}{
+		{"coherence", func(s Sample) float64 { return s.Coherence }},
+		{"consistency", func(s Sample) float64 { return s.Consistency }},
+		{"fluency", func(s Sample) float64 { return s.Fluency }},
+		{"relevance", func(s Sample) float64 { return s.Relevance }},
+	}
+
+	human := make([]float64, len(samples))
+	out := Correlation{Dimensions: make([]DimCorrelation, len(dims))}
+	for i, d := range dims {
+		for j, s := range samples {
+			human[j] = d.vals(s)
+		}
+		out.Dimensions[i] = DimCorrelation{
+			Dimension:  d.name,
+			Spearman:   SpearmanCorrelation(scores, human),
+			Pearson:    PearsonCorrelation(scores, human),
+			KendallTau: KendallTauCorrelation(scores, human),
+		}
+	}
+
+	return out
+}
+
+type Correlation struct {
+	Dimensions []DimCorrelation
+}
+
+// PearsonCorrelation computes Pearson's r between two score vectors.
+func PearsonCorrelation(x, y []float64) float64 {
+	n := len(x)
+	if n != len(y) || n == 0 {
+		return 0
+	}
+	var sx, sy, sxy, sx2, sy2 float64
+	for i := range x {
+		sx += x[i]
+		sy += y[i]
+		sxy += x[i] * y[i]
+		sx2 += x[i] * x[i]
+		sy2 += y[i] * y[i]
+	}
+	nf := float64(n)
+	num := nf*sxy - sx*sy
+	den := math.Sqrt((nf*sx2 - sx*sx) * (nf*sy2 - sy*sy))
+	if den == 0 {
+		return 0
+	}
+	return num / den
+}
+
+// SpearmanCorrelation computes Spearman's ρ (rank correlation).
+func SpearmanCorrelation(x, y []float64) float64 {
+	return PearsonCorrelation(ranks(x), ranks(y))
+}
+
+func ranks(vals []float64) []float64 {
+	n := len(vals)
+	type iv struct {
+		v float64
+		i int
+	}
+
+	s := make([]iv, n)
+	for i, v := range vals {
+		s[i] = iv{v, i}
+	}
+
+	for i := 1; i < n; i++ {
+		for j := i; j > 0 && s[j].v < s[j-1].v; j-- {
+			s[j], s[j-1] = s[j-1], s[j]
+		}
+	}
+
+	ranks := make([]float64, n)
+	for i := 0; i < n; {
+		j := i + 1
+		for j < n && s[j].v == s[i].v {
+			j++
+		}
+
+		avg := float64(i+j+1) / 2.0
+		for k := i; k < j; k++ {
+			ranks[s[k].i] = avg
+		}
+
+		i = j
+	}
+
+	return ranks
+}
 
 // correlation.go
 func KendallTauCorrelation(x, y []float64) float64 {
@@ -39,43 +133,4 @@ func KendallTauCorrelation(x, y []float64) float64 {
 		return 0
 	}
 	return float64(concordant-discordant) / den
-}
-
-// Correlation computes Spearman ρ and Pearson r between out.Scores and each
-// of the four annotation dimensions.
-func CorrelationV2(samples []Sample, scores []float64) CorrelationOutput {
-	dims := []struct {
-		name string
-		vals func(Sample) float64
-	}{
-		{"coherence", func(s Sample) float64 { return s.Coherence }},
-		{"consistency", func(s Sample) float64 { return s.Consistency }},
-		{"fluency", func(s Sample) float64 { return s.Fluency }},
-		{"relevance", func(s Sample) float64 { return s.Relevance }},
-	}
-
-	human := make([]float64, len(samples))
-	out := CorrelationOutput{Dimensions: make([]DimCorrelation, len(dims))}
-	for i, d := range dims {
-		for j, s := range samples {
-			human[j] = d.vals(s)
-		}
-		out.Dimensions[i] = DimCorrelation{
-			Dimension:  d.name,
-			Spearman:   SpearmanCorrelation(scores, human),
-			Pearson:    PearsonCorrelation(scores, human),
-			KendallTau: KendallTauCorrelation(scores, human),
-		}
-	}
-	return out
-}
-
-func PrintResultV2(name string, n int, corr CorrelationOutput) {
-	fmt.Fprintf(os.Stderr, "\n%-16s  samples=%d\n", name, n)
-	fmt.Fprintf(os.Stderr, "  %-13s %8s %8s %8s\n", "dimension", "ρ", "r", "τ")
-	fmt.Fprintf(os.Stderr, "  %-13s %8s %8s %8s\n", "---------", "---", "---", "---")
-	for _, d := range corr.Dimensions {
-		fmt.Fprintf(os.Stderr, "  %-13s %8.4f %8.4f %8.4f\n",
-			d.Dimension, d.Spearman, d.Pearson, d.KendallTau)
-	}
 }

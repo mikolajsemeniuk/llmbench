@@ -3,23 +3,17 @@ package llmbench
 import (
 	"context"
 	"fmt"
-	"os"
 	"strconv"
 	"strings"
 )
 
 type GEval struct {
-	ctx      context.Context
 	Provider *Ollama
 	Model    string
 }
 
-func NewGEval(ctx context.Context, host, model string) *GEval {
-	return &GEval{
-		ctx:      ctx,
-		Provider: NewOllama(host),
-		Model:    model,
-	}
+func NewGEval(host, model string) *GEval {
+	return &GEval{Provider: NewOllama(host), Model: model}
 }
 
 const gevalPrompt = `You are an expert evaluator. Given a question, a reference answer (ground truth), and a candidate answer produced by an AI model, rate the candidate on two dimensions.
@@ -46,7 +40,7 @@ Do not include any other text.`
 
 // score asks the LLM to rate the candidate and returns a normalised score
 // in [0, 1] (average of correctness and completeness, each divided by 5).
-func (g *GEval) score(ctx context.Context, question, reference, candidate string) (float64, error) {
+func (g *GEval) Score(ctx context.Context, question, reference, candidate string) (float64, error) {
 	prompt := fmt.Sprintf(gevalPrompt, question, reference, candidate)
 
 	input := ChatInput{
@@ -70,38 +64,6 @@ func (g *GEval) score(ctx context.Context, question, reference, candidate string
 
 	score := (float64(correctness) + float64(completeness)) / 10.0
 	return score, nil
-}
-
-// Score implements Scorer.
-func (g *GEval) Score(entries []Entry) (ScoreOutput, error) {
-	var out ScoreOutput
-	total := 0
-	for _, e := range entries {
-		total += len(e.MachineSummaries)
-	}
-	done := 0
-	for _, e := range entries {
-		for mi, mach := range e.MachineSummaries {
-			best := 0.0
-			for _, ref := range e.HumanSummaries {
-				s, err := g.score(g.ctx, e.Text, ref, mach)
-				if err != nil {
-					return ScoreOutput{}, err
-				}
-				if s > best {
-					best = s
-				}
-			}
-			out.Scores = append(out.Scores, best)
-			out.Relevance = append(out.Relevance, e.Relevance[mi])
-			out.Coherence = append(out.Coherence, e.Coherence[mi])
-			out.Fluency = append(out.Fluency, e.Fluency[mi])
-			out.Consistency = append(out.Consistency, e.Consistency[mi])
-			done++
-			fmt.Fprintf(os.Stderr, "\r[G-Eval] %d/%d", done, total)
-		}
-	}
-	return out, nil
 }
 
 // parseGEvalResponse extracts two integers from the LLM output.
