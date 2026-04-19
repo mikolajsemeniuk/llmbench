@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
 	"log"
 	"os"
 	"os/signal"
@@ -96,35 +97,39 @@ func main() {
 		fn = llmbench.Mean
 	}
 
-	var opts []llmbench.MetricOption
+	var opts []llmbench.MetricFunc
 	if bleu4 {
-		opts = append(opts, llmbench.WithBLEU())
+		opts = append(opts, llmbench.WithBLEU(fn))
 	}
 	if rougel {
-		opts = append(opts, llmbench.WithROUGEL())
+		opts = append(opts, llmbench.WithROUGEL(fn))
 	}
 	if chrf {
-		opts = append(opts, llmbench.WithChrF())
+		opts = append(opts, llmbench.WithChrF(fn))
 	}
 	if meteor {
-		opts = append(opts, llmbench.WithMETEOR())
+		opts = append(opts, llmbench.WithMETEOR(fn))
 	}
 	if smartstring {
-		opts = append(opts, llmbench.WithSMARTString())
+		opts = append(opts, llmbench.WithSMARTString(fn))
 	}
 	if gptscore {
-		opts = append(opts, llmbench.WithGPTScore(server))
+		opts = append(opts, llmbench.WithGPTScore(fn, server))
 	}
 	if geval {
-		opts = append(opts, llmbench.WithGEval(host, judge))
+		opts = append(opts, llmbench.WithGEval(fn, host, judge))
 	}
 
-	results, err := llmbench.NewResults(dataset, fn, opts...)
+	results, err := llmbench.NewBenchmark(ctx, dataset, opts...)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	if err := llmbench.NewReport(output, format).Write(results); err != nil {
-		log.Fatal(err)
+	for _, r := range results {
+		fmt.Printf("%-10s n=%d\n", r.Name, r.N)
+		for _, d := range r.Corr.Dimensions {
+			fmt.Printf("  %-12s spearman=%.3f  pearson=%.3f  kendall=%.3f\n",
+				d.Name, d.Spearman, d.Pearson, d.KendallTau)
+		}
 	}
 }

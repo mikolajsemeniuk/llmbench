@@ -16,10 +16,6 @@ func Max(in []float64) float64 {
 }
 
 func Mean(in []float64) float64 {
-	if len(in) == 0 {
-		return 0
-	}
-
 	var out float64
 	for _, v := range in {
 		out += v
