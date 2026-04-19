@@ -3,6 +3,7 @@ package llmbench
 import (
 	"context"
 	"fmt"
+	"math"
 )
 
 // SMARTModelScorer computes the SMART metric using embedding cosine similarity
@@ -69,6 +70,22 @@ func (s *SMARTModelScorer) Score(ctx context.Context, reference, candidate strin
 		return 0, nil
 	}
 	return 2 * precision * recall / (precision + recall), nil
+}
+
+func cosineSimilarity(a, b []float64) float64 {
+	if len(a) != len(b) || len(a) == 0 {
+		return 0
+	}
+	var dot, normA, normB float64
+	for i := range a {
+		dot += a[i] * b[i]
+		normA += a[i] * a[i]
+		normB += b[i] * b[i]
+	}
+	if denom := math.Sqrt(normA) * math.Sqrt(normB); denom > 0 {
+		return dot / denom
+	}
+	return 0
 }
 
 func (s *SMARTModelScorer) embedAll(ctx context.Context, sentences []string) ([][]float64, error) {

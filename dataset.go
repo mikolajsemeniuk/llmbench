@@ -35,7 +35,7 @@ type Sample struct {
 	Relevance   float64
 }
 
-func NewDatasetV2(fsys fs.FS, path string, limit int) ([]Sample, error) {
+func NewDataset(fsys fs.FS, path string, limit int) ([]Sample, error) {
 	data, err := fs.ReadFile(fsys, path)
 	if err != nil {
 		return nil, fmt.Errorf("dataset: %w", err)

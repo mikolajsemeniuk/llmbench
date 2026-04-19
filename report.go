@@ -64,13 +64,13 @@ func Print(w io.Writer, results []Result, format string) error {
 
 var dimOrder = []string{"coherence", "consistency", "fluency", "relevance"}
 
-func findDim(corr Correlation, name string) DimCorrelation {
+func findDim(corr Correlation, name string) Dimension {
 	for _, d := range corr.Dimensions {
-		if d.Dimension == name {
+		if d.Name == name {
 			return d
 		}
 	}
-	return DimCorrelation{Dimension: name}
+	return Dimension{Name: name}
 }
 
 func printTable(w io.Writer, results []Result) {
@@ -121,7 +121,7 @@ func printJSON(w io.Writer, results []Result) error {
 	for i, r := range results {
 		dims := make(map[string]dimResult, len(r.Corr.Dimensions))
 		for _, d := range r.Corr.Dimensions {
-			dims[d.Dimension] = dimResult{
+			dims[d.Name] = dimResult{
 				Spearman:   d.Spearman,
 				Pearson:    d.Pearson,
 				KendallTau: d.KendallTau,

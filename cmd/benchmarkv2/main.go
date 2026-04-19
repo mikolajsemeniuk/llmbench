@@ -86,7 +86,7 @@ func main() {
 		path = llmbench.DefaultDatasetPath
 	}
 
-	dataset, err := llmbench.NewDatasetV2(fsys, path, n)
+	dataset, err := llmbench.NewDataset(fsys, path, n)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -115,8 +115,11 @@ func main() {
 	if gptscore {
 		opts = append(opts, llmbench.WithGPTScore(server))
 	}
+	if geval {
+		opts = append(opts, llmbench.WithGEval(host, judge))
+	}
 
-	results, err := llmbench.NewResults(ctx, dataset, fn, opts...)
+	results, err := llmbench.NewResults(dataset, fn, opts...)
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -8,42 +8,74 @@ type Result struct {
 	Corr Correlation
 }
 
-type MetricOption func(ctx context.Context, dataset []Sample, norm Norm) (Result, error)
+type MetricOption func(Sample) (float64, error)
 
-func NewResults(ctx context.Context, dataset []Sample, norm Norm, opts ...MetricOption) ([]Result, error) {
-	results := make([]Result, 0, len(opts))
+func NewResults(dataset []Sample, norm Norm, opts ...MetricOption) ([]Result, error) {
+	var results []Result
 	for _, opt := range opts {
-		r, err := opt(ctx, dataset, norm)
-		if err != nil {
-			return nil, err
+		scores := make([]float64, len(dataset))
+		for i, v := range dataset {
+			refs := make([]float64, len(v.References))
+			for j, ref := range v.References {
+				s := v
+				s.Document = ref
+				v, err := opt(s)
+				if err != nil {
+					return nil, err
+				}
+
+				refs[j] = v
+			}
+
+			scores[i] = norm(refs)
 		}
-		results = append(results, r)
+
+		results = append(results, Result{N: len(scores), Corr: NewCorrelation(dataset, scores)})
 	}
 
 	return results, nil
 }
 
-func RunMetric(ctx context.Context, name string, dataset []Sample, m Metric, norm Norm) Result {
-	scores := Score(ctx, dataset, m, norm)
-	return Result{
-		Name: name,
-		N:    len(scores),
-		Corr: NewCorrelation(dataset, scores),
+func WithBLEU() MetricOption {
+	return func(s Sample) (float64, error) {
+		return BLEU(s.Document, s.Candidate), nil
 	}
 }
 
-func withMetric(name string, m Metric) MetricOption {
-	return func(ctx context.Context, dataset []Sample, norm Norm) (Result, error) {
-		return RunMetric(ctx, name, dataset, m, norm), nil
+func WithROUGEL() MetricOption {
+	return func(s Sample) (float64, error) {
+		return ROUGEL(s.Document, s.Candidate), nil
 	}
 }
 
-func WithBLEU() MetricOption        { return withMetric("BLEU-4", BLEU) }
-func WithROUGEL() MetricOption      { return withMetric("ROUGE-L", ROUGEL) }
-func WithChrF() MetricOption        { return withMetric("ChrF", ChrF) }
-func WithMETEOR() MetricOption      { return withMetric("METEOR", METEOR) }
-func WithSMARTString() MetricOption { return withMetric("SMART-String", SMARTString) }
+func WithChrF() MetricOption {
+	return func(s Sample) (float64, error) {
+		return ChrF(s.Document, s.Candidate), nil
+	}
+}
+
+func WithMETEOR() MetricOption {
+	return func(s Sample) (float64, error) {
+		return METEOR(s.Document, s.Candidate), nil
+	}
+}
+
+func WithSMARTString() MetricOption {
+	return func(s Sample) (float64, error) {
+		return SMARTString(s.Document, s.Candidate), nil
+	}
+}
 
 func WithGPTScore(server string) MetricOption {
-	return nil
+	return func(s Sample) (float64, error) {
+		scorer := NewGPTScorer(server)
+		return scorer.Score(context.Background(), s.Document, s.Candidate)
+	}
+}
+
+func WithGEval(host, judge string) MetricOption {
+	return func(s Sample) (float64, error) {
+		scorer := NewGEval(host, judge)
+		return scorer.Score(context.Background(), s.Document, s.Candidate, "")
+	}
 }

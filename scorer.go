@@ -1,7 +1,6 @@
 package llmbench
 
 import (
-	"context"
 	"slices"
 )
 
@@ -27,18 +26,4 @@ func Mean(in []float64) float64 {
 	}
 
 	return out / float64(len(in))
-}
-
-func Score(ctx context.Context, in []Sample, m Metric, n Norm) []float64 {
-	out := make([]float64, len(in))
-	for i, s := range in {
-		refs := make([]float64, len(s.References))
-		for j, ref := range s.References {
-			refs[j] = m(ref, s.Candidate)
-		}
-
-		out[i] = n(refs)
-	}
-
-	return out
 }
