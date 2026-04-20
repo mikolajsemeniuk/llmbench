@@ -10,7 +10,7 @@ import (
 	"path/filepath"
 	"slices"
 
-	"github.com/mikolajsemeniuk/llmbench"
+	llmbench "github.com/mikolajsemeniuk/llmbench/pkg"
 )
 
 var (
