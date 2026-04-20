@@ -97,39 +97,27 @@ func main() {
 		fn = llmbench.Mean
 	}
 
-	var opts []llmbench.MetricFunc
 	if bleu4 {
-		opts = append(opts, llmbench.WithBLEU(fn))
+
 	}
 	if rougel {
-		opts = append(opts, llmbench.WithROUGEL(fn))
+
 	}
 	if chrf {
-		opts = append(opts, llmbench.WithChrF(fn))
+
 	}
 	if meteor {
-		opts = append(opts, llmbench.WithMETEOR(fn))
+
 	}
 	if smartstring {
-		opts = append(opts, llmbench.WithSMARTString(fn))
+
 	}
 	if gptscore {
-		opts = append(opts, llmbench.WithGPTScore(fn, server))
+
 	}
 	if geval {
-		opts = append(opts, llmbench.WithGEval(fn, host, judge))
+
 	}
 
-	results, err := llmbench.NewBenchmark(ctx, dataset, opts...)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	for _, r := range results {
-		fmt.Printf("%-10s n=%d\n", r.Name, r.N)
-		for _, d := range r.Corr.Dimensions {
-			fmt.Printf("  %-12s spearman=%.3f  pearson=%.3f  kendall=%.3f\n",
-				d.Name, d.Spearman, d.Pearson, d.KendallTau)
-		}
-	}
+	fmt.Print(dataset, fn)
 }
