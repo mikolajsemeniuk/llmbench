@@ -9,21 +9,20 @@ func BLEU(reference, candidate string) float64 {
 	refTokens := tokenize(reference)
 	candTokens := tokenize(candidate)
 
+	if len(candTokens) == 0 {
+		return 0
+	}
+
 	bp := 1.0
 	if len(candTokens) < len(refTokens) {
 		bp = math.Exp(1.0 - float64(len(refTokens))/float64(len(candTokens)))
 	}
 
 	maxN := 4
-	maxN = max(len(candTokens), maxN)
-
-	if maxN == 0 {
-		return 0
-	}
+	maxN = min(maxN, len(candTokens))
 
 	logAvg := 0.0
 	weight := 1.0 / float64(maxN)
-
 	for n := 1; n <= maxN; n++ {
 		refNgrams := ngrams(refTokens, n)
 		candNgrams := ngrams(candTokens, n)
@@ -45,7 +44,6 @@ func BLEU(reference, candidate string) float64 {
 		}
 
 		precision := float64(clipped) / float64(total)
-
 		if precision == 0 {
 			precision = 1e-10
 		}
@@ -61,7 +59,6 @@ func tokenize(s string) []string {
 	for _, p := range []string{".", ",", "!", "?", ";", ":", "(", ")", "\"", "'"} {
 		s = strings.ReplaceAll(s, p, " "+p+" ")
 	}
-
 	return strings.Fields(s)
 }
 
@@ -71,6 +68,5 @@ func ngrams(tokens []string, n int) map[string]int {
 		key := strings.Join(tokens[i:i+n], " ")
 		m[key]++
 	}
-
 	return m
 }
