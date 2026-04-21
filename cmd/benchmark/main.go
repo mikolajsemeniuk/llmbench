@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"flag"
-	"fmt"
+	"io"
 	"log"
 	"os"
 	"os/signal"
@@ -25,6 +25,7 @@ var (
 	norm      string
 	format    string
 	n         int
+	workers   int
 
 	bleu4       bool
 	rougel      bool
@@ -50,9 +51,10 @@ func main() {
 	flag.StringVar(&model, "model", "qwen2.5:3b-instruct", "generative model for BARTScore")
 	flag.StringVar(&embed, "embed", "nomic-embed-text", "embedding model for EmbedScorer / SMART-Model")
 	flag.StringVar(&dimension, "dimension", "overall", "UniEval dimension: coherence|consistency|fluency|relevance|overall|all")
-	flag.StringVar(&norm, "norm", "max", "normalization method for BARTScore: max|mean")
+	flag.StringVar(&norm, "norm", "max", "reference aggregation: max|mean")
 	flag.StringVar(&format, "format", "table", "output format: table|json|latex")
 	flag.IntVar(&n, "n", 0, "entries limit (0 = all)")
+	flag.IntVar(&workers, "workers", 8, "concurrent samples per metric")
 
 	flag.BoolVar(&bleu4, "bleu4", false, "run BLEU-4")
 	flag.BoolVar(&rougel, "rougel", false, "run ROUGE-L")
@@ -97,27 +99,79 @@ func main() {
 		fn = llmbench.Mean
 	}
 
+	scorers := map[string]llmbench.Scorer{}
 	if bleu4 {
-
+		scorers["BLEU-4"] = llmbench.Sync(llmbench.BLEU, fn)
 	}
 	if rougel {
-
+		scorers["ROUGE-L"] = llmbench.Sync(llmbench.ROUGEL, fn)
 	}
 	if chrf {
-
+		scorers["ChrF"] = llmbench.Sync(llmbench.ChrF, fn)
 	}
 	if meteor {
-
+		scorers["METEOR"] = llmbench.Sync(llmbench.METEOR, fn)
 	}
 	if smartstring {
-
+		scorers["SMART-String"] = llmbench.Sync(llmbench.SMARTString, fn)
+	}
+	if bartscore {
+		scorers["BARTScore"] = llmbench.Async(llmbench.NewBARTScorer(ctx, host, model).Score, fn)
+	}
+	if embedscorer {
+		scorers["EmbedScorer"] = llmbench.Async(llmbench.NewEmbeddingScorer(ctx, host, embed).Score, fn)
+	}
+	if smartmodel {
+		scorers["SMART-Model"] = llmbench.Async(llmbench.NewSMARTModelScorer(ctx, host, embed).Score, fn)
 	}
 	if gptscore {
-
+		scorers["GPTScore"] = llmbench.Async(llmbench.NewGPTScorer(server).Score, fn)
+	}
+	if bertscore {
+		scorers["BERTScore"] = llmbench.Async(llmbench.NewModelServer(server).BERTScoreCanonical, fn)
+	}
+	if moverscore {
+		scorers["MoverScore"] = llmbench.Async(llmbench.NewModelServer(server).MoverScore, fn)
 	}
 	if geval {
-
+		g := llmbench.NewGEval(host, judge)
+		scorers["G-Eval"] = func(ctx context.Context, s llmbench.Sample) (float64, error) {
+			return llmbench.AggregateAsync(ctx, s.References, s.Candidate, fn,
+				func(ctx context.Context, ref, cand string) (float64, error) {
+					return g.Score(ctx, s.Document, ref, cand)
+				})
+		}
+	}
+	if unieval {
+		ms := llmbench.NewModelServer(server)
+		scorers["UniEval"] = func(ctx context.Context, s llmbench.Sample) (float64, error) {
+			return llmbench.AggregateAsync(ctx, s.References, s.Candidate, fn,
+				func(ctx context.Context, ref, cand string) (float64, error) {
+					return ms.UniEval(ctx, ref, cand, dimension)
+				})
+		}
 	}
 
-	fmt.Print(dataset, fn)
+	runner := &llmbench.Runner{
+		Dataset:  dataset,
+		Scorers:  scorers,
+		Workers:  workers,
+		Progress: os.Stderr,
+	}
+	results := runner.Run(ctx)
+
+	out := io.Writer(os.Stdout)
+	if output != "" {
+		f, err := os.Create(output)
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer f.Close()
+		out = f
+	}
+
+	report := &llmbench.Report{Results: results, Norm: norm}
+	if err := report.Write(out, format); err != nil {
+		log.Fatal(err)
+	}
 }
