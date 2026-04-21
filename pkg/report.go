@@ -15,7 +15,8 @@ type Report struct {
 	RuntimeSec   float64     `json:"runtime_sec"`
 	Timestamp    string      `json:"timestamp"`
 	Scores       []Score     `json:"scores"`
-	Correlations Correlation `json:"correlations"`
+	SummaryLevel Correlation `json:"summary_level"`
+	SystemLevel  Correlation `json:"system_level"`
 }
 
 type Score struct {

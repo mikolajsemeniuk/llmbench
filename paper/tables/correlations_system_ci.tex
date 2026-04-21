@@ -1,0 +1,16 @@
+\begin{table*}[t]
+\centering
+\caption{System-level correlations with human judgment on SummEval. $\rho$ = Spearman, $r$ = Pearson, $\tau$ = Kendall.}
+\label{tab:correlations_system}
+\begin{tabular}{lrrrrrrrrrrrr}
+\toprule
+Metric & \multicolumn{3}{c}{Coh} & \multicolumn{3}{c}{Con} & \multicolumn{3}{c}{Flu} & \multicolumn{3}{c}{Rel} \\
+\cmidrule(lr){2-4} \cmidrule(lr){5-7} \cmidrule(lr){8-10} \cmidrule(lr){11-13} 
+  & $\rho$ & $r$ & $\tau$ & $\rho$ & $r$ & $\tau$ & $\rho$ & $r$ & $\tau$ & $\rho$ & $r$ & $\tau$ \\
+\midrule
+BLEU & .388 {\scriptsize [-.169, .814]} & .421 {\scriptsize [.018, .790]} & .300 {\scriptsize [-.099, .658]} & .450 {\scriptsize [-.074, .771]} & .520 {\scriptsize [.086, .743]} & .312 {\scriptsize [-.110, .626]} & .414 {\scriptsize [-.240, .782]} & .491 {\scriptsize [.123, .740]} & .310 {\scriptsize [-.119, .679]} & .400 {\scriptsize [-.207, .753]} & .456 {\scriptsize [.008, .764]} & .250 {\scriptsize [-.214, .593]} \\
+SMART-Model & -- & -- & -- & -- & -- & -- & -- & -- & -- & -- & -- & -- \\
+GPTScore & -- & -- & -- & -- & -- & -- & -- & -- & -- & -- & -- & -- \\
+\bottomrule
+\end{tabular}
+\end{table*}

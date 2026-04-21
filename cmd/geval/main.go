@@ -21,12 +21,8 @@ var (
 	model     string
 	dimension string
 	n         int
+	bootstrap int
 )
-
-// go run ./cmd/geval -dimension coherence    # output/geval_coherence.json
-// go run ./cmd/geval -dimension consistency  # output/geval_consistency.json
-// go run ./cmd/geval -dimension fluency      # output/geval_fluency.json
-// go run ./cmd/geval -dimension relevance    # output/geval_relevance.json
 
 func main() {
 	flag.StringVar(&input, "input", "", "path to dataset JSON/JSONL file")
@@ -35,6 +31,7 @@ func main() {
 	flag.StringVar(&model, "model", "qwen2.5:7b-instruct-q4_K_M", "judge model for G-Eval")
 	flag.StringVar(&dimension, "dimension", "coherence", "SummEval dimension: coherence|consistency|fluency|relevance")
 	flag.IntVar(&n, "n", 0, "entries limit (0 = all)")
+	flag.IntVar(&bootstrap, "bootstrap", 1000, "bootstrap resamples for 95%% CI (0 = disabled)")
 	flag.Parse()
 
 	if _, ok := llmbench.GEvalDimensions[dimension]; !ok {
@@ -87,13 +84,20 @@ func main() {
 	elapsed := time.Since(start)
 
 	report := llmbench.Report{
-		Metric:       fmt.Sprintf("geval_%s", dimension),
-		Norm:         "none",
-		Samples:      len(samples),
-		RuntimeSec:   elapsed.Seconds(),
-		Timestamp:    time.Now().UTC().Format(time.RFC3339),
-		Scores:       entries,
-		Correlations: llmbench.NewCorrelation(samples, scores),
+		Metric:     fmt.Sprintf("geval_%s", dimension),
+		Norm:       "none",
+		Samples:    len(samples),
+		RuntimeSec: elapsed.Seconds(),
+		Timestamp:  time.Now().UTC().Format(time.RFC3339),
+		Scores:     entries,
+		SummaryLevel: llmbench.NewCorrelationWith(samples, scores, llmbench.CorrelationOptions{
+			Bootstrap: bootstrap,
+			Level:     "summary",
+		}),
+		SystemLevel: llmbench.NewCorrelationWith(samples, scores, llmbench.CorrelationOptions{
+			Bootstrap: bootstrap,
+			Level:     "system",
+		}),
 	}
 	if err := llmbench.NewReport(output, report); err != nil {
 		log.Fatal(err)

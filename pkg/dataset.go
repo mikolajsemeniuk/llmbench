@@ -26,6 +26,8 @@ type RawSample struct {
 
 type Sample struct {
 	ID          string
+	DocumentID  string
+	SystemID    int
 	Document    string
 	Candidate   string
 	References  []string
@@ -42,6 +44,8 @@ func NewDataset(fsys fs.FS, path string, limit int) ([]Sample, error) {
 	}
 
 	var out []Sample
+	expectedSystems := -1 // set from first document
+
 	dec := json.NewDecoder(bytes.NewReader(data))
 	for dec.More() {
 		var raw RawSample
@@ -55,9 +59,18 @@ func NewDataset(fsys fs.FS, path string, limit int) ([]Sample, error) {
 			return nil, fmt.Errorf("dataset: entry %s has %d summaries but mismatched rating lengths", raw.ID, n)
 		}
 
+		if expectedSystems < 0 {
+			expectedSystems = n
+		} else if n != expectedSystems {
+			return nil, fmt.Errorf("dataset: entry %s has %d systems but previous entries had %d — system-level correlation assumes consistent system count",
+				raw.ID, n, expectedSystems)
+		}
+
 		for i, v := range raw.MachineSummaries {
 			sample := Sample{
 				ID:          fmt.Sprintf("%s#%d", raw.ID, i),
+				DocumentID:  raw.ID,
+				SystemID:    i,
 				Document:    raw.Text,
 				Candidate:   v,
 				References:  raw.HumanSummaries,

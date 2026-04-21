@@ -17,12 +17,12 @@ import (
 var (
 	input  string
 	output string
+	level  string
+	withCI bool
 )
 
-// dimensions is the canonical ordering in the paper table (columns).
 var dimensions = []string{"coherence", "consistency", "fluency", "relevance"}
 
-// dimensionShort maps full dimension names to 3-letter headers.
 var dimensionShort = map[string]string{
 	"coherence":   "Coh",
 	"consistency": "Con",
@@ -30,15 +30,12 @@ var dimensionShort = map[string]string{
 	"relevance":   "Rel",
 }
 
-// metricOrder defines how metric rows are grouped and ordered in the table.
-// Metrics not listed appear alphabetically after the listed ones.
 var metricOrder = []string{
 	"bleu", "rouge", "chrf", "meteor", "smartstring",
 	"bertscore", "moverscore", "smartmodel",
 	"bartscore", "gptscore", "unieval", "geval",
 }
 
-// metricDisplayName maps the internal metric key to the name shown in the table.
 var metricDisplayName = map[string]string{
 	"bleu":        "BLEU",
 	"rouge":       "ROUGE-L",
@@ -57,7 +54,13 @@ var metricDisplayName = map[string]string{
 func main() {
 	flag.StringVar(&input, "input", "output", "directory containing metric JSON reports")
 	flag.StringVar(&output, "output", "paper/tables/correlations.tex", "path to write LaTeX table (- for stdout)")
+	flag.StringVar(&level, "level", "summary", "correlation level: summary|system")
+	flag.BoolVar(&withCI, "ci", false, "include 95%% CI in each cell (requires bootstrap data)")
 	flag.Parse()
+
+	if level != "summary" && level != "system" {
+		log.Fatalf("unknown level %q (available: summary, system)", level)
+	}
 
 	reports, err := loadReports(input)
 	if err != nil {
@@ -67,8 +70,8 @@ func main() {
 		log.Fatalf("no reports found in %s", input)
 	}
 
-	rows := buildRows(reports)
-	table := renderLatex(rows)
+	rows := buildRows(reports, level)
+	table := renderLatex(rows, level, withCI)
 
 	if err := write(output, table); err != nil {
 		log.Fatal(err)
@@ -97,19 +100,20 @@ func loadReports(dir string) ([]llmbench.Report, error) {
 	return reports, nil
 }
 
-// Row is one line in the LaTeX table: a metric label + 4 (spearman, pearson, kendall) triples.
-type Row struct {
-	Label string
-	// cells[dimension] = (spearman, pearson, kendall)
-	Cells map[string][3]float64
+// Cell carries a correlation value plus optional CI for one coefficient.
+type Cell struct {
+	Value float64
+	CI    *llmbench.CI
 }
 
-// buildRows converts raw reports to table rows, handling the G-Eval
-// per-dimension collapsing: geval_coherence.json + geval_consistency.json +
-// geval_fluency.json + geval_relevance.json -> single row "G-Eval" using the
-// matched diagonal correlations.
-func buildRows(reports []llmbench.Report) []Row {
-	// Index reports by metric name for fast lookup.
+// Row is one line in the LaTeX table: a metric label + 4 dimensions × 3 triples.
+type Row struct {
+	Label string
+	// cells[dimension] = [spearman, pearson, kendall]
+	Cells map[string][3]Cell
+}
+
+func buildRows(reports []llmbench.Report, level string) []Row {
 	byMetric := make(map[string]llmbench.Report, len(reports))
 	for _, r := range reports {
 		byMetric[r.Metric] = r
@@ -118,25 +122,23 @@ func buildRows(reports []llmbench.Report) []Row {
 	rows := make([]Row, 0, len(reports))
 	seen := make(map[string]bool)
 
-	// G-Eval per-dimension collapse.
-	if gevalRow, ok := collapseGEval(byMetric); ok {
-		rows = append(rows, gevalRow)
+	if row, ok := collapseGEval(byMetric, level); ok {
+		rows = append(rows, row)
 		for _, d := range dimensions {
 			seen["geval_"+d] = true
 		}
 	}
 
-	// Regular metrics (single report -> single row).
 	for _, r := range reports {
 		if seen[r.Metric] {
 			continue
 		}
 		if strings.HasPrefix(r.Metric, "geval_") {
-			continue // collapsed above
+			continue
 		}
 		rows = append(rows, Row{
 			Label: displayName(r.Metric),
-			Cells: cellsFromAllDimensions(r),
+			Cells: cellsFromAllDimensions(r, level),
 		})
 	}
 
@@ -145,37 +147,52 @@ func buildRows(reports []llmbench.Report) []Row {
 }
 
 // collapseGEval builds a single "G-Eval" row by taking the diagonal cell
-// from each per-dimension report. Returns (row, true) if all 4 dimensions
-// are present; otherwise (zero, false).
-func collapseGEval(byMetric map[string]llmbench.Report) (Row, bool) {
-	cells := make(map[string][3]float64, len(dimensions))
+// from each per-dimension report.
+func collapseGEval(byMetric map[string]llmbench.Report, level string) (Row, bool) {
+	cells := make(map[string][3]Cell, len(dimensions))
 	for _, dim := range dimensions {
 		rep, ok := byMetric["geval_"+dim]
 		if !ok {
 			return Row{}, false
 		}
-		// Find the matching dimension in this report's correlations (the diagonal).
-		for _, d := range rep.Correlations.Dimensions {
+		corr := selectLevel(rep, level)
+		found := false
+		for _, d := range corr.Dimensions {
 			if d.Name == dim {
-				cells[dim] = [3]float64{d.Spearman, d.Pearson, d.KendallTau}
+				cells[dim] = [3]Cell{
+					{Value: d.Spearman, CI: d.SpearmanCI},
+					{Value: d.Pearson, CI: d.PearsonCI},
+					{Value: d.KendallTau, CI: d.KendallTauCI},
+				}
+				found = true
 				break
 			}
 		}
-		if _, ok := cells[dim]; !ok {
+		if !found {
 			return Row{}, false
 		}
 	}
 	return Row{Label: "G-Eval", Cells: cells}, true
 }
 
-// cellsFromAllDimensions reads all four dimension correlations from a
-// single-run report (used for dimension-agnostic metrics like BLEU).
-func cellsFromAllDimensions(r llmbench.Report) map[string][3]float64 {
-	out := make(map[string][3]float64, len(dimensions))
-	for _, d := range r.Correlations.Dimensions {
-		out[d.Name] = [3]float64{d.Spearman, d.Pearson, d.KendallTau}
+func cellsFromAllDimensions(r llmbench.Report, level string) map[string][3]Cell {
+	out := make(map[string][3]Cell, len(dimensions))
+	corr := selectLevel(r, level)
+	for _, d := range corr.Dimensions {
+		out[d.Name] = [3]Cell{
+			{Value: d.Spearman, CI: d.SpearmanCI},
+			{Value: d.Pearson, CI: d.PearsonCI},
+			{Value: d.KendallTau, CI: d.KendallTauCI},
+		}
 	}
 	return out
+}
+
+func selectLevel(r llmbench.Report, level string) llmbench.Correlation {
+	if level == "system" {
+		return r.SystemLevel
+	}
+	return r.SummaryLevel
 }
 
 func displayName(metric string) string {
@@ -185,7 +202,6 @@ func displayName(metric string) string {
 	return metric
 }
 
-// sortRows orders rows according to metricOrder; unknown metrics sort alphabetically at the end.
 func sortRows(rows []Row) {
 	rank := make(map[string]int, len(metricOrder))
 	for i, m := range metricOrder {
@@ -207,32 +223,33 @@ func sortRows(rows []Row) {
 	})
 }
 
-// renderLatex builds the full booktabs-style LaTeX table.
-func renderLatex(rows []Row) string {
+func renderLatex(rows []Row, level string, withCI bool) string {
 	var b strings.Builder
 
 	colSpec := "l" + strings.Repeat("rrr", len(dimensions))
 	fmt.Fprintln(&b, `\begin{table*}[t]`)
 	fmt.Fprintln(&b, `\centering`)
-	fmt.Fprintln(&b, `\caption{Summary-level correlations with human judgment on SummEval. $\rho$ = Spearman, $r$ = Pearson, $\tau$ = Kendall.}`)
-	fmt.Fprintln(&b, `\label{tab:correlations}`)
+	levelLabel := "Summary-level"
+	if level == "system" {
+		levelLabel = "System-level"
+	}
+	fmt.Fprintf(&b, "\\caption{%s correlations with human judgment on SummEval. "+
+		`$\rho$ = Spearman, $r$ = Pearson, $\tau$ = Kendall.}`+"\n", levelLabel)
+	fmt.Fprintf(&b, "\\label{tab:correlations_%s}\n", level)
 	fmt.Fprintf(&b, "\\begin{tabular}{%s}\n", colSpec)
 	fmt.Fprintln(&b, `\toprule`)
 
-	// Header row: dimension groups.
 	fmt.Fprint(&b, "Metric")
 	for _, dim := range dimensions {
 		fmt.Fprintf(&b, ` & \multicolumn{3}{c}{%s}`, dimensionShort[dim])
 	}
 	fmt.Fprintln(&b, ` \\`)
 
-	// cmidrules under each group.
 	for i := range dimensions {
 		fmt.Fprintf(&b, `\cmidrule(lr){%d-%d} `, 2+3*i, 4+3*i)
 	}
 	fmt.Fprintln(&b)
 
-	// Sub-header with coefficient symbols.
 	fmt.Fprint(&b, " ")
 	for range dimensions {
 		fmt.Fprint(&b, ` & $\rho$ & $r$ & $\tau$`)
@@ -248,7 +265,10 @@ func renderLatex(rows []Row) string {
 				fmt.Fprint(&b, ` & -- & -- & --`)
 				continue
 			}
-			fmt.Fprintf(&b, ` & %s & %s & %s`, fmtCell(triple[0]), fmtCell(triple[1]), fmtCell(triple[2]))
+			fmt.Fprintf(&b, ` & %s & %s & %s`,
+				fmtCell(triple[0], withCI),
+				fmtCell(triple[1], withCI),
+				fmtCell(triple[2], withCI))
 		}
 		fmt.Fprintln(&b, ` \\`)
 	}
@@ -259,10 +279,20 @@ func renderLatex(rows []Row) string {
 	return b.String()
 }
 
-// fmtCell formats a correlation value for display.
-// Values in [0, 1) are shown without the leading zero (.478 not 0.478)
-// to save column width — common convention in ML papers.
-func fmtCell(x float64) string {
+// fmtCell formats a correlation value. If withCI is true and CI is present,
+// renders as "value [low, high]" in a small-sized subscript.
+func fmtCell(c Cell, withCI bool) string {
+	value := stripLeadingZero(c.Value)
+	if !withCI || c.CI == nil {
+		return value
+	}
+	return fmt.Sprintf(`%s {\scriptsize [%s, %s]}`,
+		value,
+		stripLeadingZero(c.CI.Low),
+		stripLeadingZero(c.CI.High))
+}
+
+func stripLeadingZero(x float64) string {
 	s := fmt.Sprintf("%.3f", x)
 	if x >= 0 && x < 1 {
 		s = strings.TrimPrefix(s, "0")

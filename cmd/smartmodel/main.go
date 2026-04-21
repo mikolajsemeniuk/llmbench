@@ -14,12 +14,13 @@ import (
 )
 
 var (
-	input  string
-	output string
-	host   string
-	model  string
-	n      int
-	norm   string
+	input     string
+	output    string
+	host      string
+	model     string
+	n         int
+	norm      string
+	bootstrap int
 )
 
 func main() {
@@ -29,6 +30,7 @@ func main() {
 	flag.StringVar(&model, "model", "nomic-embed-text", "embedding model for SMART-Model")
 	flag.StringVar(&norm, "norm", "max", "reference aggregation: max|mean")
 	flag.IntVar(&n, "n", 0, "entries limit (0 = all)")
+	flag.IntVar(&bootstrap, "bootstrap", 1000, "bootstrap resamples for 95%% CI (0 = disabled)")
 	flag.Parse()
 
 	ctx := context.Background()
@@ -84,13 +86,20 @@ func main() {
 	elapsed := time.Since(start)
 
 	report := llmbench.Report{
-		Metric:       "smartmodel",
-		Norm:         norm,
-		Samples:      len(samples),
-		RuntimeSec:   elapsed.Seconds(),
-		Timestamp:    time.Now().UTC().Format(time.RFC3339),
-		Scores:       entries,
-		Correlations: llmbench.NewCorrelation(samples, scores),
+		Metric:     "smartmodel",
+		Norm:       norm,
+		Samples:    len(samples),
+		RuntimeSec: elapsed.Seconds(),
+		Timestamp:  time.Now().UTC().Format(time.RFC3339),
+		Scores:     entries,
+		SummaryLevel: llmbench.NewCorrelationWith(samples, scores, llmbench.CorrelationOptions{
+			Bootstrap: bootstrap,
+			Level:     "summary",
+		}),
+		SystemLevel: llmbench.NewCorrelationWith(samples, scores, llmbench.CorrelationOptions{
+			Bootstrap: bootstrap,
+			Level:     "system",
+		}),
 	}
 	if err := llmbench.NewReport(output, report); err != nil {
 		log.Fatal(err)
