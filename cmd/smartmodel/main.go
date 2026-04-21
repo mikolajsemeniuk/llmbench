@@ -9,27 +9,36 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/schollz/progressbar/v3"
-
 	llmbench "github.com/mikolajsemeniuk/llmbench/pkg"
+	"github.com/schollz/progressbar/v3"
 )
 
 var (
 	input  string
 	output string
+	host   string
+	model  string
 	n      int
 	norm   string
 )
 
 func main() {
 	flag.StringVar(&input, "input", "", "path to dataset JSON/JSONL file")
-	flag.StringVar(&output, "output", "output/bleu.json", "write results to file instead of stdout")
+	flag.StringVar(&output, "output", "output/smartmodel.json", "write results to file instead of stdout")
+	flag.StringVar(&host, "host", "http://localhost:11434", "Ollama host URL")
+	flag.StringVar(&model, "model", "nomic-embed-text", "embedding model for SMART-Model")
 	flag.StringVar(&norm, "norm", "max", "reference aggregation: max|mean")
 	flag.IntVar(&n, "n", 0, "entries limit (0 = all)")
+	flag.Parse()
 
 	ctx := context.Background()
 	ctx, cancel := signal.NotifyContext(ctx, os.Interrupt)
 	defer cancel()
+
+	fn, ok := llmbench.Aggregators[norm]
+	if !ok {
+		log.Fatalf("unknown norm %q (available: max, mean)", norm)
+	}
 
 	fsys := os.DirFS(filepath.Dir(input))
 	path := filepath.Base(input)
@@ -37,7 +46,6 @@ func main() {
 		fsys = llmbench.SummevalDataset
 		path = llmbench.DefaultDatasetPath
 	}
-
 	samples, err := llmbench.NewDataset(fsys, path, n)
 	if err != nil {
 		log.Fatal(err)
@@ -45,7 +53,7 @@ func main() {
 
 	bar := progressbar.NewOptions(
 		len(samples),
-		progressbar.OptionSetDescription("bleu"),
+		progressbar.OptionSetDescription("smartmodel"),
 		progressbar.OptionSetWidth(20),
 		progressbar.OptionSetPredictTime(true),
 		progressbar.OptionShowIts(),
@@ -53,29 +61,30 @@ func main() {
 		progressbar.OptionSetElapsedTime(true),
 	)
 
-	fn := llmbench.Max
-	if norm == "mean" {
-		fn = llmbench.Mean
-	}
+	scorer := llmbench.NewSMARTModelScorer(host, model)
 
 	start := time.Now()
 	scores := make([]float64, len(samples))
 	entries := make([]llmbench.Score, len(samples))
 	references := make([]float64, 0, 16)
+
 	for i, s := range samples {
 		references = references[:0]
 		for _, ref := range s.References {
-			references = append(references, llmbench.BLEU(ref, s.Candidate))
+			v, err := scorer.Score(ctx, ref, s.Candidate)
+			if err != nil {
+				log.Fatalf("sample %s: %v", s.ID, err)
+			}
+			references = append(references, v)
 		}
-
 		scores[i] = fn(references)
 		entries[i] = llmbench.Score{SampleID: s.ID, Value: scores[i]}
 		bar.Add(1)
 	}
-
 	elapsed := time.Since(start)
+
 	report := llmbench.Report{
-		Metric:       "bleu",
+		Metric:       "smartmodel",
 		Norm:         norm,
 		Samples:      len(samples),
 		RuntimeSec:   elapsed.Seconds(),
@@ -83,7 +92,6 @@ func main() {
 		Scores:       entries,
 		Correlations: llmbench.NewCorrelation(samples, scores),
 	}
-
 	if err := llmbench.NewReport(output, report); err != nil {
 		log.Fatal(err)
 	}

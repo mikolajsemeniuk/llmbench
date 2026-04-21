@@ -5,27 +5,21 @@ import (
 	"fmt"
 )
 
-// SMARTModelScorer computes the SMART metric using embedding cosine similarity
-// as the sentence matching function instead of ROUGE-L.
 type SMARTModelScorer struct {
-	ctx      context.Context
 	Provider *Ollama
 	Model    string
 }
 
-func NewSMARTModelScorer(ctx context.Context, host, model string) *SMARTModelScorer {
+func NewSMARTModelScorer(host, model string) *SMARTModelScorer {
 	return &SMARTModelScorer{
-		ctx:      ctx,
 		Provider: NewOllama(host),
 		Model:    model,
 	}
 }
 
-// score computes SMART with model-based sentence matching.
 func (s *SMARTModelScorer) Score(ctx context.Context, reference, candidate string) (float64, error) {
 	refSents := splitSentences(reference)
 	candSents := splitSentences(candidate)
-
 	if len(refSents) == 0 || len(candSents) == 0 {
 		return 0, nil
 	}
@@ -39,7 +33,6 @@ func (s *SMARTModelScorer) Score(ctx context.Context, reference, candidate strin
 		return 0, fmt.Errorf("smart-model: embed candidate: %w", err)
 	}
 
-	// Precision: for each candidate sentence, find best matching reference sentence.
 	var precisionSum float64
 	for _, ce := range candEmbeds {
 		best := 0.0
@@ -52,7 +45,6 @@ func (s *SMARTModelScorer) Score(ctx context.Context, reference, candidate strin
 	}
 	precision := precisionSum / float64(len(candEmbeds))
 
-	// Recall: for each reference sentence, find best matching candidate sentence.
 	var recallSum float64
 	for _, re := range refEmbeds {
 		best := 0.0
@@ -77,6 +69,9 @@ func (s *SMARTModelScorer) embedAll(ctx context.Context, sentences []string) ([]
 		resp, err := s.Provider.Embed(ctx, EmbedInput{Model: s.Model, Input: sent})
 		if err != nil {
 			return nil, err
+		}
+		if len(resp.Embeddings) == 0 {
+			return nil, fmt.Errorf("smart-model: empty embedding for sentence %d", i)
 		}
 		embeds[i] = resp.Embeddings[0]
 	}

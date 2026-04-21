@@ -9,23 +9,25 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/schollz/progressbar/v3"
-
 	llmbench "github.com/mikolajsemeniuk/llmbench/pkg"
+	"github.com/schollz/progressbar/v3"
 )
 
 var (
 	input  string
 	output string
+	server string
 	n      int
 	norm   string
 )
 
 func main() {
 	flag.StringVar(&input, "input", "", "path to dataset JSON/JSONL file")
-	flag.StringVar(&output, "output", "output/bleu.json", "write results to file instead of stdout")
+	flag.StringVar(&output, "output", "output/gptscore.json", "write results to file instead of stdout")
+	flag.StringVar(&server, "server", "http://localhost:9200", "model server host")
 	flag.StringVar(&norm, "norm", "max", "reference aggregation: max|mean")
 	flag.IntVar(&n, "n", 0, "entries limit (0 = all)")
+	flag.Parse()
 
 	ctx := context.Background()
 	ctx, cancel := signal.NotifyContext(ctx, os.Interrupt)
@@ -37,7 +39,6 @@ func main() {
 		fsys = llmbench.SummevalDataset
 		path = llmbench.DefaultDatasetPath
 	}
-
 	samples, err := llmbench.NewDataset(fsys, path, n)
 	if err != nil {
 		log.Fatal(err)
@@ -45,7 +46,7 @@ func main() {
 
 	bar := progressbar.NewOptions(
 		len(samples),
-		progressbar.OptionSetDescription("bleu"),
+		progressbar.OptionSetDescription("gptscore"),
 		progressbar.OptionSetWidth(20),
 		progressbar.OptionSetPredictTime(true),
 		progressbar.OptionShowIts(),
@@ -53,29 +54,25 @@ func main() {
 		progressbar.OptionSetElapsedTime(true),
 	)
 
-	fn := llmbench.Max
-	if norm == "mean" {
-		fn = llmbench.Mean
-	}
+	scorer := llmbench.NewGPTScorer(server)
 
 	start := time.Now()
 	scores := make([]float64, len(samples))
 	entries := make([]llmbench.Score, len(samples))
-	references := make([]float64, 0, 16)
-	for i, s := range samples {
-		references = references[:0]
-		for _, ref := range s.References {
-			references = append(references, llmbench.BLEU(ref, s.Candidate))
-		}
 
-		scores[i] = fn(references)
-		entries[i] = llmbench.Score{SampleID: s.ID, Value: scores[i]}
+	for i, s := range samples {
+		v, err := scorer.Score(ctx, s.Document, s.Candidate)
+		if err != nil {
+			log.Fatalf("sample %s: %v", s.ID, err)
+		}
+		scores[i] = v
+		entries[i] = llmbench.Score{SampleID: s.ID, Value: v}
 		bar.Add(1)
 	}
-
 	elapsed := time.Since(start)
+
 	report := llmbench.Report{
-		Metric:       "bleu",
+		Metric:       "gptscore",
 		Norm:         norm,
 		Samples:      len(samples),
 		RuntimeSec:   elapsed.Seconds(),
@@ -83,7 +80,6 @@ func main() {
 		Scores:       entries,
 		Correlations: llmbench.NewCorrelation(samples, scores),
 	}
-
 	if err := llmbench.NewReport(output, report); err != nil {
 		log.Fatal(err)
 	}

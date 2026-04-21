@@ -4,7 +4,11 @@ import (
 	"slices"
 )
 
-type Metric func(reference, candidate string) float64
+var Aggregators = map[string]Norm{
+	"max":  Max,
+	"mean": Mean,
+}
+
 type Norm func([]float64) float64
 
 func Max(in []float64) float64 {

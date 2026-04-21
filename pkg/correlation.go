@@ -33,14 +33,14 @@ func NewCorrelation(samples []Sample, scores []float64) Correlation {
 }
 
 type Correlation struct {
-	Dimensions []Dimension
+	Dimensions []Dimension `json:"dimensions"`
 }
 
 type Dimension struct {
-	Name       string
-	Spearman   float64
-	Pearson    float64
-	KendallTau float64
+	Name       string  `json:"name"`
+	Spearman   float64 `json:"spearman"`
+	Pearson    float64 `json:"pearson"`
+	KendallTau float64 `json:"kendall_tau"`
 }
 
 func PearsonCorrelation(x, y []float64) float64 {
