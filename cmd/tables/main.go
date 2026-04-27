@@ -30,18 +30,22 @@ var dimensionShort = map[string]string{
 	"relevance":   "Rel",
 }
 
+// Add to metricOrder (insert after smartstring, before bertscore):
 var metricOrder = []string{
 	"bleu", "rouge", "chrf", "meteor", "smartstring",
+	"embedscorer",
 	"bertscore", "moverscore", "smartmodel",
 	"bartscore", "gptscore", "unieval", "geval",
 }
 
+// Add to metricDisplayName:
 var metricDisplayName = map[string]string{
 	"bleu":        "BLEU",
 	"rouge":       "ROUGE-L",
 	"chrf":        "ChrF",
 	"meteor":      "METEOR",
 	"smartstring": "SMART-String",
+	"embedscorer": "EmbedScorer",
 	"bertscore":   "BERTScore",
 	"moverscore":  "MoverScore",
 	"smartmodel":  "SMART-Model",

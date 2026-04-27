@@ -1,6 +1,10 @@
-.PHONY: benchmark
-benchmark:
+.PHONY: benchmark-cpu
+benchmark-cpu:
 	@for cmd in bleu rouge chrf meteor smartstring; do go run ./cmd/$$cmd || exit 1; done
+
+.PHONY: benchmark-ollama
+benchmark-ollama:
+	@for cmd in embedscorer geval smartmodel; do go run ./cmd/$$cmd || exit 1; done
 
 .PHONY: tables-summary
 tables-summary:
