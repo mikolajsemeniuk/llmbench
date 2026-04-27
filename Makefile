@@ -5,6 +5,10 @@ benchmark-cpu:
 .PHONY: benchmark-ollama
 benchmark-ollama:
 	@for cmd in embedscorer geval smartmodel; do go run ./cmd/$$cmd || exit 1; done
+	go run ./cmd/geval -dimension coherence
+	go run ./cmd/geval -dimension consistency
+	go run ./cmd/geval -dimension fluency
+	go run ./cmd/geval -dimension relevance
 
 .PHONY: tables-summary
 tables-summary:
