@@ -8,106 +8,18 @@ Dataset: https://huggingface.co/datasets/mteb/summeval
 docker compose up --build -d
 ```
 
-## Metrics (CLI)
-
-All commands accept `-input` (path to SummEval JSONL). Results (Spearman ρ + Pearson r per dimension) are printed to stderr.
-
-### Benchmark
+## Run benchmark
 
 ```sh
-go run ./cmd/benchmark --bleu4 --chrf --rougel
+make benchmark
 ```
-
-### BLEU
-
-```sh
-go run ./cmd/bleu -input model_annotations.aligned.scored.jsonl
-```
-
-### ROUGE
-
-```sh
-go run ./cmd/rouge -input model_annotations.aligned.scored.jsonl
-```
-
-### METEOR
-
-```sh
-go run ./cmd/meteor -input model_annotations.aligned.scored.jsonl
-```
-
-### ChrF
-
-```sh
-go run ./cmd/chrf -input model_annotations.aligned.scored.jsonl
-```
-
-### SMART-String
-
-```sh
-go run ./cmd/smartstring -input model_annotations.aligned.scored.jsonl
-```
-
-### SMART-Model (embedding cosine similarity via Ollama)
-
-```sh
-go run ./cmd/smartmodel -input model_annotations.aligned.scored.jsonl -host http://localhost:11434 -embed nomic-embed-text
-```
-
-### EmbedScorer (sentence-level cosine similarity via Ollama)
-
-```sh
-go run ./cmd/embedscorer -input model_annotations.aligned.scored.jsonl -host http://localhost:11434 -embed nomic-embed-text
-```
-
-### BARTScore (log-probability via Ollama)
-
-```sh
-go run ./cmd/bartscorer -input model_annotations.aligned.scored.jsonl -host http://localhost:11434 -model qwen2.5:3b-instruct
-```
-
-### BERTScore (canonical RoBERTa-large via metrics server)
-
-```sh
-go run ./cmd/bertscorer -input model_annotations.aligned.scored.jsonl -host http://localhost:9200
-```
-
-### MoverScore (Word Mover's Distance via metrics server)
-
-```sh
-go run ./cmd/moverscorer -input model_annotations.aligned.scored.jsonl -host http://localhost:9200
-```
-
-### UniEval (T5-based Boolean QA via metrics server)
-
-```sh
-go run ./cmd/unieval -input model_annotations.aligned.scored.jsonl -host http://localhost:9200 -dimension overall
-```
-
-### GPTScore (GPT-2 log-probability via metrics server)
-
-```sh
-go run ./cmd/gptscorer -input model_annotations.aligned.scored.jsonl -host http://localhost:9200
-```
-
-### G-Eval (LLM-as-judge via Ollama)
-
-```sh
-go run ./cmd/geval -input model_annotations.aligned.scored.jsonl -host http://localhost:11434 -judge qwen2.5:7b-instruct-q4_K_M
-```
-
----
 
 ## Metrics server endpoints (port 9200)
 
-### Health check
-
-```sh
-curl http://localhost:9200/health
-```
-
 ### BERTScore
+
 Canonical token-level BERTScore (RoBERTa-large). Returns precision, recall, F1.
+
 ```sh
 curl -X POST http://localhost:9200/bertscore \
      -H "Content-Type: application/json" \
@@ -115,7 +27,9 @@ curl -X POST http://localhost:9200/bertscore \
 ```
 
 ### MoverScore
+
 Word Mover's Distance with contextual RoBERTa embeddings. Returns similarity score [0, 1].
+
 ```sh
 curl -X POST http://localhost:9200/moverscore \
      -H "Content-Type: application/json" \
@@ -123,7 +37,9 @@ curl -X POST http://localhost:9200/moverscore \
 ```
 
 ### UniEval
+
 T5-based Boolean QA evaluator. Dimensions: `coherence`, `consistency`, `fluency`, `relevance`, `overall`, `all`.
+
 ```sh
 curl -X POST http://localhost:9200/unieval \
      -H "Content-Type: application/json" \
@@ -131,6 +47,7 @@ curl -X POST http://localhost:9200/unieval \
 ```
 
 All dimensions at once:
+
 ```sh
 curl -X POST http://localhost:9200/unieval \
      -H "Content-Type: application/json" \
@@ -138,7 +55,9 @@ curl -X POST http://localhost:9200/unieval \
 ```
 
 ### GPTScore
+
 GPT-2 log-probability scoring normalized to [0, 1]. Returns similarity score.
+
 ```sh
 curl -X POST http://localhost:9200/gptscore \
      -H "Content-Type: application/json" \
@@ -146,7 +65,9 @@ curl -X POST http://localhost:9200/gptscore \
 ```
 
 ## Reranker endpoint (port 8010)
+
 Cross-encoder reranker for semantic relevance scoring.
+
 ```sh
 curl -X POST http://localhost:8010/v1/rerank \
      -H "Content-Type: application/json" \
@@ -160,38 +81,3 @@ curl -X POST http://localhost:8010/v1/rerank \
        "top_n": 3
      }'
 ```
-
----
-
-## Metric taxonomy
-
-```
-Bez sieci neuronowych:    BLEU, ROUGE, METEOR, chrF
-                          └── porównanie n-gramów / stringów
-
-Encoder (BERT-scale):     BERTScore, MoverScore, BLEURT, AlignScore, UniEval
-                          └── embeddingi + similarity / fine-tuned regresja / Boolean QA
-
-Hybrydowe:                SMART (string lub model), BARTScore (seq2seq scoring)
-                          └── formuła + opcjonalny model
-
-LLM (scoring):            GPTScore
-                          └── log-probability generowania
-
-LLM (judge):              G-Eval, Fusion-Eval, Prometheus 1/2, MT-Bench
-                          └── prompt → ocena / feedback
-
-LLM (atomowa):            FActScore
-                          └── dekompozycja → retrieval → weryfikacja
-
-Fuzja:                    Faithfulness Metric Fusion, Multi-Layered Evaluation
-                          └── model drzewiasty / voting na wyjściach różnych metryk
-```
-
-## Correlation results (SummEval, summary-level Spearman ρ / Kendall τ)
-
-| Metryka        | Coherence    | Consistency  | Fluency      | Relevance    |
-|                |   ρ   |  τ   |   ρ   |  τ   |   ρ   |  τ   |   ρ   |  τ   |
-|----------------|-------|------|-------|------|-------|------|-------|------|
-| BLEU-4         | 0.102 | 0.08 | 0.137 | 0.10 | 0.066 | 0.05 | 0.206 | 0.16 |
-| ROUGE-L        | 0.163 | 0.12 | 0.140 | 0.11 | 0.108 | 0.08 | 0.202 | 0.15 |

@@ -1,0 +1,18 @@
+\begin{table*}[t]
+\centering
+\caption{Summary-level correlations with human judgment on SummEval. $\rho$ = Spearman, $r$ = Pearson, $\tau$ = Kendall.}
+\label{tab:correlations_summary}
+\begin{tabular}{lrrrrrrrrrrrr}
+\toprule
+Metric & \multicolumn{3}{c}{Coh} & \multicolumn{3}{c}{Con} & \multicolumn{3}{c}{Flu} & \multicolumn{3}{c}{Rel} \\
+\cmidrule(lr){2-4} \cmidrule(lr){5-7} \cmidrule(lr){8-10} \cmidrule(lr){11-13} 
+  & $\rho$ & $r$ & $\tau$ & $\rho$ & $r$ & $\tau$ & $\rho$ & $r$ & $\tau$ & $\rho$ & $r$ & $\tau$ \\
+\midrule
+BLEU & .102 {\scriptsize [.036, .165]} & .107 {\scriptsize [.045, .161]} & .072 {\scriptsize [.024, .115]} & .137 {\scriptsize [.085, .185]} & .151 {\scriptsize [.109, .195]} & .107 {\scriptsize [.065, .147]} & .066 {\scriptsize [.002, .123]} & .106 {\scriptsize [.057, .158]} & .051 {\scriptsize [.005, .097]} & .206 {\scriptsize [.123, .277]} & .204 {\scriptsize [.123, .288]} & .148 {\scriptsize [.094, .203]} \\
+ROUGE-L & .163 {\scriptsize [.093, .231]} & .166 {\scriptsize [.093, .227]} & .115 {\scriptsize [.067, .162]} & .140 {\scriptsize [.085, .195]} & .159 {\scriptsize [.111, .203]} & .110 {\scriptsize [.062, .154]} & .108 {\scriptsize [.043, .167]} & .146 {\scriptsize [.090, .206]} & .083 {\scriptsize [.036, .134]} & .201 {\scriptsize [.115, .278]} & .210 {\scriptsize [.132, .287]} & .144 {\scriptsize [.084, .202]} \\
+ChrF & .158 {\scriptsize [.092, .219]} & .137 {\scriptsize [.070, .204]} & .112 {\scriptsize [.065, .160]} & .174 {\scriptsize [.125, .220]} & .199 {\scriptsize [.149, .252]} & .137 {\scriptsize [.101, .174]} & .110 {\scriptsize [.050, .167]} & .149 {\scriptsize [.087, .211]} & .086 {\scriptsize [.043, .132]} & .293 {\scriptsize [.219, .361]} & .330 {\scriptsize [.256, .403]} & .210 {\scriptsize [.158, .264]} \\
+METEOR & .199 {\scriptsize [.146, .250]} & .206 {\scriptsize [.153, .259]} & .139 {\scriptsize [.100, .176]} & .134 {\scriptsize [.085, .179]} & .169 {\scriptsize [.125, .213]} & .105 {\scriptsize [.064, .143]} & .130 {\scriptsize [.066, .193]} & .187 {\scriptsize [.133, .246]} & .101 {\scriptsize [.051, .151]} & .185 {\scriptsize [.115, .251]} & .198 {\scriptsize [.126, .267]} & .131 {\scriptsize [.078, .179]} \\
+SMART-String & -.006 {\scriptsize [-.070, .063]} & .020 {\scriptsize [-.047, .084]} & -.004 {\scriptsize [-.051, .043]} & .111 {\scriptsize [.054, .166]} & .162 {\scriptsize [.114, .211]} & .087 {\scriptsize [.043, .130]} & .105 {\scriptsize [.046, .159]} & .169 {\scriptsize [.115, .226]} & .081 {\scriptsize [.037, .123]} & .124 {\scriptsize [.045, .194]} & .153 {\scriptsize [.078, .228]} & .088 {\scriptsize [.034, .143]} \\
+\bottomrule
+\end{tabular}
+\end{table*}
