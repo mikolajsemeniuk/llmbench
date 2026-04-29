@@ -1,6 +1,6 @@
 # LLMBench
 
-Correlation benchmark for summarization metrics on the [SummEval](https://huggingface.co/datasets/mteb/summeval) dataset. Each metric is run against the human-annotated reference summaries; results are aggregated by `cmd/tables` into the LaTeX tables under `paper/`.
+Correlation benchmark for summarization metrics on the [SummEval](https://huggingface.co/datasets/mteb/summeval) dataset. Each metric is run against the human-annotated reference summaries; results are aggregated by `cmd/paper` into the LaTeX tables under `paper/`.
 
 ## Requirements
 
@@ -59,7 +59,7 @@ Each cmd writes a JSON report to `output/<metric>.json` containing per-sample sc
 ## Generate paper tables
 
 ```sh
-make tables
+make paper
 ```
 
 Writes `paper/summary.tex` and `paper/system.tex` from the JSON reports in `output/`.

@@ -29,13 +29,13 @@ benchmark-ollama:
 	go run ./cmd/geval -dimension fluency
 	go run ./cmd/geval -dimension relevance
 
-.PHONY: tables
-tables: tables-summary tables-system
+.PHONY: paper
+paper: paper-summary paper-system
 
-.PHONY: tables-summary
-tables-summary:
-	go run ./cmd/tables -ci -level summary -output paper/summary.tex
+.PHONY: paper-summary
+paper-summary:
+	go run ./cmd/paper -ci -level summary -output paper/summary.tex
 
-.PHONY: tables-system
-tables-system:
-	go run ./cmd/tables -ci -level system  -output paper/system.tex
+.PHONY: paper-system
+paper-system:
+	go run ./cmd/paper -ci -level system  -output paper/system.tex
