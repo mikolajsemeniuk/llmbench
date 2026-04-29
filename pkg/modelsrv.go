@@ -10,7 +10,7 @@ import (
 )
 
 // ModelServer is a client for the Python modelserver container.
-// It provides access to BERTScore (canonical), MoverScore, and UniEval
+// It provides access to BERTScore, MoverScore, UniEval, GPTScore, BARTScore
 // through a unified HTTP API.
 type ModelServer struct {
 	Host string // e.g. "http://localhost:9200"
@@ -60,84 +60,83 @@ func (m *ModelServer) post(ctx context.Context, endpoint string, req modelServer
 	if err := json.NewDecoder(res.Body).Decode(&out); err != nil {
 		return modelServerResponse{}, fmt.Errorf("modelserver: decode: %w", err)
 	}
-
 	if out.Error != "" {
 		return out, fmt.Errorf("modelserver: %s", out.Error)
 	}
-
 	return out, nil
 }
 
-// BERTScoreCanonical computes canonical token-level BERTScore F1
+// ── BERTScore ─────────────────────────────────────────────────────────
+
+// BERTScorer wraps the canonical token-level BERTScore F1 (Zhang et al. 2020)
 // using RoBERTa-large via the Python bert-score library.
-func (m *ModelServer) BERTScoreCanonical(ctx context.Context, reference, candidate string) (float64, error) {
-	resp, err := m.post(ctx, "/bertscore", modelServerRequest{
+type BERTScorer struct {
+	Server *ModelServer
+}
+
+func NewBERTScorer(host string) *BERTScorer {
+	return &BERTScorer{Server: NewModelServer(host)}
+}
+
+func (b *BERTScorer) Score(ctx context.Context, reference, candidate string) (float64, error) {
+	res, err := b.Server.post(ctx, "/bertscore", modelServerRequest{
 		Reference: reference,
 		Candidate: candidate,
 	})
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("bertscore: %w", err)
 	}
-	return resp.Score, nil
+	return res.Score, nil
 }
 
-// MoverScore computes Word Mover's Distance with contextual RoBERTa embeddings.
-// Returns similarity score in [0, 1].
-func (m *ModelServer) MoverScore(ctx context.Context, reference, candidate string) (float64, error) {
-	resp, err := m.post(ctx, "/moverscore", modelServerRequest{
+// ── MoverScore ────────────────────────────────────────────────────────
+
+// MoverScorer wraps Word Mover's Distance with contextual RoBERTa embeddings
+// (Zhao et al. 2019).
+type MoverScorer struct {
+	Server *ModelServer
+}
+
+func NewMoverScorer(host string) *MoverScorer {
+	return &MoverScorer{Server: NewModelServer(host)}
+}
+
+func (m *MoverScorer) Score(ctx context.Context, reference, candidate string) (float64, error) {
+	res, err := m.Server.post(ctx, "/moverscore", modelServerRequest{
 		Reference: reference,
 		Candidate: candidate,
 	})
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("moverscore: %w", err)
 	}
-	return resp.Score, nil
+	return res.Score, nil
 }
 
-// UniEval computes the UniEval score using a T5-based Boolean QA framework.
-// Dimension can be: "coherence", "consistency", "fluency", "relevance",
-// "overall", or "all".
-func (m *ModelServer) UniEval(ctx context.Context, reference, candidate, dimension string) (float64, error) {
+// ── UniEval ───────────────────────────────────────────────────────────
+
+// UniEvalScorer wraps the T5-based Boolean QA evaluator (Zhong et al. 2022).
+// Each instance is bound to a specific dimension; cmd/unieval runs one
+// dimension per invocation.
+type UniEvalScorer struct {
+	Server    *ModelServer
+	Dimension string
+}
+
+func NewUniEvalScorer(host, dimension string) *UniEvalScorer {
 	if dimension == "" {
 		dimension = "overall"
 	}
-	resp, err := m.post(ctx, "/unieval", modelServerRequest{
+	return &UniEvalScorer{Server: NewModelServer(host), Dimension: dimension}
+}
+
+func (u *UniEvalScorer) Score(ctx context.Context, reference, candidate string) (float64, error) {
+	res, err := u.Server.post(ctx, "/unieval", modelServerRequest{
 		Reference: reference,
 		Candidate: candidate,
-		Dimension: dimension,
+		Dimension: u.Dimension,
 	})
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("unieval: %w", err)
 	}
-	return resp.Score, nil
-}
-
-// --- Scorer wrappers ---
-
-type BERTScorer struct {
-	ctx    context.Context
-	server *ModelServer
-}
-
-func NewBERTScorer(ctx context.Context, host string) *BERTScorer {
-	return &BERTScorer{ctx: ctx, server: NewModelServer(host)}
-}
-
-type MoverScorer struct {
-	ctx    context.Context
-	server *ModelServer
-}
-
-func NewMoverScorer(ctx context.Context, host string) *MoverScorer {
-	return &MoverScorer{ctx: ctx, server: NewModelServer(host)}
-}
-
-type UniEvalScorer struct {
-	ctx       context.Context
-	server    *ModelServer
-	dimension string
-}
-
-func NewUniEvalScorer(ctx context.Context, host, dimension string) *UniEvalScorer {
-	return &UniEvalScorer{ctx: ctx, server: NewModelServer(host), dimension: dimension}
+	return res.Score, nil
 }

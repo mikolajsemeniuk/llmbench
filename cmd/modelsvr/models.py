@@ -22,4 +22,10 @@ from transformers import GPT2LMHeadModel, GPT2Tokenizer
 GPT2Tokenizer.from_pretrained("gpt2")
 GPT2LMHeadModel.from_pretrained("gpt2")
 
+print("Downloading BART-large-cnn (BARTScore)...")
+from transformers import BartForConditionalGeneration, BartTokenizer
+
+BartTokenizer.from_pretrained("facebook/bart-large-cnn")
+BartForConditionalGeneration.from_pretrained("facebook/bart-large-cnn")
+
 print("All models downloaded.")

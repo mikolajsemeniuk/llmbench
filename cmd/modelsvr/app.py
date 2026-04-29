@@ -295,6 +295,76 @@ def gptscore():
     return jsonify({"score": round(score, 6)})
 
 
+def get_bartscore_model():
+    if "bartscore" not in _cache:
+        logger.info("Loading BART-large-cnn for BARTScore...")
+        from transformers import BartForConditionalGeneration, BartTokenizer
+
+        name = "facebook/bart-large-cnn"
+        _cache["bartscore_tokenizer"] = BartTokenizer.from_pretrained(name)
+        _cache["bartscore_model"] = BartForConditionalGeneration.from_pretrained(
+            name
+        ).to(DEVICE)
+        _cache["bartscore_model"].eval()
+        logger.info("BARTScore model loaded.")
+    return _cache["bartscore_tokenizer"], _cache["bartscore_model"]
+
+
+def _bartscore(reference, candidate, tokenizer, model):
+    """
+    Canonical BARTScore (Yuan et al. 2021):
+    log P(reference | candidate) averaged per token.
+
+    Higher (less negative) = candidate better predicts the reference.
+    Typical range: [-10, 0].
+    """
+    src_inputs = tokenizer(
+        candidate, return_tensors="pt", truncation=True, max_length=1024
+    ).to(DEVICE)
+    tgt_inputs = tokenizer(
+        reference, return_tensors="pt", truncation=True, max_length=1024
+    ).to(DEVICE)
+
+    src_ids = src_inputs["input_ids"]
+    src_mask = src_inputs["attention_mask"]
+    tgt_ids = tgt_inputs["input_ids"]
+
+    if tgt_ids.shape[1] <= 1:
+        return 0.0
+
+    # Shift target right for decoder input (BART expects this).
+    decoder_input_ids = tgt_ids[:, :-1]
+    labels = tgt_ids[:, 1:]
+
+    with torch.no_grad():
+        outputs = model(
+            input_ids=src_ids,
+            attention_mask=src_mask,
+            decoder_input_ids=decoder_input_ids,
+        )
+        logits = outputs.logits  # (1, tgt_len-1, vocab)
+        log_probs = torch.log_softmax(logits, dim=-1)
+
+        # Gather log-probs for the actual target tokens.
+        gathered = log_probs.gather(2, labels.unsqueeze(-1)).squeeze(-1)
+        avg_log_prob = gathered.mean().item()
+
+    return float(avg_log_prob)
+
+
+@app.route("/bartscore", methods=["POST"])
+def bartscore():
+    data = request.json
+    ref = data.get("reference", "")
+    cand = data.get("candidate", "")
+    if not ref or not cand:
+        return jsonify({"error": "reference and candidate required"}), 400
+
+    tokenizer, model = get_bartscore_model()
+    score = _bartscore(ref, cand, tokenizer, model)
+    return jsonify({"score": round(score, 6)})
+
+
 # ── Health ─────────────────────────────────────────────────────────────
 
 

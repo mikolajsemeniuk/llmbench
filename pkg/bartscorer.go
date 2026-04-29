@@ -1,129 +1,33 @@
 package llmbench
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
-	"io"
-	"net/http"
-	"strings"
 )
 
+// BARTScorer implements canonical BARTScore (Yuan et al. 2021):
+// log P(reference | candidate) using a seq2seq model (BART).
+//
+// We delegate to the Python model server which uses facebook/bart-large-cnn.
+// This requires the /bartscore endpoint on the model server.
 type BARTScorer struct {
-	ctx   context.Context
-	Host  string
-	Model string
+	Server *ModelServer
 }
 
-func NewBARTScorer(ctx context.Context, host, model string) *BARTScorer {
-	return &BARTScorer{ctx: ctx, Host: host, Model: model}
+func NewBARTScorer(host string) *BARTScorer {
+	return &BARTScorer{Server: NewModelServer(host)}
 }
 
-const bartSep = "\nSummary:\n"
-
+// Score returns the BARTScore: log P(reference | candidate) averaged
+// per token. Higher (less negative) means the candidate better predicts
+// the reference. Typically in [-10, 0] range.
 func (b *BARTScorer) Score(ctx context.Context, reference, candidate string) (float64, error) {
-	prompt := reference + bartSep + candidate
-
-	logprobs, err := b.completionLogprobs(ctx, prompt)
-	if err != nil {
-		return 0, err
-	}
-
-	sepLower := strings.ToLower(bartSep)
-	accumulated := ""
-	startIdx := -1
-	for i, tok := range logprobs.Tokens {
-		accumulated += tok
-		if startIdx == -1 && strings.Contains(strings.ToLower(accumulated), strings.TrimSpace(sepLower)) {
-			startIdx = i + 1
-		}
-	}
-
-	if startIdx == -1 || startIdx >= len(logprobs.TokenLogprobs) {
-		return 0, nil
-	}
-
-	var sum float64
-	count := 0
-	for i := startIdx; i < len(logprobs.TokenLogprobs); i++ {
-		sum += logprobs.TokenLogprobs[i]
-		count++
-	}
-	if count == 0 {
-		return 0, nil
-	}
-	return sum / float64(count), nil
-}
-
-type completionRequest struct {
-	Model     string `json:"model"`
-	Prompt    string `json:"prompt"`
-	MaxTokens int    `json:"max_tokens"`
-	Echo      bool   `json:"echo"`
-	Logprobs  int    `json:"logprobs"`
-}
-
-type completionResponse struct {
-	Choices []struct {
-		Logprobs struct {
-			Tokens        []string  `json:"tokens"`
-			TokenLogprobs []float64 `json:"token_logprobs"`
-		} `json:"logprobs"`
-	} `json:"choices"`
-}
-
-type logprobsResult struct {
-	Tokens        []string
-	TokenLogprobs []float64
-}
-
-func (b *BARTScorer) completionLogprobs(ctx context.Context, prompt string) (*logprobsResult, error) {
-	body, err := json.Marshal(completionRequest{
-		Model:     b.Model,
-		Prompt:    prompt,
-		MaxTokens: 0,
-		Echo:      true,
-		Logprobs:  1,
+	res, err := b.Server.post(ctx, "/bartscore", modelServerRequest{
+		Reference: reference,
+		Candidate: candidate,
 	})
 	if err != nil {
-		return nil, err
+		return 0, fmt.Errorf("bartscore: %w", err)
 	}
-
-	url := strings.TrimRight(b.Host, "/") + "/v1/completions"
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(body))
-	if err != nil {
-		return nil, err
-	}
-	req.Header.Set("Content-Type", "application/json")
-
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("bartscore: request: %w", err)
-	}
-	defer resp.Body.Close()
-
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("bartscore: read body: %w", err)
-	}
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("bartscore: status %d: %s", resp.StatusCode, string(data))
-	}
-
-	var cr completionResponse
-	if err := json.Unmarshal(data, &cr); err != nil {
-		return nil, fmt.Errorf("bartscore: decode: %w", err)
-	}
-
-	if len(cr.Choices) == 0 {
-		return nil, fmt.Errorf("bartscore: empty response")
-	}
-
-	lp := cr.Choices[0].Logprobs
-	return &logprobsResult{
-		Tokens:        lp.Tokens,
-		TokenLogprobs: lp.TokenLogprobs,
-	}, nil
+	return res.Score, nil
 }

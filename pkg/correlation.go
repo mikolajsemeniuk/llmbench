@@ -6,8 +6,6 @@ import (
 	"sort"
 )
 
-// ── Types ─────────────────────────────────────────────────────────────
-
 type Correlation struct {
 	Dimensions []Dimension `json:"dimensions"`
 }
@@ -27,8 +25,6 @@ type CI struct {
 	High float64 `json:"high"`
 }
 
-// CorrelationOptions configures NewCorrelation.
-// Zero value gives simple summary-level correlations (backward compatible).
 type CorrelationOptions struct {
 	// Bootstrap: when > 0, compute 95% CI by resampling at the DOCUMENT level
 	// (summary-level) or SYSTEM level (system-level), this many times.
@@ -41,8 +37,6 @@ type CorrelationOptions struct {
 	// Seed for the bootstrap RNG. Zero picks a fixed default for reproducibility.
 	Seed uint64
 }
-
-// ── Public API ────────────────────────────────────────────────────────
 
 func NewCorrelation(samples []Sample, scores []float64) Correlation {
 	return NewCorrelationWith(samples, scores, CorrelationOptions{})
@@ -167,13 +161,6 @@ func KendallTau(x, y []float64) float64 {
 	return float64(concordant-discordant) / den
 }
 
-// Backward-compat aliases.
-func PearsonCorrelation(x, y []float64) float64    { return Pearson(x, y) }
-func SpearmanCorrelation(x, y []float64) float64   { return Spearman(x, y) }
-func KendallTauCorrelation(x, y []float64) float64 { return KendallTau(x, y) }
-
-// ── Bootstrap CI ──────────────────────────────────────────────────────
-
 type CorrelationFunc func(x, y []float64) float64
 
 // BootstrapCI computes a 95% confidence interval by resampling.
@@ -242,8 +229,6 @@ func BootstrapCI(samples []Sample, metric, human []float64, fn CorrelationFunc, 
 	return percentileCI(values, 0.025, 0.975)
 }
 
-// ── System-level aggregation ──────────────────────────────────────────
-
 func aggregateBySystem(samples []Sample, metric, human []float64) ([]float64, []float64) {
 	type acc struct {
 		metricSum, humanSum float64
@@ -285,8 +270,6 @@ func groupByDocument(samples []Sample) map[string][]int {
 	}
 	return out
 }
-
-// ── Paired bootstrap for comparing two metrics ────────────────────────
 
 type PairedComparison struct {
 	DeltaMean float64 `json:"delta_mean"`
@@ -366,8 +349,6 @@ func PairedBootstrap(samples []Sample, scoresA, scoresB, human []float64,
 		N:         len(deltas),
 	}
 }
-
-// ── Helpers ───────────────────────────────────────────────────────────
 
 func percentileCI(values []float64, lo, hi float64) CI {
 	if len(values) < 2 {

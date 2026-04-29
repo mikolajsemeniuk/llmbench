@@ -8,10 +8,10 @@ import (
 	"io/fs"
 )
 
-//go:embed data/model_annotations.aligned.scored.jsonl
+//go:embed model_annotations.aligned.scored.jsonl
 var SummevalDataset embed.FS
 
-const DefaultDatasetPath = "data/model_annotations.aligned.scored.jsonl"
+const DefaultDatasetPath = "model_annotations.aligned.scored.jsonl"
 
 type RawSample struct {
 	ID               string    `json:"id"`
