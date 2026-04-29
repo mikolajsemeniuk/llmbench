@@ -9,7 +9,8 @@ import (
 	"path/filepath"
 	"time"
 
-	llmbench "github.com/mikolajsemeniuk/llmbench/pkg"
+	"github.com/mikolajsemeniuk/llmbench/pkg/eval"
+	"github.com/mikolajsemeniuk/llmbench/pkg/metrics"
 	"github.com/schollz/progressbar/v3"
 )
 
@@ -25,17 +26,17 @@ var (
 func main() {
 	flag.StringVar(&input, "input", "", "path to dataset JSON/JSONL file")
 	flag.StringVar(&output, "output", "output/bartscore.json", "write results to file instead of stdout")
-	flag.StringVar(&server, "server", "http://localhost:9200", "model server host (must support /bartscore)")
+	flag.StringVar(&server, "server", "http://localhost:9200", "model server URL (port 9200)")
 	flag.StringVar(&norm, "norm", "max", "reference aggregation: max|mean")
 	flag.IntVar(&n, "n", 0, "entries limit (0 = all)")
-	flag.IntVar(&bootstrap, "bootstrap", 1000, "bootstrap resamples for 95%% CI (0 = disabled)")
+	flag.IntVar(&bootstrap, "bootstrap", 1000, "bootstrap resamples for 95% CI (0 = disabled)")
 	flag.Parse()
 
 	ctx := context.Background()
 	ctx, cancel := signal.NotifyContext(ctx, os.Interrupt)
 	defer cancel()
 
-	fn, ok := llmbench.Aggregators[norm]
+	fn, ok := eval.Aggregators[norm]
 	if !ok {
 		log.Fatalf("unknown norm %q (available: max, mean)", norm)
 	}
@@ -43,10 +44,10 @@ func main() {
 	fsys := os.DirFS(filepath.Dir(input))
 	path := filepath.Base(input)
 	if input == "" {
-		fsys = llmbench.SummevalDataset
-		path = llmbench.DefaultDatasetPath
+		fsys = eval.SummevalDataset
+		path = eval.DefaultDatasetPath
 	}
-	samples, err := llmbench.NewDataset(fsys, path, n)
+	samples, err := eval.NewDataset(fsys, path, n)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -61,11 +62,11 @@ func main() {
 		progressbar.OptionSetElapsedTime(true),
 	)
 
-	scorer := llmbench.NewBARTScorer(server)
+	scorer := metrics.NewBARTScorer(server)
 
 	start := time.Now()
 	scores := make([]float64, len(samples))
-	entries := make([]llmbench.Score, len(samples))
+	entries := make([]eval.Score, len(samples))
 	references := make([]float64, 0, 16)
 
 	for i, s := range samples {
@@ -78,28 +79,28 @@ func main() {
 			references = append(references, v)
 		}
 		scores[i] = fn(references)
-		entries[i] = llmbench.Score{SampleID: s.ID, Value: scores[i]}
+		entries[i] = eval.Score{SampleID: s.ID, Value: scores[i]}
 		bar.Add(1)
 	}
 	elapsed := time.Since(start)
 
-	report := llmbench.Report{
+	report := eval.Report{
 		Metric:     "bartscore",
 		Norm:       norm,
 		Samples:    len(samples),
 		RuntimeSec: elapsed.Seconds(),
 		Timestamp:  time.Now().UTC().Format(time.RFC3339),
 		Scores:     entries,
-		SummaryLevel: llmbench.NewCorrelationWith(samples, scores, llmbench.CorrelationOptions{
+		SummaryLevel: eval.NewCorrelationWith(samples, scores, eval.CorrelationOptions{
 			Bootstrap: bootstrap,
 			Level:     "summary",
 		}),
-		SystemLevel: llmbench.NewCorrelationWith(samples, scores, llmbench.CorrelationOptions{
+		SystemLevel: eval.NewCorrelationWith(samples, scores, eval.CorrelationOptions{
 			Bootstrap: bootstrap,
 			Level:     "system",
 		}),
 	}
-	if err := llmbench.NewReport(output, report); err != nil {
+	if err := eval.NewReport(output, report); err != nil {
 		log.Fatal(err)
 	}
 }

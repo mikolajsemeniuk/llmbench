@@ -10,7 +10,8 @@ import (
 	"path/filepath"
 	"time"
 
-	llmbench "github.com/mikolajsemeniuk/llmbench/pkg"
+	"github.com/mikolajsemeniuk/llmbench/pkg/eval"
+	"github.com/mikolajsemeniuk/llmbench/pkg/metrics"
 	"github.com/schollz/progressbar/v3"
 )
 
@@ -27,14 +28,14 @@ var (
 func main() {
 	flag.StringVar(&input, "input", "", "path to dataset JSON/JSONL file")
 	flag.StringVar(&output, "output", "", "write results to file (default: output/geval_<dim>.json)")
-	flag.StringVar(&host, "host", "http://localhost:11434", "Ollama host URL")
+	flag.StringVar(&host, "host", "http://localhost:11434", "Ollama host URL (port 11434)")
 	flag.StringVar(&model, "model", "qwen2.5:7b-instruct-q4_K_M", "judge model for G-Eval")
 	flag.StringVar(&dimension, "dimension", "coherence", "SummEval dimension: coherence|consistency|fluency|relevance")
 	flag.IntVar(&n, "n", 0, "entries limit (0 = all)")
-	flag.IntVar(&bootstrap, "bootstrap", 1000, "bootstrap resamples for 95%% CI (0 = disabled)")
+	flag.IntVar(&bootstrap, "bootstrap", 1000, "bootstrap resamples for 95% CI (0 = disabled)")
 	flag.Parse()
 
-	if _, ok := llmbench.GEvalDimensions[dimension]; !ok {
+	if _, ok := metrics.GEvalDimensions[dimension]; !ok {
 		log.Fatalf("unknown dimension %q (available: coherence, consistency, fluency, relevance)", dimension)
 	}
 	if output == "" {
@@ -48,10 +49,10 @@ func main() {
 	fsys := os.DirFS(filepath.Dir(input))
 	path := filepath.Base(input)
 	if input == "" {
-		fsys = llmbench.SummevalDataset
-		path = llmbench.DefaultDatasetPath
+		fsys = eval.SummevalDataset
+		path = eval.DefaultDatasetPath
 	}
-	samples, err := llmbench.NewDataset(fsys, path, n)
+	samples, err := eval.NewDataset(fsys, path, n)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -66,11 +67,11 @@ func main() {
 		progressbar.OptionSetElapsedTime(true),
 	)
 
-	geval := llmbench.NewGEval(host, model)
+	geval := metrics.NewGEval(host, model)
 
 	start := time.Now()
 	scores := make([]float64, len(samples))
-	entries := make([]llmbench.Score, len(samples))
+	entries := make([]eval.Score, len(samples))
 
 	for i, s := range samples {
 		v, err := geval.Score(ctx, dimension, s.Document, s.Candidate)
@@ -78,28 +79,28 @@ func main() {
 			log.Fatalf("sample %s: %v", s.ID, err)
 		}
 		scores[i] = v
-		entries[i] = llmbench.Score{SampleID: s.ID, Value: v}
+		entries[i] = eval.Score{SampleID: s.ID, Value: v}
 		bar.Add(1)
 	}
 	elapsed := time.Since(start)
 
-	report := llmbench.Report{
+	report := eval.Report{
 		Metric:     fmt.Sprintf("geval_%s", dimension),
 		Norm:       "none",
 		Samples:    len(samples),
 		RuntimeSec: elapsed.Seconds(),
 		Timestamp:  time.Now().UTC().Format(time.RFC3339),
 		Scores:     entries,
-		SummaryLevel: llmbench.NewCorrelationWith(samples, scores, llmbench.CorrelationOptions{
+		SummaryLevel: eval.NewCorrelationWith(samples, scores, eval.CorrelationOptions{
 			Bootstrap: bootstrap,
 			Level:     "summary",
 		}),
-		SystemLevel: llmbench.NewCorrelationWith(samples, scores, llmbench.CorrelationOptions{
+		SystemLevel: eval.NewCorrelationWith(samples, scores, eval.CorrelationOptions{
 			Bootstrap: bootstrap,
 			Level:     "system",
 		}),
 	}
-	if err := llmbench.NewReport(output, report); err != nil {
+	if err := eval.NewReport(output, report); err != nil {
 		log.Fatal(err)
 	}
 }

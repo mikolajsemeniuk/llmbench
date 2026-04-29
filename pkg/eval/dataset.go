@@ -1,4 +1,4 @@
-package llmbench
+package eval
 
 import (
 	"bytes"
@@ -8,10 +8,10 @@ import (
 	"io/fs"
 )
 
-//go:embed model_annotations.aligned.scored.jsonl
+//go:embed summeval.jsonl
 var SummevalDataset embed.FS
 
-const DefaultDatasetPath = "model_annotations.aligned.scored.jsonl"
+const DefaultDatasetPath = "summeval.jsonl"
 
 type RawSample struct {
 	ID               string    `json:"id"`

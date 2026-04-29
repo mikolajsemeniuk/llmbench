@@ -1,4 +1,4 @@
-package llmbench
+package eval
 
 import (
 	"encoding/json"

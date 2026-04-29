@@ -1,4 +1,4 @@
-package llmbench
+package metrics
 
 func ROUGEL(reference, candidate string) float64 {
 	ref := tokenize(reference)

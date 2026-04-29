@@ -11,7 +11,7 @@ import (
 	"sort"
 	"strings"
 
-	llmbench "github.com/mikolajsemeniuk/llmbench/pkg"
+	"github.com/mikolajsemeniuk/llmbench/pkg/eval"
 )
 
 var (
@@ -82,20 +82,20 @@ func main() {
 	}
 }
 
-func loadReports(dir string) ([]llmbench.Report, error) {
+func loadReports(dir string) ([]eval.Report, error) {
 	matches, err := filepath.Glob(filepath.Join(dir, "*.json"))
 	if err != nil {
 		return nil, fmt.Errorf("glob: %w", err)
 	}
 	sort.Strings(matches)
 
-	reports := make([]llmbench.Report, 0, len(matches))
+	reports := make([]eval.Report, 0, len(matches))
 	for _, path := range matches {
 		data, err := os.ReadFile(path)
 		if err != nil {
 			return nil, fmt.Errorf("read %s: %w", path, err)
 		}
-		var r llmbench.Report
+		var r eval.Report
 		if err := json.Unmarshal(data, &r); err != nil {
 			return nil, fmt.Errorf("decode %s: %w", path, err)
 		}
@@ -107,7 +107,7 @@ func loadReports(dir string) ([]llmbench.Report, error) {
 // Cell carries a correlation value plus optional CI for one coefficient.
 type Cell struct {
 	Value float64
-	CI    *llmbench.CI
+	CI    *eval.CI
 }
 
 // Row is one line in the LaTeX table: a metric label + 4 dimensions × 3 triples.
@@ -117,8 +117,8 @@ type Row struct {
 	Cells map[string][3]Cell
 }
 
-func buildRows(reports []llmbench.Report, level string) []Row {
-	byMetric := make(map[string]llmbench.Report, len(reports))
+func buildRows(reports []eval.Report, level string) []Row {
+	byMetric := make(map[string]eval.Report, len(reports))
 	for _, r := range reports {
 		byMetric[r.Metric] = r
 	}
@@ -152,7 +152,7 @@ func buildRows(reports []llmbench.Report, level string) []Row {
 
 // collapseGEval builds a single "G-Eval" row by taking the diagonal cell
 // from each per-dimension report.
-func collapseGEval(byMetric map[string]llmbench.Report, level string) (Row, bool) {
+func collapseGEval(byMetric map[string]eval.Report, level string) (Row, bool) {
 	cells := make(map[string][3]Cell, len(dimensions))
 	for _, dim := range dimensions {
 		rep, ok := byMetric["geval_"+dim]
@@ -179,7 +179,7 @@ func collapseGEval(byMetric map[string]llmbench.Report, level string) (Row, bool
 	return Row{Label: "G-Eval", Cells: cells}, true
 }
 
-func cellsFromAllDimensions(r llmbench.Report, level string) map[string][3]Cell {
+func cellsFromAllDimensions(r eval.Report, level string) map[string][3]Cell {
 	out := make(map[string][3]Cell, len(dimensions))
 	corr := selectLevel(r, level)
 	for _, d := range corr.Dimensions {
@@ -192,7 +192,7 @@ func cellsFromAllDimensions(r llmbench.Report, level string) map[string][3]Cell 
 	return out
 }
 
-func selectLevel(r llmbench.Report, level string) llmbench.Correlation {
+func selectLevel(r eval.Report, level string) eval.Correlation {
 	if level == "system" {
 		return r.SystemLevel
 	}

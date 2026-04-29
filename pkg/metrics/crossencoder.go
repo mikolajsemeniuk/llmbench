@@ -1,4 +1,4 @@
-package llmbench
+package metrics
 
 import (
 	"bytes"

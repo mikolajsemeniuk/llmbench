@@ -1,8 +1,6 @@
-package llmbench
+package eval
 
-import (
-	"slices"
-)
+import "slices"
 
 var Aggregators = map[string]Norm{
 	"max":  Max,
