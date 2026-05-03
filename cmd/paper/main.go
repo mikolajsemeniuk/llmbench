@@ -15,10 +15,11 @@ import (
 )
 
 var (
-	input  string
-	output string
-	level  string
-	withCI bool
+	input        string
+	output       string
+	level        string
+	withCI       bool
+	coefficients string
 )
 
 var dimensions = []string{"coherence", "consistency", "fluency", "relevance"}
@@ -53,26 +54,57 @@ var metricDisplayName = map[string]string{
 	"geval":       "G-Eval",
 }
 
-// dimensionalMetrics lists metrics that produce one report per dimension
-// (rather than one report total). Each is collapsed into a single row using
-// the matched diagonal correlations.
 var dimensionalMetrics = []struct {
-	prefix      string // e.g. "geval_" — files are geval_coherence.json, geval_consistency.json, ...
+	prefix      string
 	displayName string
 }{
 	{"geval_", "G-Eval"},
 	{"unieval_", "UniEval"},
 }
 
+// coefficient describes one correlation column: its display symbol and how
+// to extract the value + CI from a CorrelationDimension.
+type coefficient struct {
+	key    string
+	symbol string
+	value  func(d eval.Dimension) float64
+	ci     func(d eval.Dimension) *eval.CI
+}
+
+var allCoefficients = map[string]coefficient{
+	"spearman": {
+		key: "spearman", symbol: `$\rho$`,
+		value: func(d eval.Dimension) float64 { return d.Spearman },
+		ci:    func(d eval.Dimension) *eval.CI { return d.SpearmanCI },
+	},
+	"pearson": {
+		key: "pearson", symbol: `$r$`,
+		value: func(d eval.Dimension) float64 { return d.Pearson },
+		ci:    func(d eval.Dimension) *eval.CI { return d.PearsonCI },
+	},
+	"kendall": {
+		key: "kendall", symbol: `$\tau$`,
+		value: func(d eval.Dimension) float64 { return d.KendallTau },
+		ci:    func(d eval.Dimension) *eval.CI { return d.KendallTauCI },
+	},
+}
+
 func main() {
 	flag.StringVar(&input, "input", "output", "directory containing metric JSON reports")
-	flag.StringVar(&output, "output", "paper/tables/correlations.tex", "path to write LaTeX table (- for stdout)")
+	flag.StringVar(&output, "output", "paper/correlations.tex", "path to write LaTeX table (- for stdout)")
 	flag.StringVar(&level, "level", "summary", "correlation level: summary|system")
 	flag.BoolVar(&withCI, "ci", false, "include 95%% CI in each cell (requires bootstrap data)")
+	flag.StringVar(&coefficients, "coeffs", "spearman,kendall",
+		"comma-separated coefficients to display: spearman, pearson, kendall")
 	flag.Parse()
 
 	if level != "summary" && level != "system" {
 		log.Fatalf("unknown level %q (available: summary, system)", level)
+	}
+
+	coeffs, err := parseCoefficients(coefficients)
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	reports, err := loadReports(input)
@@ -83,12 +115,37 @@ func main() {
 		log.Fatalf("no reports found in %s", input)
 	}
 
-	rows := buildRows(reports, level)
-	table := renderLatex(rows, level, withCI)
+	rows := buildRows(reports, level, coeffs)
+	table := renderLatex(rows, level, coeffs, withCI)
 
 	if err := write(output, table); err != nil {
 		log.Fatal(err)
 	}
+}
+
+func parseCoefficients(spec string) ([]coefficient, error) {
+	parts := strings.Split(spec, ",")
+	out := make([]coefficient, 0, len(parts))
+	seen := make(map[string]bool, len(parts))
+	for _, p := range parts {
+		key := strings.TrimSpace(strings.ToLower(p))
+		if key == "" {
+			continue
+		}
+		c, ok := allCoefficients[key]
+		if !ok {
+			return nil, fmt.Errorf("unknown coefficient %q (available: spearman, pearson, kendall)", key)
+		}
+		if seen[key] {
+			return nil, fmt.Errorf("coefficient %q specified twice", key)
+		}
+		seen[key] = true
+		out = append(out, c)
+	}
+	if len(out) == 0 {
+		return nil, fmt.Errorf("at least one coefficient required")
+	}
+	return out, nil
 }
 
 func loadReports(dir string) ([]eval.Report, error) {
@@ -120,10 +177,12 @@ type Cell struct {
 
 type Row struct {
 	Label string
-	Cells map[string][3]Cell
+	// Cells maps dimension -> coefficient values (in same order as the
+	// coeffs slice provided at construction time).
+	Cells map[string][]Cell
 }
 
-func buildRows(reports []eval.Report, level string) []Row {
+func buildRows(reports []eval.Report, level string, coeffs []coefficient) []Row {
 	byMetric := make(map[string]eval.Report, len(reports))
 	for _, r := range reports {
 		byMetric[r.Metric] = r
@@ -132,9 +191,8 @@ func buildRows(reports []eval.Report, level string) []Row {
 	rows := make([]Row, 0, len(reports))
 	seen := make(map[string]bool)
 
-	// Collapse all dimensional metrics (G-Eval, UniEval).
 	for _, dm := range dimensionalMetrics {
-		if row, ok := collapseDimensional(byMetric, dm.prefix, dm.displayName, level); ok {
+		if row, ok := collapseDimensional(byMetric, dm.prefix, dm.displayName, level, coeffs); ok {
 			rows = append(rows, row)
 			for _, d := range dimensions {
 				seen[dm.prefix+d] = true
@@ -142,18 +200,16 @@ func buildRows(reports []eval.Report, level string) []Row {
 		}
 	}
 
-	// Regular metrics.
 	for _, r := range reports {
 		if seen[r.Metric] {
 			continue
 		}
-		// Skip dimensional partials that didn't get fully collapsed (missing files).
 		if isDimensionalPartial(r.Metric) {
 			continue
 		}
 		rows = append(rows, Row{
 			Label: displayName(r.Metric),
-			Cells: cellsFromAllDimensions(r, level),
+			Cells: cellsFromAllDimensions(r, level, coeffs),
 		})
 	}
 
@@ -161,39 +217,29 @@ func buildRows(reports []eval.Report, level string) []Row {
 	return rows
 }
 
-// collapseDimensional builds a single row from per-dimension reports
-// (e.g. unieval_coherence.json, unieval_consistency.json, ...) by taking
-// the diagonal cell from each. Returns (row, true) if all 4 dimensions
-// are present; otherwise (zero, false).
-func collapseDimensional(byMetric map[string]eval.Report, prefix, displayName, level string) (Row, bool) {
-	cells := make(map[string][3]Cell, len(dimensions))
+func collapseDimensional(byMetric map[string]eval.Report, prefix, displayName, level string, coeffs []coefficient) (Row, bool) {
+	cells := make(map[string][]Cell, len(dimensions))
 	for _, dim := range dimensions {
 		rep, ok := byMetric[prefix+dim]
 		if !ok {
 			return Row{}, false
 		}
 		corr := selectLevel(rep, level)
-		found := false
-		for _, d := range corr.Dimensions {
-			if d.Name == dim {
-				cells[dim] = [3]Cell{
-					{Value: d.Spearman, CI: d.SpearmanCI},
-					{Value: d.Pearson, CI: d.PearsonCI},
-					{Value: d.KendallTau, CI: d.KendallTauCI},
-				}
-				found = true
+		var matched *eval.Dimension
+		for i := range corr.Dimensions {
+			if corr.Dimensions[i].Name == dim {
+				matched = &corr.Dimensions[i]
 				break
 			}
 		}
-		if !found {
+		if matched == nil {
 			return Row{}, false
 		}
+		cells[dim] = makeCells(*matched, coeffs)
 	}
 	return Row{Label: displayName, Cells: cells}, true
 }
 
-// isDimensionalPartial returns true if the metric name matches a known
-// dimensional prefix (geval_, unieval_) — used to skip incomplete sets.
 func isDimensionalPartial(metric string) bool {
 	for _, dm := range dimensionalMetrics {
 		if strings.HasPrefix(metric, dm.prefix) {
@@ -203,17 +249,21 @@ func isDimensionalPartial(metric string) bool {
 	return false
 }
 
-func cellsFromAllDimensions(r eval.Report, level string) map[string][3]Cell {
-	out := make(map[string][3]Cell, len(dimensions))
+func cellsFromAllDimensions(r eval.Report, level string, coeffs []coefficient) map[string][]Cell {
+	out := make(map[string][]Cell, len(dimensions))
 	corr := selectLevel(r, level)
 	for _, d := range corr.Dimensions {
-		out[d.Name] = [3]Cell{
-			{Value: d.Spearman, CI: d.SpearmanCI},
-			{Value: d.Pearson, CI: d.PearsonCI},
-			{Value: d.KendallTau, CI: d.KendallTauCI},
-		}
+		out[d.Name] = makeCells(d, coeffs)
 	}
 	return out
+}
+
+func makeCells(d eval.Dimension, coeffs []coefficient) []Cell {
+	cells := make([]Cell, len(coeffs))
+	for i, c := range coeffs {
+		cells[i] = Cell{Value: c.value(d), CI: c.ci(d)}
+	}
+	return cells
 }
 
 func selectLevel(r eval.Report, level string) eval.Correlation {
@@ -251,36 +301,45 @@ func sortRows(rows []Row) {
 	})
 }
 
-func renderLatex(rows []Row, level string, withCI bool) string {
+func renderLatex(rows []Row, level string, coeffs []coefficient, withCI bool) string {
 	var b strings.Builder
 
-	colSpec := "l" + strings.Repeat("rrr", len(dimensions))
+	nCoeff := len(coeffs)
+	colSpec := "l" + strings.Repeat(strings.Repeat("r", nCoeff), len(dimensions))
+
 	fmt.Fprintln(&b, `\begin{table*}[t]`)
 	fmt.Fprintln(&b, `\centering`)
+
 	levelLabel := "Summary-level"
 	if level == "system" {
 		levelLabel = "System-level"
 	}
-	fmt.Fprintf(&b, "\\caption{%s correlations with human judgment on SummEval. "+
-		`$\rho$ = Spearman, $r$ = Pearson, $\tau$ = Kendall.}`+"\n", levelLabel)
+
+	caption := fmt.Sprintf("%s correlations with human judgment on SummEval. %s.",
+		levelLabel, coeffLegend(coeffs))
+	fmt.Fprintf(&b, "\\caption{%s}\n", caption)
 	fmt.Fprintf(&b, "\\label{tab:correlations_%s}\n", level)
 	fmt.Fprintf(&b, "\\begin{tabular}{%s}\n", colSpec)
 	fmt.Fprintln(&b, `\toprule`)
 
 	fmt.Fprint(&b, "Metric")
 	for _, dim := range dimensions {
-		fmt.Fprintf(&b, ` & \multicolumn{3}{c}{%s}`, dimensionShort[dim])
+		fmt.Fprintf(&b, ` & \multicolumn{%d}{c}{%s}`, nCoeff, dimensionShort[dim])
 	}
 	fmt.Fprintln(&b, ` \\`)
 
 	for i := range dimensions {
-		fmt.Fprintf(&b, `\cmidrule(lr){%d-%d} `, 2+3*i, 4+3*i)
+		from := 2 + nCoeff*i
+		to := from + nCoeff - 1
+		fmt.Fprintf(&b, `\cmidrule(lr){%d-%d} `, from, to)
 	}
 	fmt.Fprintln(&b)
 
 	fmt.Fprint(&b, " ")
 	for range dimensions {
-		fmt.Fprint(&b, ` & $\rho$ & $r$ & $\tau$`)
+		for _, c := range coeffs {
+			fmt.Fprintf(&b, ` & %s`, c.symbol)
+		}
 	}
 	fmt.Fprintln(&b, ` \\`)
 	fmt.Fprintln(&b, `\midrule`)
@@ -288,15 +347,16 @@ func renderLatex(rows []Row, level string, withCI bool) string {
 	for _, r := range rows {
 		fmt.Fprint(&b, r.Label)
 		for _, dim := range dimensions {
-			triple, ok := r.Cells[dim]
+			cells, ok := r.Cells[dim]
 			if !ok {
-				fmt.Fprint(&b, ` & -- & -- & --`)
+				for range coeffs {
+					fmt.Fprint(&b, ` & --`)
+				}
 				continue
 			}
-			fmt.Fprintf(&b, ` & %s & %s & %s`,
-				fmtCell(triple[0], withCI),
-				fmtCell(triple[1], withCI),
-				fmtCell(triple[2], withCI))
+			for _, cell := range cells {
+				fmt.Fprintf(&b, ` & %s`, fmtCell(cell, withCI))
+			}
 		}
 		fmt.Fprintln(&b, ` \\`)
 	}
@@ -305,6 +365,19 @@ func renderLatex(rows []Row, level string, withCI bool) string {
 	fmt.Fprintln(&b, `\end{tabular}`)
 	fmt.Fprintln(&b, `\end{table*}`)
 	return b.String()
+}
+
+func coeffLegend(coeffs []coefficient) string {
+	parts := make([]string, 0, len(coeffs))
+	names := map[string]string{
+		"spearman": "Spearman",
+		"pearson":  "Pearson",
+		"kendall":  "Kendall",
+	}
+	for _, c := range coeffs {
+		parts = append(parts, fmt.Sprintf("%s = %s", c.symbol, names[c.key]))
+	}
+	return strings.Join(parts, ", ")
 }
 
 func fmtCell(c Cell, withCI bool) string {
