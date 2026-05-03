@@ -21,8 +21,9 @@ func NewModelServer(host string) *ModelServer {
 }
 
 type modelServerRequest struct {
-	Reference string `json:"reference"`
+	Reference string `json:"reference,omitempty"`
 	Candidate string `json:"candidate"`
+	Source    string `json:"source,omitempty"` // for UniEval coherence/consistency
 	Dimension string `json:"dimension,omitempty"`
 }
 
@@ -68,8 +69,6 @@ func (m *ModelServer) post(ctx context.Context, endpoint string, req modelServer
 
 // ── BERTScore ─────────────────────────────────────────────────────────
 
-// BERTScorer wraps the canonical token-level BERTScore F1 (Zhang et al. 2020)
-// using RoBERTa-large via the Python bert-score library.
 type BERTScorer struct {
 	Server *ModelServer
 }
@@ -91,8 +90,6 @@ func (b *BERTScorer) Score(ctx context.Context, reference, candidate string) (fl
 
 // ── MoverScore ────────────────────────────────────────────────────────
 
-// MoverScorer wraps Word Mover's Distance with contextual RoBERTa embeddings
-// (Zhao et al. 2019).
 type MoverScorer struct {
 	Server *ModelServer
 }
@@ -114,9 +111,17 @@ func (m *MoverScorer) Score(ctx context.Context, reference, candidate string) (f
 
 // ── UniEval ───────────────────────────────────────────────────────────
 
-// UniEvalScorer wraps the T5-based Boolean QA evaluator (Zhong et al. 2022).
+// UniEvalScorer wraps the canonical-style UniEval Boolean QA evaluator.
 // Each instance is bound to a specific dimension; cmd/unieval runs one
 // dimension per invocation.
+//
+// The canonical UniEval prompts condition on different fields per dimension:
+//   - coherence/consistency: source document
+//   - relevance: reference summary
+//   - fluency: candidate only
+//
+// Score takes (reference, source, candidate); the server picks the right
+// fields based on the configured dimension.
 type UniEvalScorer struct {
 	Server    *ModelServer
 	Dimension string
@@ -124,15 +129,16 @@ type UniEvalScorer struct {
 
 func NewUniEvalScorer(host, dimension string) *UniEvalScorer {
 	if dimension == "" {
-		dimension = "overall"
+		dimension = "coherence"
 	}
 	return &UniEvalScorer{Server: NewModelServer(host), Dimension: dimension}
 }
 
-func (u *UniEvalScorer) Score(ctx context.Context, reference, candidate string) (float64, error) {
+func (u *UniEvalScorer) Score(ctx context.Context, reference, source, candidate string) (float64, error) {
 	res, err := u.Server.post(ctx, "/unieval", modelServerRequest{
 		Reference: reference,
 		Candidate: candidate,
+		Source:    source,
 		Dimension: u.Dimension,
 	})
 	if err != nil {

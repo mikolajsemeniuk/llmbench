@@ -11,7 +11,7 @@ Usage:
 Endpoints:
     POST /bertscore      — canonical token-level BERTScore (F1)
     POST /moverscore     — Word Mover's Distance with contextual embeddings
-    POST /unieval        — T5-based multi-dimensional Boolean QA evaluator
+    POST /unieval        — T5-based Boolean QA evaluator (canonical-style prompts)
     POST /gptscore       — generative log-probability scoring (GPT-2)
     POST /bartscore      — canonical BARTScore via facebook/bart-large-cnn
     GET  /health         — health check + loaded models
@@ -34,7 +34,6 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__)
 
 # Suppress Flask's per-request access logs to keep startup output clean.
-# Comment out if you want to see each request being served.
 logging.getLogger("werkzeug").setLevel(logging.WARNING)
 
 _cache = {}
@@ -176,10 +175,46 @@ def get_unieval_model():
     return _cache["unieval_tokenizer"], _cache["unieval_model"]
 
 
-def _unieval_score(question, source, tokenizer, model):
-    input_text = f"question: {question} </s> premise: {source}"
+def _build_unieval_prompt(dimension, candidate, reference, source):
+    """
+    Builds canonical-style UniEval prompts following Zhong et al. 2022.
+
+    Coherence/consistency: condition on source document (the news article).
+    Fluency: candidate only (grammar/style judgment).
+    Relevance: condition on reference summary (alignment with gold summary).
+    """
+    if dimension == "coherence":
+        return (
+            f"question: Is this a coherent summary to the document? </s> "
+            f"summary: {candidate} </s> "
+            f"document: {source}"
+        )
+    if dimension == "consistency":
+        return (
+            f"question: Is this claim consistent with the document? </s> "
+            f"claim: {candidate} </s> "
+            f"document: {source}"
+        )
+    if dimension == "fluency":
+        return f"question: Is this a fluent paragraph? </s> paragraph: {candidate}"
+    if dimension == "relevance":
+        return (
+            f"question: Is this summary relevant to the reference? </s> "
+            f"summary: {candidate} </s> "
+            f"reference: {reference}"
+        )
+    # Fallback: same as coherence with source.
+    return (
+        f"question: Is this a good summary of the document? </s> "
+        f"summary: {candidate} </s> "
+        f"document: {source}"
+    )
+
+
+def _unieval_score(prompt, tokenizer, model):
+    """Returns P(Yes) given the prompt — one model forward pass."""
     inputs = tokenizer(
-        input_text, return_tensors="pt", truncation=True, max_length=512
+        prompt, return_tensors="pt", truncation=True, max_length=1024
     ).to(DEVICE)
 
     with torch.no_grad():
@@ -190,6 +225,7 @@ def _unieval_score(question, source, tokenizer, model):
         outputs = model(**inputs, decoder_input_ids=decoder_input_ids)
         logits = outputs.logits[0, 0, :]
 
+        # Softmax over yes/no only — closer to canonical Boolean QA setup.
         probs = torch.softmax(logits[[yes_id, no_id]], dim=0)
         return probs[0].item()
 
@@ -199,36 +235,27 @@ def unieval():
     data = request.json
     ref = data.get("reference", "")
     cand = data.get("candidate", "")
+    source = data.get("source", "")
     dimension = data.get("dimension", "overall")
 
-    if not ref or not cand:
-        return jsonify({"error": "reference and candidate required"}), 400
-
-    questions = {
-        "coherence": f"Is this a coherent piece of text? {cand}",
-        "consistency": f"Is this text consistent with the reference? "
-        f"Reference: {ref} Text: {cand}",
-        "fluency": f"Is this a fluent piece of text? {cand}",
-        "relevance": f"Is this text relevant to the reference? "
-        f"Reference: {ref} Text: {cand}",
-        "overall": f"Is this a good response given the reference? "
-        f"Reference: {ref} Response: {cand}",
-    }
+    if not cand:
+        return jsonify({"error": "candidate required"}), 400
 
     tokenizer, model = get_unieval_model()
 
     if dimension == "all":
         scores = {}
-        for dim, question in questions.items():
-            scores[dim] = round(_unieval_score(question, cand, tokenizer, model), 6)
+        for dim in ["coherence", "consistency", "fluency", "relevance"]:
+            prompt = _build_unieval_prompt(dim, cand, ref, source)
+            scores[dim] = round(_unieval_score(prompt, tokenizer, model), 6)
         scores["score"] = round(
             float(np.mean([v for k, v in scores.items() if k != "score"])), 6
         )
         return jsonify(scores)
-    else:
-        question = questions.get(dimension, questions["overall"])
-        score = _unieval_score(question, cand, tokenizer, model)
-        return jsonify({"score": round(score, 6), "dimension": dimension})
+
+    prompt = _build_unieval_prompt(dimension, cand, ref, source)
+    score = _unieval_score(prompt, tokenizer, model)
+    return jsonify({"score": round(score, 6), "dimension": dimension})
 
 
 # ── GPTScore ───────────────────────────────────────────────────────────
@@ -254,7 +281,6 @@ def _gptscore(reference, candidate, tokenizer, model):
     given reference as context.
 
     Score = sigmoid( (1/m) * Σ log P(cand_i | cand_<i, reference) + 3 )
-
     Returns a score in [0, 1].
     """
     prompt = f"Reference: {reference}\nResponse: {candidate}"
@@ -408,10 +434,6 @@ def health():
 
 
 def warmup():
-    """Load all models into _cache before accepting requests.
-
-    Set EAGER_LOAD=0 to skip and use lazy loading on first request.
-    """
     if os.environ.get("EAGER_LOAD", "1") != "1":
         logger.info(
             "Eager loading disabled (EAGER_LOAD=0); models will load on first request."

@@ -31,10 +31,10 @@ var (
 func main() {
 	flag.StringVar(&input, "input", "", "path to dataset JSON/JSONL file")
 	flag.StringVar(&output, "output", "", "write results to file (default: output/unieval_<dim>.json)")
-	flag.StringVar(&server, "server", "http://localhost:9200", "model server URL (port 9200)")
+	flag.StringVar(&server, "server", "http://localhost:9200", "model server host")
 	flag.StringVar(&dimension, "dimension", "coherence", "SummEval dimension: coherence|consistency|fluency|relevance")
 	flag.IntVar(&n, "n", 0, "entries limit (0 = all)")
-	flag.IntVar(&bootstrap, "bootstrap", 1000, "bootstrap resamples for 95% CI (0 = disabled)")
+	flag.IntVar(&bootstrap, "bootstrap", 1000, "bootstrap resamples for 95%% CI (0 = disabled)")
 	flag.Parse()
 
 	if !validDimensions[dimension] {
@@ -76,10 +76,16 @@ func main() {
 	entries := make([]eval.Score, len(samples))
 
 	for i, s := range samples {
-		// UniEval is reference-based for consistency/relevance, candidate-only
-		// for coherence/fluency. The Python server handles dimension-specific
-		// prompting; we always pass both ref and candidate.
-		v, err := scorer.Score(ctx, s.References[0], s.Candidate)
+		// Canonical UniEval prompts use different fields per dimension:
+		//   coherence/consistency → source document
+		//   relevance             → reference summary
+		//   fluency               → candidate only
+		// We always pass all three; the server picks the right one.
+		ref := ""
+		if len(s.References) > 0 {
+			ref = s.References[0]
+		}
+		v, err := scorer.Score(ctx, ref, s.Document, s.Candidate)
 		if err != nil {
 			log.Fatalf("sample %s: %v", s.ID, err)
 		}
