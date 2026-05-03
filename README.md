@@ -37,7 +37,10 @@ G-Eval and UniEval are run once per SummEval dimension (`coherence`, `consistenc
 Start the model server:
 
 ```sh
-docker compose up --build -d
+# docker compose up --build -d
+cd cmd/modelsvr
+pip3 install -r requirements.txt
+python3 app.py
 ```
 
 Run the full benchmark (CPU + model server + Ollama):

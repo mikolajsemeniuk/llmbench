@@ -1,33 +1,41 @@
 """
-Model Server — BERTScore, MoverScore, UniEval, GPTScore.
+Model Server — BERTScore, MoverScore, UniEval, GPTScore, BARTScore.
 
-All models are PyTorch-based. Loaded lazily on first request per metric.
-Shares RoBERTa weights between BERTScore and MoverScore.
+All models are loaded EAGERLY at startup. The server only starts accepting
+requests after all models are in memory. Set EAGER_LOAD=0 to revert to
+lazy loading (load on first request) for faster development startup.
 
 Usage:
-    docker build -t modelserver .
-    docker run -p 9200:9200 modelserver
+    python3 app.py
 
 Endpoints:
     POST /bertscore      — canonical token-level BERTScore (F1)
     POST /moverscore     — Word Mover's Distance with contextual embeddings
     POST /unieval        — T5-based multi-dimensional Boolean QA evaluator
     POST /gptscore       — generative log-probability scoring (GPT-2)
+    POST /bartscore      — canonical BARTScore via facebook/bart-large-cnn
     GET  /health         — health check + loaded models
 """
 
 import logging
 import math
 import os
+import time
 
 import numpy as np
 import torch
 from flask import Flask, jsonify, request
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s"
+)
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
+
+# Suppress Flask's per-request access logs to keep startup output clean.
+# Comment out if you want to see each request being served.
+logging.getLogger("werkzeug").setLevel(logging.WARNING)
 
 _cache = {}
 
@@ -94,7 +102,9 @@ def get_mover_model():
 
         name = BERTSCORE_MODEL
         _cache["mover_tokenizer"] = AutoTokenizer.from_pretrained(name)
-        _cache["mover_model"] = AutoModel.from_pretrained(name).to(DEVICE)
+        _cache["mover_model"] = AutoModel.from_pretrained(
+            name, use_safetensors=True
+        ).to(DEVICE)
         _cache["mover_model"].eval()
         logger.info("MoverScore model loaded.")
     return _cache["mover_tokenizer"], _cache["mover_model"]
@@ -152,13 +162,15 @@ def moverscore():
 
 
 def get_unieval_model():
-    if "unieval" not in _cache:
+    if "unieval_model" not in _cache:
         logger.info("Loading UniEval model...")
         from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
 
         name = "MingZhong/unieval-sum"
         _cache["unieval_tokenizer"] = AutoTokenizer.from_pretrained(name)
-        _cache["unieval_model"] = AutoModelForSeq2SeqLM.from_pretrained(name).to(DEVICE)
+        _cache["unieval_model"] = AutoModelForSeq2SeqLM.from_pretrained(
+            name, use_safetensors=True
+        ).to(DEVICE)
         _cache["unieval_model"].eval()
         logger.info("UniEval loaded.")
     return _cache["unieval_tokenizer"], _cache["unieval_model"]
@@ -223,12 +235,14 @@ def unieval():
 
 
 def get_gptscore_model():
-    if "gptscore" not in _cache:
+    if "gptscore_model" not in _cache:
         logger.info("Loading GPT-2 for GPTScore...")
         from transformers import GPT2LMHeadModel, GPT2Tokenizer
 
         _cache["gptscore_tokenizer"] = GPT2Tokenizer.from_pretrained("gpt2")
-        _cache["gptscore_model"] = GPT2LMHeadModel.from_pretrained("gpt2").to(DEVICE)
+        _cache["gptscore_model"] = GPT2LMHeadModel.from_pretrained(
+            "gpt2", use_safetensors=True
+        ).to(DEVICE)
         _cache["gptscore_model"].eval()
         logger.info("GPTScore model loaded.")
     return _cache["gptscore_tokenizer"], _cache["gptscore_model"]
@@ -295,15 +309,18 @@ def gptscore():
     return jsonify({"score": round(score, 6)})
 
 
+# ── BARTScore ──────────────────────────────────────────────────────────
+
+
 def get_bartscore_model():
-    if "bartscore" not in _cache:
+    if "bartscore_model" not in _cache:
         logger.info("Loading BART-large-cnn for BARTScore...")
         from transformers import BartForConditionalGeneration, BartTokenizer
 
         name = "facebook/bart-large-cnn"
         _cache["bartscore_tokenizer"] = BartTokenizer.from_pretrained(name)
         _cache["bartscore_model"] = BartForConditionalGeneration.from_pretrained(
-            name
+            name, use_safetensors=True
         ).to(DEVICE)
         _cache["bartscore_model"].eval()
         logger.info("BARTScore model loaded.")
@@ -332,7 +349,6 @@ def _bartscore(reference, candidate, tokenizer, model):
     if tgt_ids.shape[1] <= 1:
         return 0.0
 
-    # Shift target right for decoder input (BART expects this).
     decoder_input_ids = tgt_ids[:, :-1]
     labels = tgt_ids[:, 1:]
 
@@ -345,7 +361,6 @@ def _bartscore(reference, candidate, tokenizer, model):
         logits = outputs.logits  # (1, tgt_len-1, vocab)
         log_probs = torch.log_softmax(logits, dim=-1)
 
-        # Gather log-probs for the actual target tokens.
         gathered = log_probs.gather(2, labels.unsqueeze(-1)).squeeze(-1)
         avg_log_prob = gathered.mean().item()
 
@@ -370,7 +385,7 @@ def bartscore():
 
 @app.route("/health", methods=["GET"])
 def health():
-    loaded = list(
+    loaded = sorted(
         set(k.replace("_tokenizer", "").replace("_model", "") for k in _cache.keys())
     )
     return jsonify(
@@ -378,12 +393,62 @@ def health():
             "status": "ok",
             "device": DEVICE,
             "loaded_models": loaded,
-            "available": ["bertscore", "moverscore", "unieval", "gptscore"],
+            "available": [
+                "bertscore",
+                "moverscore",
+                "unieval",
+                "gptscore",
+                "bartscore",
+            ],
         }
     )
+
+
+# ── Eager loading ──────────────────────────────────────────────────────
+
+
+def warmup():
+    """Load all models into _cache before accepting requests.
+
+    Set EAGER_LOAD=0 to skip and use lazy loading on first request.
+    """
+    if os.environ.get("EAGER_LOAD", "1") != "1":
+        logger.info(
+            "Eager loading disabled (EAGER_LOAD=0); models will load on first request."
+        )
+        return
+
+    logger.info("Eager loading all models — this may take a few minutes...")
+    start = time.time()
+
+    loaders = [
+        ("BERTScore", get_bertscore_scorer),
+        ("MoverScore", get_mover_model),
+        ("UniEval", get_unieval_model),
+        ("GPTScore", get_gptscore_model),
+        ("BARTScore", get_bartscore_model),
+    ]
+
+    for name, fn in loaders:
+        t0 = time.time()
+        try:
+            fn()
+            logger.info(f"  {name} ready ({time.time() - t0:.1f}s)")
+        except Exception as e:
+            logger.error(f"  {name} FAILED to load: {e}")
+            logger.error(f"  /{name.lower()} endpoint will return 500 until fixed.")
+
+    logger.info(f"All models loaded in {time.time() - start:.1f}s.")
 
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 9200))
     logger.info(f"Model server starting on :{port} (device: {DEVICE})")
-    app.run(host="0.0.0.0", port=port)
+
+    warmup()
+
+    logger.info("=" * 60)
+    logger.info(f"READY — accepting requests on :{port}")
+    logger.info("=" * 60)
+
+    app.run(host="0.0.0.0", port=port, use_reloader=False)

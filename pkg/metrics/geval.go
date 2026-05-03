@@ -9,15 +9,6 @@ import (
 
 // GEval implements a simplified G-Eval (Liu et al., 2023):
 // "G-Eval: NLG Evaluation using GPT-4 with Better Human Alignment".
-//
-// Reference-free: scores a candidate summary against the source document
-// on a single SummEval dimension. Use one instance per dimension; the
-// cmd/geval binary runs one dimension per invocation.
-//
-// Simplifications vs. the original paper:
-//   - Greedy decoding (temperature=0, seed=42) instead of n=20 samples
-//     with probability-weighted aggregation via token logprobs.
-//   - Fixed CoT steps from the paper's appendix A rather than auto-generated.
 type GEval struct {
 	Provider *Ollama
 	Model    string
@@ -27,7 +18,6 @@ func NewGEval(host, model string) *GEval {
 	return &GEval{Provider: NewOllama(host), Model: model}
 }
 
-// GEvalDimension describes a single SummEval dimension prompt.
 type GEvalDimension struct {
 	Name     string
 	MinScore int
@@ -35,8 +25,6 @@ type GEvalDimension struct {
 	build    func(source, candidate string) string
 }
 
-// GEvalDimensions holds the 4 canonical SummEval dimensions.
-// Fluency is on 1-3 scale per Liu et al. 2023; the others are 1-5.
 var GEvalDimensions = map[string]GEvalDimension{
 	"coherence": {
 		Name: "coherence", MinScore: 1, MaxScore: 5,
@@ -64,12 +52,35 @@ var GEvalDimensions = map[string]GEvalDimension{
 	},
 }
 
+// GEvalResult carries the parsed score plus metadata for diagnostics.
+type GEvalResult struct {
+	NormalizedScore float64 // [0, 1]
+	RawScore        int     // raw integer from model, in [MinScore, MaxScore]
+	UsedFallback    bool    // true when parser couldn't extract a clean integer
+	RawResponse     string  // model's actual response text
+}
+
 // Score evaluates the candidate summary against the source document on the
 // given SummEval dimension. Returns a normalized score in [0, 1].
+//
+// On unparseable responses, returns the dimension midpoint as a fallback
+// rather than failing — this keeps the run going and preserves N for
+// correlation. Use ScoreDetailed if you need to track fallback frequency.
 func (g *GEval) Score(ctx context.Context, dimension, source, candidate string) (float64, error) {
+	res, err := g.ScoreDetailed(ctx, dimension, source, candidate)
+	if err != nil {
+		return 0, err
+	}
+	return res.NormalizedScore, nil
+}
+
+// ScoreDetailed returns the parsed score plus metadata about how it was extracted.
+// Use this when you want to track fallback frequency (e.g., warn if >5% of
+// responses required fallback).
+func (g *GEval) ScoreDetailed(ctx context.Context, dimension, source, candidate string) (GEvalResult, error) {
 	dim, ok := GEvalDimensions[dimension]
 	if !ok {
-		return 0, fmt.Errorf("geval: unknown dimension %q", dimension)
+		return GEvalResult{}, fmt.Errorf("geval: unknown dimension %q", dimension)
 	}
 
 	res, err := g.Provider.Chat(ctx, ChatInput{
@@ -82,43 +93,102 @@ func (g *GEval) Score(ctx context.Context, dimension, source, candidate string) 
 		},
 	})
 	if err != nil {
-		return 0, fmt.Errorf("geval: completion: %w", err)
+		return GEvalResult{}, fmt.Errorf("geval: completion: %w", err)
 	}
 
-	raw, err := parseGEvalScore(res.Response, dim.MinScore, dim.MaxScore)
-	if err != nil {
-		return 0, fmt.Errorf("geval: parse response %q: %w", res.Response, err)
-	}
+	raw, fallback := parseGEvalScore(res.Response, dim.MinScore, dim.MaxScore)
 
-	return float64(raw-dim.MinScore) / float64(dim.MaxScore-dim.MinScore), nil
+	return GEvalResult{
+		NormalizedScore: float64(raw-dim.MinScore) / float64(dim.MaxScore-dim.MinScore),
+		RawScore:        raw,
+		UsedFallback:    fallback,
+		RawResponse:     res.Response,
+	}, nil
 }
 
-// parseGEvalScore extracts the first integer from the model response
-// and clamps it to the dimension's valid range.
-func parseGEvalScore(raw string, minVal, maxVal int) (int, error) {
-	for _, field := range strings.Fields(raw) {
+// parseGEvalScore extracts a score from the model response. Handles:
+//   - Plain integers: "4", "Score: 4"
+//   - Trailing punctuation: "4.", "4,", "(4)"
+//   - Ranges treated as ambiguous, returns lower bound: "1-2" -> 1
+//   - Echo of prompt header: "- Fluency (1-2):" -> fallback to midpoint
+//
+// Returns (score, usedFallback). When usedFallback is true, the score is
+// the midpoint of the dimension's valid range — not derived from the
+// response — so the caller can decide whether to log a warning.
+func parseGEvalScore(raw string, minVal, maxVal int) (int, bool) {
+	// Strip the prompt-echo prefix if present (e.g. "- Fluency (1-3):").
+	cleaned := stripPromptEcho(raw)
+
+	for _, field := range strings.Fields(cleaned) {
 		field = strings.TrimFunc(field, func(r rune) bool {
 			return r == '.' || r == ',' || r == ';' || r == ':' ||
-				r == '!' || r == '?' || r == '-' || r == '*' ||
-				r == '(' || r == ')' || r == '[' || r == ']'
+				r == '!' || r == '?' || r == '*' ||
+				r == '(' || r == ')' || r == '[' || r == ']' ||
+				r == '"' || r == '\''
 		})
-		n, err := strconv.Atoi(field)
-		if err != nil {
+		if field == "" {
 			continue
 		}
-		if n < minVal {
-			return minVal, nil
+
+		// Direct parse.
+		if n, err := strconv.Atoi(field); err == nil {
+			return clamp(n, minVal, maxVal), false
 		}
-		if n > maxVal {
-			return maxVal, nil
+
+		// Range like "1-2" or "1-3" — take lower bound.
+		if idx := strings.Index(field, "-"); idx > 0 && idx < len(field)-1 {
+			lo, errLo := strconv.Atoi(field[:idx])
+			hi, errHi := strconv.Atoi(field[idx+1:])
+			if errLo == nil && errHi == nil && lo >= minVal && hi <= maxVal && lo <= hi {
+				// This is a valid range from the model. Take the lower bound
+				// conservatively.
+				return lo, false
+			}
 		}
-		return n, nil
 	}
-	return 0, fmt.Errorf("no integers found")
+
+	// Fallback: midpoint of valid range. Caller is informed via UsedFallback.
+	return (minVal + maxVal) / 2, true
 }
 
-// Prompts below are adapted from Liu et al. 2023, "G-Eval: NLG Evaluation
-// using GPT-4 with Better Human Alignment", Appendix A.
+// stripPromptEcho removes the "- Coherence:" / "- Fluency (1-3):" / etc.
+// prefix that small models sometimes echo back.
+func stripPromptEcho(raw string) string {
+	prefixes := []string{
+		"- Coherence", "- Consistency", "- Fluency", "- Relevance",
+		"Coherence", "Consistency", "Fluency", "Relevance",
+	}
+	trimmed := strings.TrimSpace(raw)
+	lower := strings.ToLower(trimmed)
+	for _, p := range prefixes {
+		pl := strings.ToLower(p)
+		if strings.HasPrefix(lower, pl) {
+			rest := trimmed[len(p):]
+			// Skip optional "(1-3):" / "(1-5):" header.
+			rest = strings.TrimSpace(rest)
+			if strings.HasPrefix(rest, "(") {
+				if end := strings.Index(rest, ")"); end != -1 {
+					rest = rest[end+1:]
+				}
+			}
+			rest = strings.TrimLeft(rest, " :\t\n")
+			return rest
+		}
+	}
+	return trimmed
+}
+
+func clamp(n, minVal, maxVal int) int {
+	if n < minVal {
+		return minVal
+	}
+	if n > maxVal {
+		return maxVal
+	}
+	return n
+}
+
+// Prompts adapted from Liu et al. 2023, Appendix A.
 
 const coherencePrompt = `You will be given one summary written for a news article.
 

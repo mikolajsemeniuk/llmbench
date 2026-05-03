@@ -30,7 +30,6 @@ var dimensionShort = map[string]string{
 	"relevance":   "Rel",
 }
 
-// Add to metricOrder (insert after smartstring, before bertscore):
 var metricOrder = []string{
 	"bleu", "rouge", "chrf", "meteor", "smartstring",
 	"embedscorer",
@@ -38,7 +37,6 @@ var metricOrder = []string{
 	"bartscore", "gptscore", "unieval", "geval",
 }
 
-// Add to metricDisplayName:
 var metricDisplayName = map[string]string{
 	"bleu":        "BLEU",
 	"rouge":       "ROUGE-L",
@@ -53,6 +51,17 @@ var metricDisplayName = map[string]string{
 	"gptscore":    "GPTScore",
 	"unieval":     "UniEval",
 	"geval":       "G-Eval",
+}
+
+// dimensionalMetrics lists metrics that produce one report per dimension
+// (rather than one report total). Each is collapsed into a single row using
+// the matched diagonal correlations.
+var dimensionalMetrics = []struct {
+	prefix      string // e.g. "geval_" — files are geval_coherence.json, geval_consistency.json, ...
+	displayName string
+}{
+	{"geval_", "G-Eval"},
+	{"unieval_", "UniEval"},
 }
 
 func main() {
@@ -104,16 +113,13 @@ func loadReports(dir string) ([]eval.Report, error) {
 	return reports, nil
 }
 
-// Cell carries a correlation value plus optional CI for one coefficient.
 type Cell struct {
 	Value float64
 	CI    *eval.CI
 }
 
-// Row is one line in the LaTeX table: a metric label + 4 dimensions × 3 triples.
 type Row struct {
 	Label string
-	// cells[dimension] = [spearman, pearson, kendall]
 	Cells map[string][3]Cell
 }
 
@@ -126,18 +132,23 @@ func buildRows(reports []eval.Report, level string) []Row {
 	rows := make([]Row, 0, len(reports))
 	seen := make(map[string]bool)
 
-	if row, ok := collapseGEval(byMetric, level); ok {
-		rows = append(rows, row)
-		for _, d := range dimensions {
-			seen["geval_"+d] = true
+	// Collapse all dimensional metrics (G-Eval, UniEval).
+	for _, dm := range dimensionalMetrics {
+		if row, ok := collapseDimensional(byMetric, dm.prefix, dm.displayName, level); ok {
+			rows = append(rows, row)
+			for _, d := range dimensions {
+				seen[dm.prefix+d] = true
+			}
 		}
 	}
 
+	// Regular metrics.
 	for _, r := range reports {
 		if seen[r.Metric] {
 			continue
 		}
-		if strings.HasPrefix(r.Metric, "geval_") {
+		// Skip dimensional partials that didn't get fully collapsed (missing files).
+		if isDimensionalPartial(r.Metric) {
 			continue
 		}
 		rows = append(rows, Row{
@@ -150,12 +161,14 @@ func buildRows(reports []eval.Report, level string) []Row {
 	return rows
 }
 
-// collapseGEval builds a single "G-Eval" row by taking the diagonal cell
-// from each per-dimension report.
-func collapseGEval(byMetric map[string]eval.Report, level string) (Row, bool) {
+// collapseDimensional builds a single row from per-dimension reports
+// (e.g. unieval_coherence.json, unieval_consistency.json, ...) by taking
+// the diagonal cell from each. Returns (row, true) if all 4 dimensions
+// are present; otherwise (zero, false).
+func collapseDimensional(byMetric map[string]eval.Report, prefix, displayName, level string) (Row, bool) {
 	cells := make(map[string][3]Cell, len(dimensions))
 	for _, dim := range dimensions {
-		rep, ok := byMetric["geval_"+dim]
+		rep, ok := byMetric[prefix+dim]
 		if !ok {
 			return Row{}, false
 		}
@@ -176,7 +189,18 @@ func collapseGEval(byMetric map[string]eval.Report, level string) (Row, bool) {
 			return Row{}, false
 		}
 	}
-	return Row{Label: "G-Eval", Cells: cells}, true
+	return Row{Label: displayName, Cells: cells}, true
+}
+
+// isDimensionalPartial returns true if the metric name matches a known
+// dimensional prefix (geval_, unieval_) — used to skip incomplete sets.
+func isDimensionalPartial(metric string) bool {
+	for _, dm := range dimensionalMetrics {
+		if strings.HasPrefix(metric, dm.prefix) {
+			return true
+		}
+	}
+	return false
 }
 
 func cellsFromAllDimensions(r eval.Report, level string) map[string][3]Cell {
@@ -283,8 +307,6 @@ func renderLatex(rows []Row, level string, withCI bool) string {
 	return b.String()
 }
 
-// fmtCell formats a correlation value. If withCI is true and CI is present,
-// renders as "value [low, high]" in a small-sized subscript.
 func fmtCell(c Cell, withCI bool) string {
 	value := stripLeadingZero(c.Value)
 	if !withCI || c.CI == nil {
