@@ -38,7 +38,7 @@ G-Eval and UniEval are run once per SummEval dimension (`coherence`, `consistenc
 Start the model server:
 
 ```sh
-cd cmd/modelsvr
+cd cmd/modelsrv
 pip3 install -r requirements.txt
 python3 app.py
 ```

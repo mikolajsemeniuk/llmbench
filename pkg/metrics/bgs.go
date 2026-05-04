@@ -12,9 +12,9 @@ import (
 // Reference-free, embedding-only summary-quality metric. For source D
 // and candidate summary C:
 //
-//   Recall    R = mean over c_j of  max_i  cos(emb(c_j), emb(s_i))
-//   Precision P = mean over s_i ∈ salient(D) of  max_j  cos(emb(s_i), emb(c_j))
-//   BGS       = F1(P, R) = 2·P·R / (P + R)
+//	Recall    R = mean over c_j of  max_i  cos(emb(c_j), emb(s_i))
+//	Precision P = mean over s_i ∈ salient(D) of  max_j  cos(emb(s_i), emb(c_j))
+//	BGS       = F1(P, R) = 2·P·R / (P + R)
 //
 // Recall is the standard "is each summary sentence anchored in some
 // source sentence?" — penalises hallucination. Precision asks "is each
