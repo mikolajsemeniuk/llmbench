@@ -21,6 +21,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/mikolajsemeniuk/llmbench/pkg/dataset"
 	"github.com/mikolajsemeniuk/llmbench/pkg/eval"
 )
 
@@ -83,8 +84,6 @@ type comparisonCell struct {
 	baseRho   float64
 }
 
-// ── Main ───────────────────────────────────────────────────────────────
-
 func main() {
 	flag.StringVar(&inputDir, "input", "output", "directory containing metric JSON reports")
 	flag.StringVar(&output, "output", "paper/comparisons.tex",
@@ -116,7 +115,7 @@ func main() {
 		log.Fatal("no baselines specified")
 	}
 
-	samples, err := eval.NewDataset(eval.SummevalDataset, eval.DefaultDatasetPath, 0)
+	samples, err := eval.NewDataset(dataset.Summeval, dataset.SummevalDefaultPath, 0)
 	if err != nil {
 		log.Fatalf("load dataset: %v", err)
 	}
@@ -491,8 +490,8 @@ func writeFile(path, content string) error {
 // comparisonJSON is the on-disk shape for the webviewer's Comparison tab.
 // One file per cmd/compare run, target + level pinned in the header.
 type comparisonJSON struct {
-	Target string           `json:"target"`
-	Level  string           `json:"level"`
+	Target string               `json:"target"`
+	Level  string               `json:"level"`
 	Cells  []comparisonJSONCell `json:"cells"`
 }
 

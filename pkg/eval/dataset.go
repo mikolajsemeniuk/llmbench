@@ -2,16 +2,10 @@ package eval
 
 import (
 	"bytes"
-	"embed"
 	"encoding/json"
 	"fmt"
 	"io/fs"
 )
-
-//go:embed summeval.jsonl
-var SummevalDataset embed.FS
-
-const DefaultDatasetPath = "summeval.jsonl"
 
 type RawSample struct {
 	ID               string    `json:"id"`

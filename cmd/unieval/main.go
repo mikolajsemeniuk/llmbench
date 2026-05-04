@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/mikolajsemeniuk/llmbench/pkg/dataset"
 	"github.com/mikolajsemeniuk/llmbench/pkg/eval"
 	"github.com/mikolajsemeniuk/llmbench/pkg/metrics"
 	"github.com/schollz/progressbar/v3"
@@ -51,9 +52,10 @@ func main() {
 	fsys := os.DirFS(filepath.Dir(input))
 	path := filepath.Base(input)
 	if input == "" {
-		fsys = eval.SummevalDataset
-		path = eval.DefaultDatasetPath
+		fsys = dataset.Summeval
+		path = dataset.SummevalDefaultPath
 	}
+
 	samples, err := eval.NewDataset(fsys, path, n)
 	if err != nil {
 		log.Fatal(err)
