@@ -24,6 +24,7 @@ benchmark-modelsrv:
 benchmark-ollama:
 	go run ./cmd/embedscorer
 	go run ./cmd/smartmodel
+	go run ./cmd/bgs
 	go run ./cmd/geval -dimension coherence
 	go run ./cmd/geval -dimension consistency
 	go run ./cmd/geval -dimension fluency

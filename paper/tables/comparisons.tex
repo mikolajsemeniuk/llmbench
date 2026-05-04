@@ -1,0 +1,16 @@
+\begin{table*}[t]
+\centering
+\caption{Paired bootstrap comparison of BGS (ours) against baselines on summary-level Spearman correlations. Each cell reports $\Delta\rho$ (ours minus baseline) with 95\% CI in brackets and $p$-value. Bold marks significant improvements ($p<0.05$, CI excludes 0).}
+\label{tab:compare_bgs_summary}
+\begin{tabular}{lcccc}
+\toprule
+Baseline & Coh & Con & Flu & Rel \\
+\midrule
+UniEval & -.196 {\scriptsize [-.260, -.135], $p$=<.001} & -.202 {\scriptsize [-.258, -.147], $p$=<.001} & -.308 {\scriptsize [-.371, -.247], $p$=<.001} & -.106 {\scriptsize [-.179, -.037], $p$=0.003} \\
+BERTScore & -.004 {\scriptsize [-.059, +.051], $p$=0.895} & \textbf{+.094 {\scriptsize [+.040, +.150], $p$=<.001}} & -.007 {\scriptsize [-.053, +.041], $p$=0.802} & -.015 {\scriptsize [-.077, +.047], $p$=0.630} \\
+G-Eval & -.001 {\scriptsize [-.082, +.077], $p$=0.996} & -.285 {\scriptsize [-.346, -.225], $p$=<.001} & +.019 {\scriptsize [-.050, +.089], $p$=0.607} & -.062 {\scriptsize [-.148, +.022], $p$=0.148} \\
+SMART-Model & \textbf{+.045 {\scriptsize [+.001, +.089], $p$=0.042}} & \textbf{+.110 {\scriptsize [+.066, +.151], $p$=<.001}} & \textbf{+.068 {\scriptsize [+.023, +.111], $p$=0.006}} & +.036 {\scriptsize [-.011, +.085], $p$=0.142} \\
+ChrF & \textbf{+.214 {\scriptsize [+.122, +.301], $p$=<.001}} & +.028 {\scriptsize [-.038, +.095], $p$=0.410} & +.025 {\scriptsize [-.038, +.090], $p$=0.464} & +.062 {\scriptsize [-.036, +.159], $p$=0.198} \\
+\bottomrule
+\end{tabular}
+\end{table*}

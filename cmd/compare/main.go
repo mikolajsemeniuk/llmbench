@@ -59,6 +59,7 @@ var metricDisplayName = map[string]string{
 	"gptscore":    "GPTScore",
 	"unieval":     "UniEval",
 	"geval":       "G-Eval",
+	"bgs":         "BGS",
 }
 
 // ── Domain types ───────────────────────────────────────────────────────
