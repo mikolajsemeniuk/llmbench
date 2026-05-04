@@ -11,15 +11,15 @@
 // embed the source's sentences ONCE per DocumentID and reuse them
 // across the 16 candidates that share the same source.
 //
-// Ablation flags:
+// Ablation flags (used by `make benchmark-ablation` to populate
+// ablation/*.json):
 //
 //	-salience-frac 0.30   → default (top-30% as salient core)
 //	-salience-frac 1.00   → no salience filter (precision over all sources)
 //	-salience-frac 0.10   → very tight salient core
-//
-// Combined with the alpha=0.0 ablation of the prior DCS run (recall
-// only, file in ablation/), this lets the paper isolate (a) the value
-// of the precision side and (b) the value of the salience filter.
+//	-beta 1               → F1 (precision and recall equally weighted)
+//	-beta 2               → recall-biased F (canonical, β² = 4× weight on R)
+//	-recall-only          → drop precision side entirely (R alone)
 package main
 
 import (

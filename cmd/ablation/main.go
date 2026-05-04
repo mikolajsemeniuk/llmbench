@@ -1,9 +1,10 @@
 // cmd/ablation reads BGS ablation reports from a directory (default
 // `ablation/`) and renders a LaTeX table summarising the β / salience
 // sweep. The canonical configuration (β=2, salience-frac=0.30) is
-// flagged with a ★. A "recall only" baseline row is added if the
-// directory contains a DCS-grounding run (legacy file from the
-// recall-vs-precision ablation done before BGS was finalised).
+// flagged with a ★. The recall-only baseline (BGS run with the
+// `-recall-only` flag, identified by `recall_only=true` in the
+// report's Norm field) appears as the bottom row, separated by a
+// midrule, to anchor the rest of the sweep.
 //
 // Output target matches the rest of the paper pipeline (default
 // `paper/ablation.tex`). Rendering also writes a JSON sidecar so the
@@ -105,34 +106,21 @@ func parseRow(path string) (Row, bool) {
 	row := Row{Source: filepath.Base(path)}
 	row.Coh, row.Con, row.Flu, row.Rel = extractDims(r.SummaryLevel)
 
-	switch r.Metric {
-	case "bgs":
-		// Recall-only sentinel (BGS run with -recall-only flag) is the
-		// reproducible "no precision side" ablation row. Identified by
-		// the norm field "recall_only=true".
-		if strings.Contains(r.Norm, "recall_only=true") {
-			row.IsRecallOnly = true
-			row.Label = "Recall only (no precision side)"
-			break
-		}
-		row.Beta = parseField(r.Norm, "beta")
-		row.SalienceFrac = parseField(r.Norm, "salience")
-		row.Label = fmt.Sprintf("$\\beta=%g$, frac=%.2f", row.Beta, row.SalienceFrac)
-		row.IsCanonical = approxEqual(row.Beta, 2.0) && approxEqual(row.SalienceFrac, 0.30)
-	case "dcs":
-		// Legacy: DCS α=0 ≡ recall only; α=1 ≡ pure flow. Kept for
-		// backward compatibility with older snapshots that might still
-		// be in the ablation directory; current `make benchmark-ablation`
-		// produces a `bgs` recall-only file instead.
-		alpha := parseField(r.Norm, "alpha")
-		if !approxEqual(alpha, 0) {
-			return Row{}, false
-		}
-		row.IsRecallOnly = true
-		row.Label = "Recall only (no precision side)"
-	default:
+	if r.Metric != "bgs" {
 		return Row{}, false
 	}
+	// Recall-only sentinel (BGS run with -recall-only flag) is the
+	// reproducible "no precision side" ablation row. Identified by
+	// the norm field "recall_only=true".
+	if strings.Contains(r.Norm, "recall_only=true") {
+		row.IsRecallOnly = true
+		row.Label = "Recall only (no precision side)"
+		return row, true
+	}
+	row.Beta = parseField(r.Norm, "beta")
+	row.SalienceFrac = parseField(r.Norm, "salience")
+	row.Label = fmt.Sprintf("$\\beta=%g$, frac=%.2f", row.Beta, row.SalienceFrac)
+	row.IsCanonical = approxEqual(row.Beta, 2.0) && approxEqual(row.SalienceFrac, 0.30)
 	return row, true
 }
 

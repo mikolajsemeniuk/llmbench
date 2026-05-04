@@ -5,8 +5,8 @@ Correlation benchmark for summarization metrics on the [SummEval](https://huggin
 ## Requirements
 
 - Go 1.26+
-- Docker (for the model server: BERTScore, MoverScore, BARTScore, UniEval, GPTScore)
-- [Ollama](https://ollama.com) running locally on port 11434 (for EmbedScorer, SMART-Model, G-Eval). Pull the default models first:
+- Python 3.10+ with pip (for the model server: BERTScore, MoverScore, BARTScore, UniEval, GPTScore)
+- [Ollama](https://ollama.com) running locally on port 11434 (for EmbedScorer, SMART-Model, BGS, G-Eval). Pull the default models first:
   ```sh
   ollama pull nomic-embed-text
   ollama pull qwen2.5:7b-instruct-q4_K_M
@@ -29,6 +29,7 @@ Correlation benchmark for summarization metrics on the [SummEval](https://huggin
 | BARTScore    | model        | model server  | `cmd/bartscorer`   |
 | GPTScore     | model        | model server  | `cmd/gptscorer`    |
 | UniEval      | model        | model server  | `cmd/unieval`      |
+| BGS (ours)   | embedding    | Ollama        | `cmd/bgs`          |
 
 G-Eval and UniEval are run once per SummEval dimension (`coherence`, `consistency`, `fluency`, `relevance`).
 
@@ -37,7 +38,6 @@ G-Eval and UniEval are run once per SummEval dimension (`coherence`, `consistenc
 Start the model server:
 
 ```sh
-# docker compose up --build -d
 cd cmd/modelsvr
 pip3 install -r requirements.txt
 python3 app.py

@@ -61,8 +61,7 @@ type BGS struct {
 	// RecallOnly disables the precision side entirely: the score is
 	// just the mean candidate→max-source cosine. Used as the bottom
 	// row of the ablation table — "what does the metric look like
-	// if we drop the bidirectional half?" — and as a reproducible
-	// replacement for the legacy DCS-grounding baseline.
+	// if we drop the bidirectional half?".
 	RecallOnly bool
 
 	// MinSentenceLen drops sentences shorter than this many runes
