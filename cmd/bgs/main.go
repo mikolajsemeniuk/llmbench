@@ -45,6 +45,7 @@ var (
 	salienceFrac float64
 	salienceMin  int
 	beta         float64
+	recallOnly   bool
 	minSentLen   int
 	n            int
 	bootstrap    int
@@ -58,6 +59,7 @@ func main() {
 	flag.Float64Var(&salienceFrac, "salience-frac", 0.30, "fraction of source sentences in salient core (precision side); 1.0 = no filter")
 	flag.IntVar(&salienceMin, "salience-min", 3, "floor on salient-core size for short documents")
 	flag.Float64Var(&beta, "beta", 2.0, "F_β recall-vs-precision weighting; β>1 favours recall (β=2 default from sweep, β=1 → F1)")
+	flag.BoolVar(&recallOnly, "recall-only", false, "skip precision side entirely; score = recall (ablation row in paper/ablation.tex)")
 	flag.IntVar(&minSentLen, "min-sent-len", 4, "drop sentences shorter than this many runes")
 	flag.IntVar(&n, "n", 0, "entries limit (0 = all)")
 	flag.IntVar(&bootstrap, "bootstrap", 1000, "bootstrap resamples for 95%% CI (0 = disabled)")
@@ -90,8 +92,13 @@ func main() {
 	scorer.SalienceMin = salienceMin
 	scorer.MinSentenceLen = minSentLen
 	scorer.Beta = beta
+	scorer.RecallOnly = recallOnly
 
-	log.Printf("BGS: salience top-frac=%.2f, min=%d, beta=%.2f", salienceFrac, salienceMin, beta)
+	if recallOnly {
+		log.Printf("BGS: recall-only mode (precision side disabled)")
+	} else {
+		log.Printf("BGS: salience top-frac=%.2f, min=%d, beta=%.2f", salienceFrac, salienceMin, beta)
+	}
 
 	type cached struct {
 		sents []string
@@ -154,9 +161,13 @@ func main() {
 		len(samples), elapsed.Seconds(),
 		sumP/N, sumR/N, sumF1/N, float64(sumSalient)/N)
 
+	norm := fmt.Sprintf("salience=%.2f,beta=%.2f", salienceFrac, beta)
+	if recallOnly {
+		norm = "recall_only=true"
+	}
 	report := eval.Report{
 		Metric:     "bgs",
-		Norm:       fmt.Sprintf("salience=%.2f,beta=%.2f", salienceFrac, beta),
+		Norm:       norm,
 		Samples:    len(samples),
 		RuntimeSec: elapsed.Seconds(),
 		Timestamp:  time.Now().UTC().Format(time.RFC3339),

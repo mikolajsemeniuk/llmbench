@@ -1,0 +1,19 @@
+\begin{table*}[t]
+\centering
+\caption{Ablation of BGS on SummEval (summary-level Spearman $\rho$). β controls the F$_\beta$ recall vs.\ precision weighting; salience-frac is the top-$k$\% of source sentences (by degree centrality) used in the precision side. Canonical configuration ($\beta=2$, frac $=0.30$) marked $\star$.}
+\label{tab:ablation_bgs}
+\begin{tabular}{lrrrr}
+\toprule
+Variant & Coh & Con & Flu & Rel \\
+\midrule
+$\beta=1$, frac=0.10 & .332 & .149 & .100 & .363 \\
+$\beta=1$, frac=0.30 & .341 & .155 & .099 & .359 \\
+$\beta=1$, frac=0.50 & .348 & .161 & .108 & .361 \\
+$\beta=1$, frac=1.00 & .353 & .161 & .113 & .361 \\
+$\beta=2$, frac=0.30 $\star$ & .373 & .203 & .134 & .356 \\
+$\beta=3$, frac=0.30 & .377 & .214 & .143 & .348 \\
+\midrule
+Recall only (no precision side) & .377 & .223 & .149 & .337 \\
+\bottomrule
+\end{tabular}
+\end{table*}

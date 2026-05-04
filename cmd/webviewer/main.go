@@ -31,8 +31,10 @@ import (
 )
 
 var (
-	inputDir string
-	addr     string
+	inputDir       string
+	ablationFile   string
+	comparisonFile string
+	addr           string
 )
 
 // ── Display ordering matches cmd/tables ───────────────────────────────
@@ -127,16 +129,58 @@ type MetadataRow struct {
 }
 
 type PageData struct {
-	Title    string
-	Summary  LevelTable
-	System   LevelTable
-	Metadata []MetadataRow
+	Title      string
+	Summary    LevelTable
+	System     LevelTable
+	Metadata   []MetadataRow
+	Ablation   []AblationRow
+	Comparison ComparisonData
+	// Hint messages shown in their respective tabs when source files
+	// are missing. Empty string ⇒ data loaded successfully.
+	AblationHint   string
+	ComparisonHint string
+}
+
+// AblationRow mirrors the JSON written by cmd/ablation.
+type AblationRow struct {
+	Label        string  `json:"label"`
+	Source       string  `json:"source"`
+	Beta         float64 `json:"beta"`
+	SalienceFrac float64 `json:"salience_frac"`
+	IsCanonical  bool    `json:"is_canonical"`
+	IsRecallOnly bool    `json:"is_recall_only"`
+	Coh          float64 `json:"coh"`
+	Con          float64 `json:"con"`
+	Flu          float64 `json:"flu"`
+	Rel          float64 `json:"rel"`
+}
+
+// ComparisonData mirrors the JSON written by cmd/compare.
+type ComparisonData struct {
+	Target string           `json:"target"`
+	Level  string           `json:"level"`
+	Cells  []ComparisonCell `json:"cells"`
+}
+
+type ComparisonCell struct {
+	Baseline  string  `json:"baseline"`
+	Dimension string  `json:"dimension"`
+	TargetRho float64 `json:"target_rho"`
+	BaseRho   float64 `json:"base_rho"`
+	DeltaMean float64 `json:"delta_mean"`
+	CILow     float64 `json:"ci_low"`
+	CIHigh    float64 `json:"ci_high"`
+	PValue    float64 `json:"p_value"`
+	// Verdict is computed at load time: "ours" / "base" / "tie".
+	Verdict string `json:"-"`
 }
 
 // ── Main ───────────────────────────────────────────────────────────────
 
 func main() {
 	flag.StringVar(&inputDir, "input", "output", "directory containing metric JSON reports")
+	flag.StringVar(&ablationFile, "ablation", "paper/ablation.json", "path to ablation JSON sidecar (run `make paper-ablation` to refresh)")
+	flag.StringVar(&comparisonFile, "comparison", "paper/comparisons.json", "path to comparison JSON sidecar (run `make paper-comparisons` to refresh)")
 	flag.StringVar(&addr, "addr", ":8080", "HTTP listen address")
 	flag.Parse()
 
@@ -176,12 +220,66 @@ func buildPageData(dir string) (PageData, error) {
 		return PageData{}, fmt.Errorf("no JSON reports in %s", dir)
 	}
 
+	abl, ablHint := loadAblation(ablationFile)
+	cmp, cmpHint := loadComparison(comparisonFile)
+
 	return PageData{
-		Title:    "llmbench results",
-		Summary:  LevelTable{Level: "summary", Rows: buildRows(reports, "summary")},
-		System:   LevelTable{Level: "system", Rows: buildRows(reports, "system")},
-		Metadata: buildMetadataRows(reports),
+		Title:          "llmbench results",
+		Summary:        LevelTable{Level: "summary", Rows: buildRows(reports, "summary")},
+		System:         LevelTable{Level: "system", Rows: buildRows(reports, "system")},
+		Metadata:       buildMetadataRows(reports),
+		Ablation:       abl,
+		AblationHint:   ablHint,
+		Comparison:     cmp,
+		ComparisonHint: cmpHint,
 	}, nil
+}
+
+// loadAblation reads the JSON sidecar produced by cmd/ablation. Returns
+// an empty slice + a hint message if the file is missing or malformed.
+// A missing file is the expected state on a fresh repo before
+// `make paper-ablation` has been run.
+func loadAblation(path string) ([]AblationRow, string) {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil, fmt.Sprintf("No ablation data at %s — run `make paper-ablation` to generate it.", path)
+		}
+		return nil, fmt.Sprintf("Failed to read %s: %v", path, err)
+	}
+	var rows []AblationRow
+	if err := json.Unmarshal(data, &rows); err != nil {
+		return nil, fmt.Sprintf("Failed to decode %s: %v", path, err)
+	}
+	return rows, ""
+}
+
+// loadComparison reads the JSON sidecar produced by cmd/compare and
+// annotates each cell with a verdict ("ours" / "base" / "tie") based
+// on whether the bootstrap CI excludes 0.
+func loadComparison(path string) (ComparisonData, string) {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return ComparisonData{}, fmt.Sprintf("No comparison data at %s — run `make paper-comparisons` to generate it.", path)
+		}
+		return ComparisonData{}, fmt.Sprintf("Failed to read %s: %v", path, err)
+	}
+	var c ComparisonData
+	if err := json.Unmarshal(data, &c); err != nil {
+		return ComparisonData{}, fmt.Sprintf("Failed to decode %s: %v", path, err)
+	}
+	for i := range c.Cells {
+		switch {
+		case c.Cells[i].CILow > 0:
+			c.Cells[i].Verdict = "ours"
+		case c.Cells[i].CIHigh < 0:
+			c.Cells[i].Verdict = "base"
+		default:
+			c.Cells[i].Verdict = "tie"
+		}
+	}
+	return c, ""
 }
 
 func loadReports(dir string) ([]eval.Report, error) {
@@ -488,10 +586,76 @@ func formatAge(d time.Duration) string {
 
 func templateFuncs() template.FuncMap {
 	return template.FuncMap{
-		"fmtVal":  fmtVal,
-		"fmtCI":   fmtCI,
-		"colorOf": colorOf,
-		"isOdd":   func(i int) bool { return i%2 == 1 },
+		"fmtVal":        fmtVal,
+		"fmtCI":         fmtCI,
+		"colorOf":       colorOf,
+		"isOdd":         func(i int) bool { return i%2 == 1 },
+		"ablationLabel": ablationLabel,
+		"fmtBeta":       fmtBeta,
+		"fmtFrac":       fmtFrac,
+		"fmtSigned":     fmtSigned,
+		"fmtP":          fmtP,
+		"verdictColor":  verdictColor,
+		"verdictBadge":  verdictBadgeHTML,
+	}
+}
+
+func ablationLabel(r AblationRow) string {
+	return fmt.Sprintf("β=%s, frac=%s", fmtBeta(r.Beta), fmtFrac(r.SalienceFrac))
+}
+
+func fmtBeta(b float64) string {
+	if b == math.Trunc(b) {
+		return fmt.Sprintf("%.0f", b)
+	}
+	return fmt.Sprintf("%.1f", b)
+}
+
+func fmtFrac(f float64) string {
+	return fmt.Sprintf("%.2f", f)
+}
+
+func fmtSigned(x float64) string {
+	if math.IsNaN(x) {
+		return "—"
+	}
+	s := fmt.Sprintf("%+.3f", x)
+	// "+0.123" → "+.123"; "-0.123" → "-.123"
+	if len(s) >= 3 && s[1] == '0' && s[2] == '.' {
+		return s[:1] + s[2:]
+	}
+	return s
+}
+
+func fmtP(p float64) string {
+	if math.IsNaN(p) {
+		return "—"
+	}
+	if p < 0.001 {
+		return "<.001"
+	}
+	return fmt.Sprintf("%.3f", p)
+}
+
+func verdictColor(v string) string {
+	switch v {
+	case "ours":
+		return "bg-green-100 font-semibold"
+	case "base":
+		return "bg-red-100"
+	default:
+		return "text-gray-500"
+	}
+}
+
+func verdictBadgeHTML(v string) template.HTML {
+	switch v {
+	case "ours":
+		return template.HTML(`<span class="px-2 py-1 rounded bg-green-200 text-green-900 text-xs font-semibold">ours ↑</span>`)
+	case "base":
+		return template.HTML(`<span class="px-2 py-1 rounded bg-red-200 text-red-900 text-xs font-semibold">base ↑</span>`)
+	default:
+		return template.HTML(`<span class="px-2 py-1 rounded bg-gray-200 text-gray-700 text-xs">tie</span>`)
 	}
 }
 
@@ -569,6 +733,12 @@ const pageHTML = `<!DOCTYPE html>
     <button data-tab="system" class="tab-btn px-4 py-2 rounded font-medium bg-gray-200 text-gray-700 hover:bg-gray-300">
       System-level
     </button>
+    <button data-tab="ablation" class="tab-btn px-4 py-2 rounded font-medium bg-gray-200 text-gray-700 hover:bg-gray-300">
+      Ablation
+    </button>
+    <button data-tab="comparison" class="tab-btn px-4 py-2 rounded font-medium bg-gray-200 text-gray-700 hover:bg-gray-300">
+      Comparison
+    </button>
     <button data-tab="metadata" class="tab-btn px-4 py-2 rounded font-medium bg-gray-200 text-gray-700 hover:bg-gray-300">
       Run metadata
     </button>
@@ -585,6 +755,30 @@ const pageHTML = `<!DOCTYPE html>
     <p class="text-xs text-gray-400 mt-2">
       Spearman ρ and Kendall τ. With N=16 systems, system-level CI are wide.
     </p>
+  </div>
+  <div data-panel="ablation" class="hidden">
+    {{if .AblationHint}}
+      <div class="bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded">
+        {{.AblationHint}}
+      </div>
+    {{else}}
+      {{template "ablationTable" .Ablation}}
+      <p class="text-xs text-gray-400 mt-2">
+        Summary-level Spearman ρ across BGS hyperparameter variants. Canonical row marked ★.
+      </p>
+    {{end}}
+  </div>
+  <div data-panel="comparison" class="hidden">
+    {{if .ComparisonHint}}
+      <div class="bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded">
+        {{.ComparisonHint}}
+      </div>
+    {{else}}
+      {{template "comparisonTable" .Comparison}}
+      <p class="text-xs text-gray-400 mt-2">
+        Paired bootstrap (5000 resamples). Δρ = ours minus baseline. Green = significant win, red = significant loss, grey = tie.
+      </p>
+    {{end}}
   </div>
   <div data-panel="metadata" class="hidden">
     {{template "metadataTable" .Metadata}}
@@ -688,6 +882,82 @@ const pageHTML = `<!DOCTYPE html>
         <td class="px-3 py-2 text-gray-600">{{$row.Norm}}</td>
         <td class="px-3 py-2 font-mono text-xs text-gray-600">{{$row.TimestampHuman}}</td>
         <td class="px-3 py-2 text-gray-500">{{$row.Age}}</td>
+      </tr>
+      {{end}}
+    </tbody>
+  </table>
+</div>
+{{end}}
+
+{{define "ablationTable"}}
+<div class="bg-white rounded-lg shadow overflow-x-auto">
+  <table class="min-w-full text-sm">
+    <thead class="bg-gray-100 text-gray-700">
+      <tr>
+        <th class="text-left px-4 py-3 font-semibold">Variant</th>
+        <th class="text-right px-3 py-3 font-semibold">β</th>
+        <th class="text-right px-3 py-3 font-semibold">Salience frac</th>
+        <th class="text-right px-3 py-3 font-semibold border-l border-gray-200">Coh</th>
+        <th class="text-right px-3 py-3 font-semibold">Con</th>
+        <th class="text-right px-3 py-3 font-semibold">Flu</th>
+        <th class="text-right px-3 py-3 font-semibold">Rel</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{range $i, $row := .}}
+      <tr class="{{if isOdd $i}}bg-gray-50{{end}}{{if $row.IsCanonical}} bg-blue-50 font-semibold{{end}} hover:bg-blue-100">
+        <td class="px-4 py-2 text-gray-800 whitespace-nowrap">
+          {{if $row.IsRecallOnly}}<em class="text-gray-700">Recall only (no precision side)</em>
+          {{else}}{{ablationLabel $row}}{{end}}
+          {{if $row.IsCanonical}}<span class="ml-1 text-blue-600">★</span>{{end}}
+        </td>
+        <td class="px-3 py-2 text-right font-mono">
+          {{if $row.IsRecallOnly}}—{{else}}{{fmtBeta $row.Beta}}{{end}}
+        </td>
+        <td class="px-3 py-2 text-right font-mono">
+          {{if $row.IsRecallOnly}}—{{else}}{{fmtFrac $row.SalienceFrac}}{{end}}
+        </td>
+        <td class="px-3 py-2 text-right font-mono border-l border-gray-100 {{colorOf $row.Coh}}">{{fmtVal $row.Coh}}</td>
+        <td class="px-3 py-2 text-right font-mono {{colorOf $row.Con}}">{{fmtVal $row.Con}}</td>
+        <td class="px-3 py-2 text-right font-mono {{colorOf $row.Flu}}">{{fmtVal $row.Flu}}</td>
+        <td class="px-3 py-2 text-right font-mono {{colorOf $row.Rel}}">{{fmtVal $row.Rel}}</td>
+      </tr>
+      {{end}}
+    </tbody>
+  </table>
+</div>
+{{end}}
+
+{{define "comparisonTable"}}
+<div class="mb-2 text-sm text-gray-600">
+  Target: <span class="font-semibold">{{.Target}}</span> ·
+  Level: <span class="font-mono">{{.Level}}</span>
+</div>
+<div class="bg-white rounded-lg shadow overflow-x-auto">
+  <table class="min-w-full text-sm">
+    <thead class="bg-gray-100 text-gray-700">
+      <tr>
+        <th class="text-left px-4 py-3 font-semibold">Baseline</th>
+        <th class="text-left px-3 py-3 font-semibold">Dimension</th>
+        <th class="text-right px-3 py-3 font-semibold">Ours ρ</th>
+        <th class="text-right px-3 py-3 font-semibold">Base ρ</th>
+        <th class="text-right px-3 py-3 font-semibold">Δρ</th>
+        <th class="text-center px-3 py-3 font-semibold">95% CI</th>
+        <th class="text-right px-3 py-3 font-semibold">p</th>
+        <th class="text-center px-3 py-3 font-semibold">Verdict</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{range $i, $c := .Cells}}
+      <tr class="{{if isOdd $i}}bg-gray-50{{end}} hover:bg-blue-50">
+        <td class="px-4 py-2 text-gray-800 font-medium whitespace-nowrap">{{$c.Baseline}}</td>
+        <td class="px-3 py-2 text-gray-600">{{$c.Dimension}}</td>
+        <td class="px-3 py-2 text-right font-mono">{{fmtVal $c.TargetRho}}</td>
+        <td class="px-3 py-2 text-right font-mono text-gray-500">{{fmtVal $c.BaseRho}}</td>
+        <td class="px-3 py-2 text-right font-mono {{verdictColor $c.Verdict}}">{{fmtSigned $c.DeltaMean}}</td>
+        <td class="px-3 py-2 text-center font-mono text-xs text-gray-500">{{fmtCI $c.CILow $c.CIHigh}}</td>
+        <td class="px-3 py-2 text-right font-mono text-gray-500">{{fmtP $c.PValue}}</td>
+        <td class="px-3 py-2 text-center">{{verdictBadge $c.Verdict}}</td>
       </tr>
       {{end}}
     </tbody>

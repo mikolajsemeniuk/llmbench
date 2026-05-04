@@ -1,0 +1,86 @@
+[
+  {
+    "label": "$\\beta=1$, frac=0.10",
+    "source": "bgs_salience10.json",
+    "beta": 1,
+    "salience_frac": 0.1,
+    "is_canonical": false,
+    "is_recall_only": false,
+    "coh": 0.3322596812226652,
+    "con": 0.1485329011823926,
+    "flu": 0.10004871490388308,
+    "rel": 0.36301837613236293
+  },
+  {
+    "label": "$\\beta=1$, frac=0.30",
+    "source": "bgs_beta1.json",
+    "beta": 1,
+    "salience_frac": 0.3,
+    "is_canonical": false,
+    "is_recall_only": false,
+    "coh": 0.3408687289160145,
+    "con": 0.155331754696063,
+    "flu": 0.09906601825819875,
+    "rel": 0.35859416306693914
+  },
+  {
+    "label": "$\\beta=1$, frac=0.50",
+    "source": "bgs_salience50.json",
+    "beta": 1,
+    "salience_frac": 0.5,
+    "is_canonical": false,
+    "is_recall_only": false,
+    "coh": 0.34846590460541144,
+    "con": 0.1607614991667247,
+    "flu": 0.10763414826588046,
+    "rel": 0.3609583436767376
+  },
+  {
+    "label": "$\\beta=1$, frac=1.00",
+    "source": "bgs_salience100.json",
+    "beta": 1,
+    "salience_frac": 1,
+    "is_canonical": false,
+    "is_recall_only": false,
+    "coh": 0.35265701184741627,
+    "con": 0.16086817844225199,
+    "flu": 0.11316281527927083,
+    "rel": 0.36085873586156303
+  },
+  {
+    "label": "$\\beta=2$, frac=0.30",
+    "source": "bgs_beta2.json",
+    "beta": 2,
+    "salience_frac": 0.3,
+    "is_canonical": true,
+    "is_recall_only": false,
+    "coh": 0.3731611046780265,
+    "con": 0.20255920518878381,
+    "flu": 0.13445914319616648,
+    "rel": 0.35638702550127455
+  },
+  {
+    "label": "$\\beta=3$, frac=0.30",
+    "source": "bgs_beta3.json",
+    "beta": 3,
+    "salience_frac": 0.3,
+    "is_canonical": false,
+    "is_recall_only": false,
+    "coh": 0.3767269112172377,
+    "con": 0.21390806097573092,
+    "flu": 0.14258449879628057,
+    "rel": 0.34795566622416
+  },
+  {
+    "label": "Recall only (no precision side)",
+    "source": "bgs_recall_only.json",
+    "beta": 0,
+    "salience_frac": 0,
+    "is_canonical": false,
+    "is_recall_only": true,
+    "coh": 0.37690719655804716,
+    "con": 0.22329616308669128,
+    "flu": 0.1488418964536214,
+    "rel": 0.3372460268747882
+  }
+]

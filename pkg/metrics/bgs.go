@@ -58,6 +58,13 @@ type BGS struct {
 	// the natural ablation candidate.
 	Beta float64
 
+	// RecallOnly disables the precision side entirely: the score is
+	// just the mean candidate→max-source cosine. Used as the bottom
+	// row of the ablation table — "what does the metric look like
+	// if we drop the bidirectional half?" — and as a reproducible
+	// replacement for the legacy DCS-grounding baseline.
+	RecallOnly bool
+
 	// MinSentenceLen drops sentences shorter than this many runes
 	// after trimming. Avoids degenerate inputs ("Yes.", "OK.").
 	MinSentenceLen int
@@ -140,8 +147,6 @@ func (b *BGS) score(
 	candSents []string, candEmbs [][]float64,
 ) (float64, BGSDiagnostics, error) {
 
-	salient := selectSalientIndices(sourceEmbs, b.SalienceTopFrac, b.SalienceMin)
-
 	// Recall: every candidate sentence pulled toward its best source match
 	// across the FULL source (no salience filter — the candidate is allowed
 	// to ground itself in any source sentence, salient or not).
@@ -156,6 +161,25 @@ func (b *BGS) score(
 		recall += best
 	}
 	recall /= float64(len(candEmbs))
+	if recall < 0 {
+		recall = 0
+	}
+
+	// Recall-only mode skips precision and salience selection entirely.
+	// The score is the recall component as-is. Used as an ablation
+	// "no precision side" reference row.
+	if b.RecallOnly {
+		return recall, BGSDiagnostics{
+			NumSourceSents:    len(sourceSents),
+			NumCandidateSents: len(candSents),
+			NumSalientSents:   0,
+			Precision:         0,
+			Recall:            recall,
+			FScore:            recall,
+		}, nil
+	}
+
+	salient := selectSalientIndices(sourceEmbs, b.SalienceTopFrac, b.SalienceMin)
 
 	// Precision: every salient source sentence pulled toward its best
 	// candidate match. A candidate that misses many salient core sentences
@@ -179,9 +203,6 @@ func (b *BGS) score(
 	// pathological inputs and prevents F1 from being undefined.
 	if precision < 0 {
 		precision = 0
-	}
-	if recall < 0 {
-		recall = 0
 	}
 
 	beta := b.Beta

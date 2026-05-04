@@ -27,13 +27,14 @@ import (
 // ── Configuration ──────────────────────────────────────────────────────
 
 var (
-	inputDir  string
-	output    string
-	target    string
-	baselines string
-	bootstrap int
-	level     string
-	seed      uint64
+	inputDir   string
+	output     string
+	outputJSON string
+	target     string
+	baselines  string
+	bootstrap  int
+	level      string
+	seed       uint64
 )
 
 var dimensions = []string{"coherence", "consistency", "fluency", "relevance"}
@@ -86,8 +87,10 @@ type comparisonCell struct {
 
 func main() {
 	flag.StringVar(&inputDir, "input", "output", "directory containing metric JSON reports")
-	flag.StringVar(&output, "output", "paper/tables/comparisons.tex",
+	flag.StringVar(&output, "output", "paper/comparisons.tex",
 		"path to write LaTeX table (- for stdout, empty to skip)")
+	flag.StringVar(&outputJSON, "json", "paper/comparisons.json",
+		"path to write JSON sidecar consumed by the webviewer (empty to skip)")
 	flag.StringVar(&target, "metric", "",
 		"target metric name (file basename without .json, e.g. 'mymetric')")
 	flag.StringVar(&baselines, "baselines", "unieval,geval",
@@ -172,6 +175,13 @@ func main() {
 		if output != "-" {
 			fmt.Fprintf(os.Stderr, "\nLaTeX table written to %s\n", output)
 		}
+	}
+
+	if outputJSON != "" {
+		if err := writeJSON(outputJSON, target, level, cells); err != nil {
+			log.Fatal(err)
+		}
+		fmt.Fprintf(os.Stderr, "JSON sidecar written to %s\n", outputJSON)
 	}
 }
 
@@ -476,4 +486,48 @@ func writeFile(path, content string) error {
 	defer f.Close()
 	_, err = io.WriteString(f, content)
 	return err
+}
+
+// comparisonJSON is the on-disk shape for the webviewer's Comparison tab.
+// One file per cmd/compare run, target + level pinned in the header.
+type comparisonJSON struct {
+	Target string           `json:"target"`
+	Level  string           `json:"level"`
+	Cells  []comparisonJSONCell `json:"cells"`
+}
+
+type comparisonJSONCell struct {
+	Baseline  string  `json:"baseline"`
+	Dimension string  `json:"dimension"`
+	TargetRho float64 `json:"target_rho"`
+	BaseRho   float64 `json:"base_rho"`
+	DeltaMean float64 `json:"delta_mean"`
+	CILow     float64 `json:"ci_low"`
+	CIHigh    float64 `json:"ci_high"`
+	PValue    float64 `json:"p_value"`
+}
+
+func writeJSON(path, target, level string, cells []comparisonCell) error {
+	out := comparisonJSON{
+		Target: target,
+		Level:  level,
+		Cells:  make([]comparisonJSONCell, len(cells)),
+	}
+	for i, c := range cells {
+		out.Cells[i] = comparisonJSONCell{
+			Baseline:  c.baseline,
+			Dimension: c.dimension,
+			TargetRho: c.targetRho,
+			BaseRho:   c.baseRho,
+			DeltaMean: c.comp.DeltaMean,
+			CILow:     c.comp.DeltaCI.Low,
+			CIHigh:    c.comp.DeltaCI.High,
+			PValue:    c.comp.PValue,
+		}
+	}
+	raw, err := json.MarshalIndent(out, "", "  ")
+	if err != nil {
+		return fmt.Errorf("marshal: %w", err)
+	}
+	return writeFile(path, string(raw))
 }
