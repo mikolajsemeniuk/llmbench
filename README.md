@@ -23,11 +23,13 @@ The mean-of-max grounding ("is each summary sentence anchored in some source sen
 
 LGS is reference-free and runs on a small Ollama embedder (`nomic-embed-text`, 137M params). It is **not** intended to beat UniEval — UniEval still wins on raw correlation. The claim is that LGS:
 
+- Beats **EmbedScorer** (the whole-text cosine baseline using the *same* embedder) significantly on coh / con / flu (Δρ = +.117 / +.171 / +.116, p<.001), tie on rel — this isolates the contribution of sentence-level grounding + lead-bias prior over a plain whole-text cosine.
 - Beats **SMART-Model** significantly on coh / con / flu (Δρ = +.068 / +.134 / +.089, p ≤ .005), tie on rel — same family (sentence-level + embedder), so this isolates the value of reference-freeness + lead-bias prior.
 - Beats **BERTScore** significantly on consistency (Δρ=+.118, p<.001), ties on coh / flu / rel — while using a much smaller embedder and no human reference.
 - Beats **ChrF** significantly on coherence (Δρ=+.237, p<.001).
-- Outscores BLEU, ROUGE-L, METEOR, SMART-String, MoverScore, BARTScore, EmbedScorer on the point estimate of every SummEval dimension.
+- Outscores BLEU, ROUGE-L, METEOR, SMART-String, MoverScore, BARTScore on the point estimate of every SummEval dimension.
 - Loses to UniEval on every dimension (p<.001) and to G-Eval on consistency (p<.001); other G-Eval comparisons are statistical ties. This is openly reported in `paper/comparisons.tex`.
+- **Robust to embedder choice** (`paper/embedder_ablation.tex`). The canonical metric is run with four sentence-embedder backbones spanning a ~24× parameter range — `all-minilm` (23M), `nomic-embed-text` (137M, headline), `mxbai-embed-large` (335M), `bge-m3` (567M). Mean Spearman ρ stays in [.284, .312]; per-dimension profile shifts (nomic dominates coh / rel, others con / flu) but the metric design is not specific to one backbone.
 
 The paper's contribution is "a reference-free metric you can deploy with a single Ollama model, with one tunable hyperparameter (lead-bias λ) selected via held-out methodology that prior metric papers skip" — efficiency, reference-freeness, methodological honesty, and an empirically-validated structural prior.
 
@@ -40,29 +42,33 @@ Every number in `paper/{summary,system,ablation,comparisons}.tex` regenerates fr
 #    Skip this if output/*.json is already populated.
 make benchmark                  # ~30 min
 
-# 2. Reproduce the LGS ablation + canonical end-to-end:
+# 2. Reproduce the LGS ablations + canonical end-to-end:
 #    (a) recall baseline (λ=0) on dev and test → lgs_recall_{dev,test}.json
 #    (b) lead-bias sweep λ ∈ {0.25, 0.5, 1.0, 2.0} on dev and test
 #        → lgs_lead_{dev,test}_l*.json
-#    (c) canonical run on the full set with the dev-selected λ*
+#    (c) embedder ablation: canonical λ run with 4 sentence-embedders
+#        → lgs_embedder_{nomic,mxbai,bge,minilm}.json
+#    (d) canonical run on the full set with the dev-selected λ*
 #        → output/lgs.json
-#    (d) re-render every paper/*.tex.
-make benchmark-lgs-paper        # ~10 min
+#    (e) re-render every paper/*.tex.
+make benchmark-lgs-paper        # ~25 min
 
 # 3. (Optional) Run only one ablation slice — useful when a reviewer
 #    wants to verify a single component without re-running the full grid:
-make benchmark-ablation-recall  # recall baseline only (2 runs, ~2 min)
-make benchmark-ablation-lead    # lead-bias sweep only (7 runs, ~6 min)
+make benchmark-ablation-recall      # recall baseline only (2 runs, ~2 min)
+make benchmark-ablation-lead        # lead-bias sweep only (8 runs, ~7 min)
+make benchmark-embedder-ablation    # 4 embedders, full set (~7 min)
 
-# 4. (Optional) Inspect the snapshots and rendered table:
-ls ablation/                    # lgs_recall_*.json + lgs_lead_*_l*.json
-cat paper/ablation.tex
+# 4. (Optional) Inspect the snapshots and rendered tables:
+ls ablation/                        # lgs_recall_*.json + lgs_lead_*.json + lgs_embedder_*.json
+cat paper/ablation.tex paper/embedder_ablation.tex
 ```
 
-The selected λ is encoded as a Make variable: `LGS_LAMBDA=0.5` (the dev-selected value). To rerun the canonical with a different choice — for instance, λ=0.25:
+The canonical hyperparameters are encoded as Make variables: `LGS_LAMBDA=0.5` (dev-selected) and `LGS_EMBED_MODEL=nomic-embed-text` (the headline embedder). To rerun the canonical with a different choice — for instance, λ=0.25 or a larger embedder:
 
 ```sh
 make benchmark-lgs LGS_LAMBDA=0.25
+make benchmark-lgs LGS_EMBED_MODEL=mxbai-embed-large
 ```
 
 The dev/test split is by dataset order (deterministic from `eval.NewDataset`'s JSONL emission order — no random seed). The article-level split is implemented in `applyDocSplit` in `cmd/lgs/main.go`.
@@ -75,6 +81,12 @@ The dev/test split is by dataset order (deterministic from `eval.NewDataset`'s J
   ```sh
   ollama pull nomic-embed-text
   ollama pull qwen2.5:7b-instruct-q4_K_M
+  ```
+  For the embedder ablation (`make benchmark-embedder-ablation`), additionally pull:
+  ```sh
+  ollama pull mxbai-embed-large
+  ollama pull bge-m3
+  ollama pull all-minilm
   ```
 
 ## Metrics

@@ -31,7 +31,7 @@ benchmark-ollama:
 	go run ./cmd/geval -dimension relevance
 
 .PHONY: paper
-paper: paper-summary paper-system paper-ablation paper-comparisons
+paper: paper-summary paper-system paper-ablation paper-embedder-ablation paper-comparisons
 
 .PHONY: paper-summary
 paper-summary:
@@ -45,32 +45,38 @@ paper-system:
 paper-ablation:
 	go run ./cmd/ablation -input ablation -lambda-star $(LGS_LAMBDA) -output paper/ablation.tex -json paper/ablation.json
 
+.PHONY: paper-embedder-ablation
+paper-embedder-ablation:
+	go run ./cmd/embedder -input ablation -canonical $(LGS_EMBED_MODEL) -output paper/embedder_ablation.tex -json paper/embedder_ablation.json
+
 .PHONY: paper-comparisons
 paper-comparisons:
 	go run ./cmd/compare -metric lgs -baselines unieval,bertscore,geval,smartmodel,chrf,embedscorer -bootstrap 5000 -output paper/comparisons.tex -json paper/comparisons.json
 
-# Canonical lead-bias λ selected on the dev split (first 50 articles).
-# This is the value used for the headline run in output/lgs.json
-# (consumed by paper/summary.tex). To reproduce the selection, run
-# `make benchmark-ablation-dev-lead` and check the dev-mean Spearman ρ
-# is maximised at λ=0.5.
-LGS_LAMBDA ?= 0.5
+# Canonical hyperparameters. λ is the lead-bias decay (selected on
+# the dev split — see benchmark-ablation-lead). LGS_EMBED_MODEL is
+# the canonical sentence-embedder used for the headline run; the
+# embedder ablation (benchmark-embedder-ablation) compares it against
+# alternatives to show the result is not specific to one backbone.
+LGS_LAMBDA      ?= 0.5
+LGS_EMBED_MODEL ?= nomic-embed-text
 
 # benchmark-lgs runs the canonical metric on the full SummEval set
-# with the dev-selected λ above. Writes the report consumed by
-# paper/summary.tex and paper/comparisons.tex.
+# with the dev-selected λ and the canonical embedder. Writes the
+# report consumed by paper/summary.tex and paper/comparisons.tex.
 .PHONY: benchmark-lgs
 benchmark-lgs:
-	go run ./cmd/lgs -doc-split all -lead-bias-lambda $(LGS_LAMBDA) -output output/lgs.json
+	go run ./cmd/lgs -doc-split all -lead-bias-lambda $(LGS_LAMBDA) -embed-model $(LGS_EMBED_MODEL) -output output/lgs.json
 
 # benchmark-lgs-paper is the *full reproduction pipeline* a reviewer
-# can run end-to-end. It (1) regenerates the LGS lead-bias dev sweep,
-# (2) re-runs the test-split verification, (3) re-runs the canonical
-# metric on the full set, (4) re-renders every paper artifact
-# (summary, system, ablation, comparisons). Allow ~10 minutes total
-# on Apple silicon with Ollama warmed up.
+# can run end-to-end. It (1) regenerates the LGS lead-bias dev sweep
+# and test verification, (2) regenerates the embedder ablation,
+# (3) re-runs the canonical metric on the full set, (4) re-renders
+# every paper artifact (summary, system, ablation, embedder ablation,
+# comparisons). Allow ~25 minutes total on Apple silicon with Ollama
+# warmed up.
 .PHONY: benchmark-lgs-paper
-benchmark-lgs-paper: benchmark-ablation benchmark-lgs paper
+benchmark-lgs-paper: benchmark-ablation benchmark-embedder-ablation benchmark-lgs paper
 
 # benchmark-ablation regenerates the per-variant snapshots in
 # ablation/ that back paper/ablation.tex. Two conceptually distinct
@@ -102,3 +108,33 @@ benchmark-ablation-lead:
 	go run ./cmd/lgs -doc-split last50  -lead-bias-lambda 0.5  -bootstrap 0 -output ablation/lgs_lead_test_l050.json
 	go run ./cmd/lgs -doc-split last50  -lead-bias-lambda 1.0  -bootstrap 0 -output ablation/lgs_lead_test_l100.json
 	go run ./cmd/lgs -doc-split last50  -lead-bias-lambda 2.0  -bootstrap 0 -output ablation/lgs_lead_test_l200.json
+
+# Cross-embedder lead-bias verification — repeats the dev λ sweep
+# with a second embedder (bge-m3, 567M, the largest in our roster)
+# to confirm the lead-bias contribution is not specific to
+# nomic-embed-text. Outputs files with `_bge` suffix so they can be
+# distinguished from the canonical nomic sweep. Used in narrative,
+# not currently rendered into a paper table.
+.PHONY: benchmark-ablation-lead-bge
+benchmark-ablation-lead-bge:
+	@mkdir -p ablation
+	go run ./cmd/lgs -doc-split first50 -lead-bias-lambda 0    -embed-model bge-m3 -bootstrap 0 -output ablation/lgs_lead_dev_l000_bge.json
+	go run ./cmd/lgs -doc-split first50 -lead-bias-lambda 0.25 -embed-model bge-m3 -bootstrap 0 -output ablation/lgs_lead_dev_l025_bge.json
+	go run ./cmd/lgs -doc-split first50 -lead-bias-lambda 0.5  -embed-model bge-m3 -bootstrap 0 -output ablation/lgs_lead_dev_l050_bge.json
+	go run ./cmd/lgs -doc-split first50 -lead-bias-lambda 1.0  -embed-model bge-m3 -bootstrap 0 -output ablation/lgs_lead_dev_l100_bge.json
+	go run ./cmd/lgs -doc-split first50 -lead-bias-lambda 2.0  -embed-model bge-m3 -bootstrap 0 -output ablation/lgs_lead_dev_l200_bge.json
+
+# Embedder ablation — runs the canonical metric (λ=$(LGS_LAMBDA)) on
+# the full SummEval set with four sentence-embedder backbones.
+# Establishes that LGS is a metric design (sentence-level grounding +
+# lead-bias prior), not specific to nomic-embed-text. Output is
+# rendered into paper/embedder_ablation.tex by `paper-embedder-ablation`.
+# Requires the four embedders to be available in Ollama:
+#   ollama pull nomic-embed-text mxbai-embed-large bge-m3 all-minilm
+.PHONY: benchmark-embedder-ablation
+benchmark-embedder-ablation:
+	@mkdir -p ablation
+	go run ./cmd/lgs -doc-split all -lead-bias-lambda $(LGS_LAMBDA) -embed-model nomic-embed-text  -bootstrap 0 -output ablation/lgs_embedder_nomic.json
+	go run ./cmd/lgs -doc-split all -lead-bias-lambda $(LGS_LAMBDA) -embed-model mxbai-embed-large -bootstrap 0 -output ablation/lgs_embedder_mxbai.json
+	go run ./cmd/lgs -doc-split all -lead-bias-lambda $(LGS_LAMBDA) -embed-model bge-m3            -bootstrap 0 -output ablation/lgs_embedder_bge.json
+	go run ./cmd/lgs -doc-split all -lead-bias-lambda $(LGS_LAMBDA) -embed-model all-minilm        -bootstrap 0 -output ablation/lgs_embedder_minilm.json

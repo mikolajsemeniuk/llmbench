@@ -148,7 +148,7 @@ func main() {
 	log.Printf("LGS: %d samples in %.1fs — mean score=%.3f",
 		len(samples), elapsed.Seconds(), sumScore/N)
 
-	norm := fmt.Sprintf("lead_lambda=%.3f,split=%s", leadBiasLambda, docSplit)
+	norm := fmt.Sprintf("lead_lambda=%.3f,split=%s,embed_model=%s", leadBiasLambda, docSplit, embedModel)
 	report := eval.Report{
 		Metric:     "lgs",
 		Norm:       norm,
