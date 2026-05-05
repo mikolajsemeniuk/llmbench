@@ -47,7 +47,7 @@ paper-ablation:
 
 .PHONY: paper-comparisons
 paper-comparisons:
-	go run ./cmd/compare -metric lgs -baselines unieval,bertscore,geval,smartmodel,chrf -bootstrap 5000 -output paper/comparisons.tex -json paper/comparisons.json
+	go run ./cmd/compare -metric lgs -baselines unieval,bertscore,geval,smartmodel,chrf,embedscorer -bootstrap 5000 -output paper/comparisons.tex -json paper/comparisons.json
 
 # Canonical lead-bias λ selected on the dev split (first 50 articles).
 # This is the value used for the headline run in output/lgs.json
