@@ -1,10 +1,10 @@
 # LLMBench
 
-Correlation benchmark for summarization metrics on the [SummEval](https://huggingface.co/datasets/mteb/summeval) dataset, and reference implementation of **BGS** — an *efficient, reference-free* embedding-only metric for summary quality.
+Correlation benchmark for summarization metrics on the [SummEval](https://huggingface.co/datasets/mteb/summeval) dataset, and reference implementation of **LGS** — an *efficient, reference-free* embedding-only metric for summary quality.
 
-Reference-based metrics (BERTScore, MoverScore, SMART-Model, BLEU, ROUGE-L, ChrF, METEOR, SMART-String, EmbedScorer, BARTScore, GPTScore) are scored against the human-annotated reference summaries. Source-based metrics (G-Eval, BGS) score the candidate against the source article and need no reference. UniEval uses both source and reference. All correlations and paired-bootstrap comparisons are aggregated by `cmd/paper` and `cmd/compare` into the LaTeX tables under `paper/`.
+Reference-based metrics (BERTScore, MoverScore, SMART-Model, BLEU, ROUGE-L, ChrF, METEOR, SMART-String, EmbedScorer, BARTScore, GPTScore) are scored against the human-annotated reference summaries. Source-based metrics (G-Eval, LGS) score the candidate against the source article and need no reference. UniEval uses both source and reference. All correlations and paired-bootstrap comparisons are aggregated by `cmd/paper` and `cmd/compare` into the LaTeX tables under `paper/`.
 
-## BGS — formulation
+## LGS — formulation
 
 For source `D` and candidate summary `C` split into sentences:
 
@@ -19,9 +19,9 @@ The mean-of-max grounding ("is each summary sentence anchored in some source sen
 
 **Held-out selection of λ**. SummEval is split by article into a 50-article development set (first 50 docs in dataset order) and a 50-article test set (last 50). On dev, λ ∈ {0, 0.25, 0.5, 1.0, 2.0} is swept and the value maximising mean Spearman ρ across the four SummEval dimensions is selected. The dev winner is **λ\* = 0.5**: dev mean ρ rises from .233 (λ=0) to .252 (+.019), with all four dimensions improving (coh +.021, con +.007, flu +.011, rel +.036). On the held-out test split λ\*=0.5 also beats the no-prior baseline (mean ρ .319 vs .314).
 
-## BGS — positioning
+## LGS — positioning
 
-BGS is reference-free and runs on a small Ollama embedder (`nomic-embed-text`, 137M params). It is **not** intended to beat UniEval — UniEval still wins on raw correlation. The claim is that BGS:
+LGS is reference-free and runs on a small Ollama embedder (`nomic-embed-text`, 137M params). It is **not** intended to beat UniEval — UniEval still wins on raw correlation. The claim is that LGS:
 
 - Beats **SMART-Model** significantly on coh / con / flu (Δρ = +.068 / +.134 / +.089, p ≤ .005), tie on rel — same family (sentence-level + embedder), so this isolates the value of reference-freeness + lead-bias prior.
 - Beats **BERTScore** significantly on consistency (Δρ=+.118, p<.001), ties on coh / flu / rel — while using a much smaller embedder and no human reference.
@@ -40,14 +40,14 @@ Every number in `paper/{summary,system,ablation,comparisons}.tex` regenerates fr
 #    Skip this if output/*.json is already populated.
 make benchmark                  # ~30 min
 
-# 2. Reproduce the BGS ablation + canonical end-to-end:
-#    (a) recall baseline (λ=0) on dev and test → bgs_recall_{dev,test}.json
+# 2. Reproduce the LGS ablation + canonical end-to-end:
+#    (a) recall baseline (λ=0) on dev and test → lgs_recall_{dev,test}.json
 #    (b) lead-bias sweep λ ∈ {0.25, 0.5, 1.0, 2.0} on dev and test
-#        → bgs_lead_{dev,test}_l*.json
+#        → lgs_lead_{dev,test}_l*.json
 #    (c) canonical run on the full set with the dev-selected λ*
-#        → output/bgs.json
+#        → output/lgs.json
 #    (d) re-render every paper/*.tex.
-make benchmark-bgs-paper        # ~10 min
+make benchmark-lgs-paper        # ~10 min
 
 # 3. (Optional) Run only one ablation slice — useful when a reviewer
 #    wants to verify a single component without re-running the full grid:
@@ -55,23 +55,23 @@ make benchmark-ablation-recall  # recall baseline only (2 runs, ~2 min)
 make benchmark-ablation-lead    # lead-bias sweep only (7 runs, ~6 min)
 
 # 4. (Optional) Inspect the snapshots and rendered table:
-ls ablation/                    # bgs_recall_*.json + bgs_lead_*_l*.json
+ls ablation/                    # lgs_recall_*.json + lgs_lead_*_l*.json
 cat paper/ablation.tex
 ```
 
-The selected λ is encoded as a Make variable: `BGS_LAMBDA=0.5` (the dev-selected value). To rerun the canonical with a different choice — for instance, λ=0.25:
+The selected λ is encoded as a Make variable: `LGS_LAMBDA=0.5` (the dev-selected value). To rerun the canonical with a different choice — for instance, λ=0.25:
 
 ```sh
-make benchmark-bgs BGS_LAMBDA=0.25
+make benchmark-lgs LGS_LAMBDA=0.25
 ```
 
-The dev/test split is by dataset order (deterministic from `eval.NewDataset`'s JSONL emission order — no random seed). The article-level split is implemented in `applyDocSplit` in `cmd/bgs/main.go`.
+The dev/test split is by dataset order (deterministic from `eval.NewDataset`'s JSONL emission order — no random seed). The article-level split is implemented in `applyDocSplit` in `cmd/lgs/main.go`.
 
 ## Requirements
 
 - Go 1.26+
 - Python 3.10+ with pip (for the model server: BERTScore, MoverScore, BARTScore, UniEval, GPTScore)
-- [Ollama](https://ollama.com) running locally on port 11434 (for EmbedScorer, SMART-Model, BGS, G-Eval). Pull the default models first:
+- [Ollama](https://ollama.com) running locally on port 11434 (for EmbedScorer, SMART-Model, LGS, G-Eval). Pull the default models first:
   ```sh
   ollama pull nomic-embed-text
   ollama pull qwen2.5:7b-instruct-q4_K_M
@@ -94,7 +94,7 @@ The dev/test split is by dataset order (deterministic from `eval.NewDataset`'s J
 | GPTScore     | model        | model server  | reference        | `cmd/gptscorer`    |
 | G-Eval       | LLM judge    | Ollama        | source           | `cmd/geval`        |
 | UniEval      | model        | model server  | source + ref     | `cmd/unieval`      |
-| BGS (ours)   | embedding    | Ollama        | source           | `cmd/bgs`          |
+| LGS (ours)   | embedding    | Ollama        | source           | `cmd/lgs`          |
 
 G-Eval and UniEval are run once per SummEval dimension (`coherence`, `consistency`, `fluency`, `relevance`).
 

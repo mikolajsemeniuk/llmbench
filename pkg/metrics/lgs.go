@@ -6,7 +6,7 @@ import (
 	"math"
 )
 
-// BGS — reference-free, embedding-only summary-quality metric. For source
+// LGS — reference-free, embedding-only summary-quality metric. For source
 // document D and candidate summary C split into sentences:
 //
 //	w(i)  = exp(−λ · i / n)                    // exponential lead-bias prior
@@ -22,17 +22,17 @@ import (
 // CNN/DailyMail-style news on the source side.
 //
 // λ is the only hyperparameter and is selected on a held-out development
-// split (see cmd/bgs and Makefile). λ=0 disables the prior and reproduces
+// split (see cmd/lgs and Makefile). λ=0 disables the prior and reproduces
 // position-agnostic mean-of-max recall.
 //
 // Differences from the closest reference-based baselines:
-//   - BERTScore: token-level F1 against a reference summary. BGS is
+//   - BERTScore: token-level F1 against a reference summary. LGS is
 //     sentence-level, source-grounded, reference-free.
-//   - SMART-Model: reference-based sentence matching. BGS uses the
+//   - SMART-Model: reference-based sentence matching. LGS uses the
 //     source as the grounding target and adds the lead-bias prior.
-//   - EmbedScorer: a single whole-text cosine. BGS exploits sentence
+//   - EmbedScorer: a single whole-text cosine. LGS exploits sentence
 //     granularity and source-position weighting.
-type BGS struct {
+type LGS struct {
 	Embedder   *Ollama
 	EmbedModel string
 
@@ -48,70 +48,70 @@ type BGS struct {
 	MinSentenceLen int
 }
 
-func NewBGS(host, embedModel string) *BGS {
-	return &BGS{
+func NewLGS(host, embedModel string) *LGS {
+	return &LGS{
 		Embedder:       NewOllama(host),
 		EmbedModel:     embedModel,
 		MinSentenceLen: 4,
-		LeadBiasLambda: 0.0, // overridden by cmd/bgs with the dev-selected λ*
+		LeadBiasLambda: 0.0, // overridden by cmd/lgs with the dev-selected λ*
 	}
 }
 
-// BGSDiagnostics carries per-call internals so cmd/bgs can produce
+// LGSDiagnostics carries per-call internals so cmd/lgs can produce
 // run-level statistics without re-running the pipeline. Score is the
 // final scalar returned for correlation; Recall is the same value
 // (kept as an alias for callers that read the decomposition).
-type BGSDiagnostics struct {
+type LGSDiagnostics struct {
 	NumSourceSents    int
 	NumCandidateSents int
 	Recall            float64
 	Score             float64
 }
 
-func (b *BGS) Score(ctx context.Context, source, candidate string) (float64, error) {
+func (b *LGS) Score(ctx context.Context, source, candidate string) (float64, error) {
 	score, _, err := b.ScoreDetailed(ctx, source, candidate)
 	return score, err
 }
 
 // ScoreWithSourceEmbeddings reuses precomputed source embeddings (one
-// per source sentence). cmd/bgs caches these per DocumentID so the 16
+// per source sentence). cmd/lgs caches these per DocumentID so the 16
 // candidates summarising the same article share the embedding cost.
-func (b *BGS) ScoreWithSourceEmbeddings(ctx context.Context,
+func (b *LGS) ScoreWithSourceEmbeddings(ctx context.Context,
 	sourceSents []string, sourceEmbs [][]float64,
 	candidate string,
-) (float64, BGSDiagnostics, error) {
+) (float64, LGSDiagnostics, error) {
 	candSents := filterShortSentences(splitSentences(candidate), b.MinSentenceLen)
 	if len(sourceSents) == 0 || len(candSents) == 0 {
-		return 0, BGSDiagnostics{}, nil
+		return 0, LGSDiagnostics{}, nil
 	}
 	candEmbs, err := b.embedAll(ctx, candSents)
 	if err != nil {
-		return 0, BGSDiagnostics{}, fmt.Errorf("bgs: embed candidate: %w", err)
+		return 0, LGSDiagnostics{}, fmt.Errorf("lgs: embed candidate: %w", err)
 	}
 	return b.score(sourceSents, sourceEmbs, candSents, candEmbs)
 }
 
-func (b *BGS) ScoreDetailed(ctx context.Context, source, candidate string) (float64, BGSDiagnostics, error) {
+func (b *LGS) ScoreDetailed(ctx context.Context, source, candidate string) (float64, LGSDiagnostics, error) {
 	sourceSents := filterShortSentences(splitSentences(source), b.MinSentenceLen)
 	candSents := filterShortSentences(splitSentences(candidate), b.MinSentenceLen)
 	if len(sourceSents) == 0 || len(candSents) == 0 {
-		return 0, BGSDiagnostics{}, nil
+		return 0, LGSDiagnostics{}, nil
 	}
 	sourceEmbs, err := b.embedAll(ctx, sourceSents)
 	if err != nil {
-		return 0, BGSDiagnostics{}, fmt.Errorf("bgs: embed source: %w", err)
+		return 0, LGSDiagnostics{}, fmt.Errorf("lgs: embed source: %w", err)
 	}
 	candEmbs, err := b.embedAll(ctx, candSents)
 	if err != nil {
-		return 0, BGSDiagnostics{}, fmt.Errorf("bgs: embed candidate: %w", err)
+		return 0, LGSDiagnostics{}, fmt.Errorf("lgs: embed candidate: %w", err)
 	}
 	return b.score(sourceSents, sourceEmbs, candSents, candEmbs)
 }
 
-func (b *BGS) score(
+func (b *LGS) score(
 	sourceSents []string, sourceEmbs [][]float64,
 	candSents []string, candEmbs [][]float64,
-) (float64, BGSDiagnostics, error) {
+) (float64, LGSDiagnostics, error) {
 
 	// Pre-compute source-position weights once. λ=0 degenerates to
 	// all-ones so we skip the multiplication entirely.
@@ -143,7 +143,7 @@ func (b *BGS) score(
 		recall = 0
 	}
 
-	return recall, BGSDiagnostics{
+	return recall, LGSDiagnostics{
 		NumSourceSents:    len(sourceSents),
 		NumCandidateSents: len(candSents),
 		Recall:            recall,
@@ -151,20 +151,20 @@ func (b *BGS) score(
 	}, nil
 }
 
-// EmbedSentences exposes embedAll for cmd/bgs so per-document caching
+// EmbedSentences exposes embedAll for cmd/lgs so per-document caching
 // of source-sentence embeddings is possible.
-func (b *BGS) EmbedSentences(ctx context.Context, sents []string) ([][]float64, error) {
+func (b *LGS) EmbedSentences(ctx context.Context, sents []string) ([][]float64, error) {
 	return b.embedAll(ctx, sents)
 }
 
-// SplitSentencesForBGS exposes the package-private splitter so cmd/bgs
+// SplitSentencesForLGS exposes the package-private splitter so cmd/lgs
 // can produce the same filtered list of source sentences that the
 // metric uses internally.
-func SplitSentencesForBGS(text string) []string {
+func SplitSentencesForLGS(text string) []string {
 	return splitSentences(text)
 }
 
-func (b *BGS) embedAll(ctx context.Context, sentences []string) ([][]float64, error) {
+func (b *LGS) embedAll(ctx context.Context, sentences []string) ([][]float64, error) {
 	embeds := make([][]float64, len(sentences))
 	for i, sent := range sentences {
 		resp, err := b.Embedder.Embed(ctx, EmbedInput{Model: b.EmbedModel, Input: sent})
@@ -172,7 +172,7 @@ func (b *BGS) embedAll(ctx context.Context, sentences []string) ([][]float64, er
 			return nil, err
 		}
 		if len(resp.Embeddings) == 0 {
-			return nil, fmt.Errorf("bgs: empty embedding for sentence %d", i)
+			return nil, fmt.Errorf("lgs: empty embedding for sentence %d", i)
 		}
 		embeds[i] = resp.Embeddings[0]
 	}

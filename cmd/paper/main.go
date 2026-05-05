@@ -36,7 +36,7 @@ var metricOrder = []string{
 	"embedscorer",
 	"bertscore", "moverscore", "smartmodel",
 	"bartscore", "gptscore", "unieval", "geval",
-	"bgs",
+	"lgs",
 }
 
 var metricDisplayName = map[string]string{
@@ -53,7 +53,7 @@ var metricDisplayName = map[string]string{
 	"gptscore":    "GPTScore",
 	"unieval":     "UniEval",
 	"geval":       "G-Eval",
-	"bgs":         "BGS",
+	"lgs":         "LGS",
 }
 
 var dimensionalMetrics = []struct {

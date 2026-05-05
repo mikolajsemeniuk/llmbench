@@ -1,9 +1,9 @@
 {
-  "metric": "bgs",
-  "norm": "top_k=1,lead_lambda=0.500,coverage_alpha=0.000,redundancy_gamma=0.000,split=last50",
+  "metric": "lgs",
+  "norm": "lead_lambda=0.500,split=last50",
   "samples": 800,
-  "runtime_sec": 45.142836792,
-  "timestamp": "2026-05-05T13:31:58Z",
+  "runtime_sec": 46.129364625,
+  "timestamp": "2026-05-05T15:10:28Z",
   "scores": [
     {
       "sample_id": "dm-test-632cfdb03aacd90a34a470f6a70b47eee62ec5f0#0",

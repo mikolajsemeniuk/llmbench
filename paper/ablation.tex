@@ -1,7 +1,7 @@
 \begin{table*}[t]
 \centering
-\caption{Ablation of BGS on SummEval (summary-level Spearman $\rho$). The metric is $\mathrm{score} = \mathrm{mean}_j\, \max_i\, w(i)\cdot\cos(c_j, s_i)$ with exponential lead-bias prior $w(i)=\exp(-\lambda \cdot i / n)$ on source-sentence position. The exponent $\lambda$ is selected on a held-out development split (50 articles) and re-evaluated on the test split (50 articles); the dev-selected canonical row is marked $\star$.}
-\label{tab:ablation_bgs}
+\caption{Ablation of LGS on SummEval (summary-level Spearman $\rho$). The metric is $\mathrm{score} = \mathrm{mean}_j\, \max_i\, w(i)\cdot\cos(c_j, s_i)$ with exponential lead-bias prior $w(i)=\exp(-\lambda \cdot i / n)$ on source-sentence position. The exponent $\lambda$ is selected on a held-out development split (50 articles) and re-evaluated on the test split (50 articles); the dev-selected canonical row is marked $\star$.}
+\label{tab:ablation_lgs}
 \begin{tabular}{lrrrr}
 \toprule
 Variant & Coh & Con & Flu & Rel \\
@@ -16,6 +16,7 @@ Recall baseline ($\lambda=0$) (test) & .415 & .272 & .161 & .410 \\
 Lead-bias ($\lambda=0.25$) (test) & .433 & .295 & .180 & .427 \\
 Lead-bias ($\lambda=0.5$) (test) $\star$ & .429 & .271 & .162 & .413 \\
 Lead-bias ($\lambda=1$) (test) & .402 & .227 & .121 & .369 \\
+Lead-bias ($\lambda=2$) (test) & .375 & .158 & .079 & .336 \\
 \bottomrule
 \end{tabular}
 \end{table*}

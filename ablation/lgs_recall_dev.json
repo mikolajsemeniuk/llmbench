@@ -1,9 +1,9 @@
 {
-  "metric": "bgs",
-  "norm": "coverage_alpha=0.000,split=first50",
+  "metric": "lgs",
+  "norm": "lead_lambda=0.000,split=first50",
   "samples": 800,
-  "runtime_sec": 46.085772792,
-  "timestamp": "2026-05-05T11:58:15Z",
+  "runtime_sec": 46.245035334,
+  "timestamp": "2026-05-05T15:05:02Z",
   "scores": [
     {
       "sample_id": "cnn-test-404f859482d47c127868964a9a39d1a7645dd2e9#0",

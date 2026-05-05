@@ -1,7 +1,7 @@
 [
   {
     "label": "Recall baseline ($\\lambda=0$) (dev)",
-    "source": "bgs_recall_dev.json",
+    "source": "lgs_recall_dev.json",
     "lead_bias_lambda": 0,
     "split": "first50",
     "is_canonical": false,
@@ -12,7 +12,7 @@
   },
   {
     "label": "Lead-bias ($\\lambda=0.25$) (dev)",
-    "source": "bgs_lead_dev_l025.json",
+    "source": "lgs_lead_dev_l025.json",
     "lead_bias_lambda": 0.25,
     "split": "first50",
     "is_canonical": false,
@@ -23,7 +23,7 @@
   },
   {
     "label": "Lead-bias ($\\lambda=0.5$) (dev)",
-    "source": "bgs_lead_dev_l050.json",
+    "source": "lgs_lead_dev_l050.json",
     "lead_bias_lambda": 0.5,
     "split": "first50",
     "is_canonical": false,
@@ -34,7 +34,7 @@
   },
   {
     "label": "Lead-bias ($\\lambda=1$) (dev)",
-    "source": "bgs_lead_dev_l100.json",
+    "source": "lgs_lead_dev_l100.json",
     "lead_bias_lambda": 1,
     "split": "first50",
     "is_canonical": false,
@@ -45,7 +45,7 @@
   },
   {
     "label": "Lead-bias ($\\lambda=2$) (dev)",
-    "source": "bgs_lead_dev_l200.json",
+    "source": "lgs_lead_dev_l200.json",
     "lead_bias_lambda": 2,
     "split": "first50",
     "is_canonical": false,
@@ -56,7 +56,7 @@
   },
   {
     "label": "Recall baseline ($\\lambda=0$) (test)",
-    "source": "bgs_recall_test.json",
+    "source": "lgs_recall_test.json",
     "lead_bias_lambda": 0,
     "split": "last50",
     "is_canonical": false,
@@ -67,7 +67,7 @@
   },
   {
     "label": "Lead-bias ($\\lambda=0.25$) (test)",
-    "source": "bgs_lead_test_l025.json",
+    "source": "lgs_lead_test_l025.json",
     "lead_bias_lambda": 0.25,
     "split": "last50",
     "is_canonical": false,
@@ -78,7 +78,7 @@
   },
   {
     "label": "Lead-bias ($\\lambda=0.5$) (test)",
-    "source": "bgs_lead_test_l050.json",
+    "source": "lgs_lead_test_l050.json",
     "lead_bias_lambda": 0.5,
     "split": "last50",
     "is_canonical": true,
@@ -89,7 +89,7 @@
   },
   {
     "label": "Lead-bias ($\\lambda=1$) (test)",
-    "source": "bgs_lead_test_l100.json",
+    "source": "lgs_lead_test_l100.json",
     "lead_bias_lambda": 1,
     "split": "last50",
     "is_canonical": false,
@@ -97,5 +97,16 @@
     "con": 0.2266968560714527,
     "flu": 0.12129027039689187,
     "rel": 0.3691058189158917
+  },
+  {
+    "label": "Lead-bias ($\\lambda=2$) (test)",
+    "source": "lgs_lead_test_l200.json",
+    "lead_bias_lambda": 2,
+    "split": "last50",
+    "is_canonical": false,
+    "coh": 0.375343357117613,
+    "con": 0.15803062396813414,
+    "flu": 0.0786207725859596,
+    "rel": 0.336279974209698
   }
 ]

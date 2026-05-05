@@ -53,7 +53,7 @@ var metricOrder = []string{
 	"embedscorer",
 	"bertscore", "moverscore", "smartmodel",
 	"bartscore", "gptscore", "unieval", "geval",
-	"bgs",
+	"lgs",
 }
 
 var metricDisplayName = map[string]string{
@@ -70,7 +70,7 @@ var metricDisplayName = map[string]string{
 	"gptscore":    "GPTScore",
 	"unieval":     "UniEval",
 	"geval":       "G-Eval",
-	"bgs":         "BGS",
+	"lgs":         "LGS",
 }
 
 var dimensionalMetrics = []struct {
@@ -764,7 +764,7 @@ const pageHTML = `<!DOCTYPE html>
     {{else}}
       {{template "ablationTable" .Ablation}}
       <p class="text-xs text-gray-400 mt-2">
-        Summary-level Spearman ρ across BGS hyperparameter variants. Canonical row marked ★.
+        Summary-level Spearman ρ across LGS hyperparameter variants. Canonical row marked ★.
       </p>
     {{end}}
   </div>

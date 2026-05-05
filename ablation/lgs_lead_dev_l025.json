@@ -1,229 +1,229 @@
 {
-  "metric": "bgs",
-  "norm": "top_k=1,lead_lambda=1.000,coverage_alpha=0.000,redundancy_gamma=0.000,split=first50",
+  "metric": "lgs",
+  "norm": "lead_lambda=0.250,split=first50",
   "samples": 800,
-  "runtime_sec": 46.965083625,
-  "timestamp": "2026-05-05T13:29:20Z",
+  "runtime_sec": 46.546358042,
+  "timestamp": "2026-05-05T15:06:34Z",
   "scores": [
     {
       "sample_id": "cnn-test-404f859482d47c127868964a9a39d1a7645dd2e9#0",
-      "value": 0.632288492774093
+      "value": 0.7090993818995305
     },
     {
       "sample_id": "cnn-test-404f859482d47c127868964a9a39d1a7645dd2e9#1",
-      "value": 0.5583605748437209
+      "value": 0.6822376570139318
     },
     {
       "sample_id": "cnn-test-404f859482d47c127868964a9a39d1a7645dd2e9#2",
-      "value": 0.671695982963656
+      "value": 0.7175712081131075
     },
     {
       "sample_id": "cnn-test-404f859482d47c127868964a9a39d1a7645dd2e9#3",
-      "value": 0.5545385291002447
+      "value": 0.6888426647657111
     },
     {
       "sample_id": "cnn-test-404f859482d47c127868964a9a39d1a7645dd2e9#4",
-      "value": 0.7771011378002872
+      "value": 0.8205626851333089
     },
     {
       "sample_id": "cnn-test-404f859482d47c127868964a9a39d1a7645dd2e9#5",
-      "value": 0.5490713790274725
+      "value": 0.6713908474741359
     },
     {
       "sample_id": "cnn-test-404f859482d47c127868964a9a39d1a7645dd2e9#6",
-      "value": 0.7627513666123136
+      "value": 0.8196882681054974
     },
     {
       "sample_id": "cnn-test-404f859482d47c127868964a9a39d1a7645dd2e9#7",
-      "value": 0.6111518734271263
+      "value": 0.7058735026817891
     },
     {
       "sample_id": "cnn-test-404f859482d47c127868964a9a39d1a7645dd2e9#8",
-      "value": 0.9713425405868727
+      "value": 0.9895167285834565
     },
     {
       "sample_id": "cnn-test-404f859482d47c127868964a9a39d1a7645dd2e9#9",
-      "value": 0.6283952741435483
+      "value": 0.714534049215732
     },
     {
       "sample_id": "cnn-test-404f859482d47c127868964a9a39d1a7645dd2e9#10",
-      "value": 0.6907448219000343
+      "value": 0.7864656002455932
     },
     {
       "sample_id": "cnn-test-404f859482d47c127868964a9a39d1a7645dd2e9#11",
-      "value": 0.790754394833237
+      "value": 0.835899393356876
     },
     {
       "sample_id": "cnn-test-404f859482d47c127868964a9a39d1a7645dd2e9#12",
-      "value": 0.6911597909551053
+      "value": 0.8066467805587474
     },
     {
       "sample_id": "cnn-test-404f859482d47c127868964a9a39d1a7645dd2e9#13",
-      "value": 0.5363160670158043
+      "value": 0.6677000918076453
     },
     {
       "sample_id": "cnn-test-404f859482d47c127868964a9a39d1a7645dd2e9#14",
-      "value": 0.6456122419047201
+      "value": 0.7011964576733426
     },
     {
       "sample_id": "cnn-test-404f859482d47c127868964a9a39d1a7645dd2e9#15",
-      "value": 0.6120804173646975
+      "value": 0.6838454445712455
     },
     {
       "sample_id": "cnn-test-4761dc6d8bdf56b9ada97104113dd1bcf4aed3f1#0",
-      "value": 0.7492918849968752
+      "value": 0.769561012219589
     },
     {
       "sample_id": "cnn-test-4761dc6d8bdf56b9ada97104113dd1bcf4aed3f1#1",
-      "value": 0.7971191919995751
+      "value": 0.8608499508022591
     },
     {
       "sample_id": "cnn-test-4761dc6d8bdf56b9ada97104113dd1bcf4aed3f1#2",
-      "value": 0.7167705365137547
+      "value": 0.7805544938984124
     },
     {
       "sample_id": "cnn-test-4761dc6d8bdf56b9ada97104113dd1bcf4aed3f1#3",
-      "value": 0.728859843068658
+      "value": 0.8187847787128221
     },
     {
       "sample_id": "cnn-test-4761dc6d8bdf56b9ada97104113dd1bcf4aed3f1#4",
-      "value": 0.6654108682310397
+      "value": 0.7164497135973861
     },
     {
       "sample_id": "cnn-test-4761dc6d8bdf56b9ada97104113dd1bcf4aed3f1#5",
-      "value": 0.7149632180052344
+      "value": 0.758641616879061
     },
     {
       "sample_id": "cnn-test-4761dc6d8bdf56b9ada97104113dd1bcf4aed3f1#6",
-      "value": 0.7980893604715962
+      "value": 0.8624407617604546
     },
     {
       "sample_id": "cnn-test-4761dc6d8bdf56b9ada97104113dd1bcf4aed3f1#7",
-      "value": 0.6634306105299868
+      "value": 0.7084506406883836
     },
     {
       "sample_id": "cnn-test-4761dc6d8bdf56b9ada97104113dd1bcf4aed3f1#8",
-      "value": 0.5939181584719323
+      "value": 0.661959167682769
     },
     {
       "sample_id": "cnn-test-4761dc6d8bdf56b9ada97104113dd1bcf4aed3f1#9",
-      "value": 0.7410281835970854
+      "value": 0.7941222199235414
     },
     {
       "sample_id": "cnn-test-4761dc6d8bdf56b9ada97104113dd1bcf4aed3f1#10",
-      "value": 0.6402421648605886
+      "value": 0.7252874413734657
     },
     {
       "sample_id": "cnn-test-4761dc6d8bdf56b9ada97104113dd1bcf4aed3f1#11",
-      "value": 0.7762570650504083
+      "value": 0.7977277861824111
     },
     {
       "sample_id": "cnn-test-4761dc6d8bdf56b9ada97104113dd1bcf4aed3f1#12",
-      "value": 0.8987786129754424
+      "value": 0.9310213296050945
     },
     {
       "sample_id": "cnn-test-4761dc6d8bdf56b9ada97104113dd1bcf4aed3f1#13",
-      "value": 0.7779023542773411
+      "value": 0.8436867605907074
     },
     {
       "sample_id": "cnn-test-4761dc6d8bdf56b9ada97104113dd1bcf4aed3f1#14",
-      "value": 0.7009256325054855
+      "value": 0.733577022510966
     },
     {
       "sample_id": "cnn-test-4761dc6d8bdf56b9ada97104113dd1bcf4aed3f1#15",
-      "value": 0.7436824073388363
+      "value": 0.7947450149111095
     },
     {
       "sample_id": "cnn-test-5139ccfabee55ddb83e7937f5802c0a67aee8975#0",
-      "value": 0.7128636552191022
+      "value": 0.7403248314815679
     },
     {
       "sample_id": "cnn-test-5139ccfabee55ddb83e7937f5802c0a67aee8975#1",
-      "value": 0.757816568891795
+      "value": 0.8190958958092748
     },
     {
       "sample_id": "cnn-test-5139ccfabee55ddb83e7937f5802c0a67aee8975#2",
-      "value": 0.7088399129688752
+      "value": 0.7821679153198375
     },
     {
       "sample_id": "cnn-test-5139ccfabee55ddb83e7937f5802c0a67aee8975#3",
-      "value": 0.6608042731705043
+      "value": 0.7527984828049905
     },
     {
       "sample_id": "cnn-test-5139ccfabee55ddb83e7937f5802c0a67aee8975#4",
-      "value": 0.7690779734416509
+      "value": 0.7856301863852673
     },
     {
       "sample_id": "cnn-test-5139ccfabee55ddb83e7937f5802c0a67aee8975#5",
-      "value": 0.7608628847391493
+      "value": 0.8414694752622248
     },
     {
       "sample_id": "cnn-test-5139ccfabee55ddb83e7937f5802c0a67aee8975#6",
-      "value": 0.757602233942384
+      "value": 0.797084437575717
     },
     {
       "sample_id": "cnn-test-5139ccfabee55ddb83e7937f5802c0a67aee8975#7",
-      "value": 0.6745356044038193
+      "value": 0.7384826953783428
     },
     {
       "sample_id": "cnn-test-5139ccfabee55ddb83e7937f5802c0a67aee8975#8",
-      "value": 0.7970935470572486
+      "value": 0.8670857527848891
     },
     {
       "sample_id": "cnn-test-5139ccfabee55ddb83e7937f5802c0a67aee8975#9",
-      "value": 0.6729838236660308
+      "value": 0.7497220353517429
     },
     {
       "sample_id": "cnn-test-5139ccfabee55ddb83e7937f5802c0a67aee8975#10",
-      "value": 0.7581285066438945
+      "value": 0.7976107102772275
     },
     {
       "sample_id": "cnn-test-5139ccfabee55ddb83e7937f5802c0a67aee8975#11",
-      "value": 0.7581285066438945
+      "value": 0.7976107102772275
     },
     {
       "sample_id": "cnn-test-5139ccfabee55ddb83e7937f5802c0a67aee8975#12",
-      "value": 0.8628679178919773
+      "value": 0.901894848109964
     },
     {
       "sample_id": "cnn-test-5139ccfabee55ddb83e7937f5802c0a67aee8975#13",
-      "value": 0.7329102066020513
+      "value": 0.8369879830131761
     },
     {
       "sample_id": "cnn-test-5139ccfabee55ddb83e7937f5802c0a67aee8975#14",
-      "value": 0.6972302869763571
+      "value": 0.7629009873415438
     },
     {
       "sample_id": "cnn-test-5139ccfabee55ddb83e7937f5802c0a67aee8975#15",
-      "value": 0.6409289138474836
+      "value": 0.7188202169175725
     },
     {
       "sample_id": "cnn-test-88c2481234e763c9bbc68d0ab1be1d2375c1349a#0",
-      "value": 0.5877755397682966
+      "value": 0.6218560232976283
     },
     {
       "sample_id": "cnn-test-88c2481234e763c9bbc68d0ab1be1d2375c1349a#1",
-      "value": 0.7143151605840722
+      "value": 0.8011432783121779
     },
     {
       "sample_id": "cnn-test-88c2481234e763c9bbc68d0ab1be1d2375c1349a#2",
-      "value": 0.7115639256487214
+      "value": 0.7528765876019571
     },
     {
       "sample_id": "cnn-test-88c2481234e763c9bbc68d0ab1be1d2375c1349a#3",
-      "value": 0.7344410173385688
+      "value": 0.7987803128350608
     },
     {
       "sample_id": "cnn-test-88c2481234e763c9bbc68d0ab1be1d2375c1349a#4",
-      "value": 0.7478487760894055
+      "value": 0.7907989852532102
     },
     {
       "sample_id": "cnn-test-88c2481234e763c9bbc68d0ab1be1d2375c1349a#5",
-      "value": 0.7044499484614463
+      "value": 0.752239449862135
     },
     {
       "sample_id": "cnn-test-88c2481234e763c9bbc68d0ab1be1d2375c1349a#6",
-      "value": 0.7589281213171084
+      "value": 0.8126631070523914
     },
     {
       "sample_id": "cnn-test-88c2481234e763c9bbc68d0ab1be1d2375c1349a#7",
@@ -235,63 +235,63 @@
     },
     {
       "sample_id": "cnn-test-88c2481234e763c9bbc68d0ab1be1d2375c1349a#9",
-      "value": 0.7072271905226248
+      "value": 0.7778981376652014
     },
     {
       "sample_id": "cnn-test-88c2481234e763c9bbc68d0ab1be1d2375c1349a#10",
-      "value": 0.7613670827637211
+      "value": 0.8302911372705107
     },
     {
       "sample_id": "cnn-test-88c2481234e763c9bbc68d0ab1be1d2375c1349a#11",
-      "value": 0.7824660683784712
+      "value": 0.8245605612236515
     },
     {
       "sample_id": "cnn-test-88c2481234e763c9bbc68d0ab1be1d2375c1349a#12",
-      "value": 0.7492336100545469
+      "value": 0.7730582297070084
     },
     {
       "sample_id": "cnn-test-88c2481234e763c9bbc68d0ab1be1d2375c1349a#13",
-      "value": 0.628667478030377
+      "value": 0.6718226580599312
     },
     {
       "sample_id": "cnn-test-88c2481234e763c9bbc68d0ab1be1d2375c1349a#14",
-      "value": 0.6150683742340551
+      "value": 0.6927947730521042
     },
     {
       "sample_id": "cnn-test-88c2481234e763c9bbc68d0ab1be1d2375c1349a#15",
-      "value": 0.7143286238867425
+      "value": 0.758461729431551
     },
     {
       "sample_id": "cnn-test-a02e362c5b8f049848ce718b37b96117485461cf#0",
-      "value": 0.6401075886274424
+      "value": 0.7653524713205504
     },
     {
       "sample_id": "cnn-test-a02e362c5b8f049848ce718b37b96117485461cf#1",
-      "value": 0.6479183011990027
+      "value": 0.7927488702739258
     },
     {
       "sample_id": "cnn-test-a02e362c5b8f049848ce718b37b96117485461cf#2",
-      "value": 0.7435254851568229
+      "value": 0.7980469768812944
     },
     {
       "sample_id": "cnn-test-a02e362c5b8f049848ce718b37b96117485461cf#3",
-      "value": 0.6600329410425735
+      "value": 0.7775470045574522
     },
     {
       "sample_id": "cnn-test-a02e362c5b8f049848ce718b37b96117485461cf#4",
-      "value": 0.6360530435369348
+      "value": 0.7995840599823109
     },
     {
       "sample_id": "cnn-test-a02e362c5b8f049848ce718b37b96117485461cf#5",
-      "value": 0.6457497313320254
+      "value": 0.8007936549285719
     },
     {
       "sample_id": "cnn-test-a02e362c5b8f049848ce718b37b96117485461cf#6",
-      "value": 0.7091744324149248
+      "value": 0.8056172088503792
     },
     {
       "sample_id": "cnn-test-a02e362c5b8f049848ce718b37b96117485461cf#7",
-      "value": 0.6141139758085776
+      "value": 0.7400139330425924
     },
     {
       "sample_id": "cnn-test-a02e362c5b8f049848ce718b37b96117485461cf#8",
@@ -299,703 +299,703 @@
     },
     {
       "sample_id": "cnn-test-a02e362c5b8f049848ce718b37b96117485461cf#9",
-      "value": 0.7461764433239393
+      "value": 0.800756076613548
     },
     {
       "sample_id": "cnn-test-a02e362c5b8f049848ce718b37b96117485461cf#10",
-      "value": 0.6940170058342764
+      "value": 0.797883855085823
     },
     {
       "sample_id": "cnn-test-a02e362c5b8f049848ce718b37b96117485461cf#11",
-      "value": 0.7503863705752408
+      "value": 0.7866952706814637
     },
     {
       "sample_id": "cnn-test-a02e362c5b8f049848ce718b37b96117485461cf#12",
-      "value": 0.6887320331536341
+      "value": 0.861592951538974
     },
     {
       "sample_id": "cnn-test-a02e362c5b8f049848ce718b37b96117485461cf#13",
-      "value": 0.7082205307416464
+      "value": 0.8007817990295495
     },
     {
       "sample_id": "cnn-test-a02e362c5b8f049848ce718b37b96117485461cf#14",
-      "value": 0.5788243058585638
+      "value": 0.7125263349854327
     },
     {
       "sample_id": "cnn-test-a02e362c5b8f049848ce718b37b96117485461cf#15",
-      "value": 0.6681083531547689
+      "value": 0.8034956069347031
     },
     {
       "sample_id": "cnn-test-b1c3fc03a2b74cf4c79844c1fe2fdce70a8a436e#0",
-      "value": 0.6950016682442397
+      "value": 0.756705280259882
     },
     {
       "sample_id": "cnn-test-b1c3fc03a2b74cf4c79844c1fe2fdce70a8a436e#1",
-      "value": 0.7572999291645535
+      "value": 0.8040815092927917
     },
     {
       "sample_id": "cnn-test-b1c3fc03a2b74cf4c79844c1fe2fdce70a8a436e#2",
-      "value": 0.7755480663816993
+      "value": 0.8273041209161526
     },
     {
       "sample_id": "cnn-test-b1c3fc03a2b74cf4c79844c1fe2fdce70a8a436e#3",
-      "value": 0.7245737017996071
+      "value": 0.7760245881081498
     },
     {
       "sample_id": "cnn-test-b1c3fc03a2b74cf4c79844c1fe2fdce70a8a436e#4",
-      "value": 0.7476459781950114
+      "value": 0.7959041975392144
     },
     {
       "sample_id": "cnn-test-b1c3fc03a2b74cf4c79844c1fe2fdce70a8a436e#5",
-      "value": 0.7627835700715163
+      "value": 0.8120180802131137
     },
     {
       "sample_id": "cnn-test-b1c3fc03a2b74cf4c79844c1fe2fdce70a8a436e#6",
-      "value": 0.7781806817841448
+      "value": 0.8053333107430742
     },
     {
       "sample_id": "cnn-test-b1c3fc03a2b74cf4c79844c1fe2fdce70a8a436e#7",
-      "value": 0.6275731555605063
+      "value": 0.7234724694479966
     },
     {
       "sample_id": "cnn-test-b1c3fc03a2b74cf4c79844c1fe2fdce70a8a436e#8",
-      "value": 0.7432486612438646
+      "value": 0.7911840814922111
     },
     {
       "sample_id": "cnn-test-b1c3fc03a2b74cf4c79844c1fe2fdce70a8a436e#9",
-      "value": 0.6947068193610372
+      "value": 0.7756003428430107
     },
     {
       "sample_id": "cnn-test-b1c3fc03a2b74cf4c79844c1fe2fdce70a8a436e#10",
-      "value": 0.6903479541244445
+      "value": 0.7836858619248646
     },
     {
       "sample_id": "cnn-test-b1c3fc03a2b74cf4c79844c1fe2fdce70a8a436e#11",
-      "value": 0.7755480663816993
+      "value": 0.8273041209161526
     },
     {
       "sample_id": "cnn-test-b1c3fc03a2b74cf4c79844c1fe2fdce70a8a436e#12",
-      "value": 0.7067657767526497
+      "value": 0.793751099856103
     },
     {
       "sample_id": "cnn-test-b1c3fc03a2b74cf4c79844c1fe2fdce70a8a436e#13",
-      "value": 0.7383101406686712
+      "value": 0.7707047816333238
     },
     {
       "sample_id": "cnn-test-b1c3fc03a2b74cf4c79844c1fe2fdce70a8a436e#14",
-      "value": 0.6679422471965442
+      "value": 0.7290719280625998
     },
     {
       "sample_id": "cnn-test-b1c3fc03a2b74cf4c79844c1fe2fdce70a8a436e#15",
-      "value": 0.6666881158160833
+      "value": 0.7462417428832986
     },
     {
       "sample_id": "cnn-test-b8b6e729fff27c4eef87887e61d3448de9c063f6#0",
-      "value": 0.7217514716419955
+      "value": 0.7531121297955455
     },
     {
       "sample_id": "cnn-test-b8b6e729fff27c4eef87887e61d3448de9c063f6#1",
-      "value": 0.6209065523989179
+      "value": 0.7079118940619996
     },
     {
       "sample_id": "cnn-test-b8b6e729fff27c4eef87887e61d3448de9c063f6#2",
-      "value": 0.788885711600722
+      "value": 0.8400673877146827
     },
     {
       "sample_id": "cnn-test-b8b6e729fff27c4eef87887e61d3448de9c063f6#3",
-      "value": 0.7179903252778048
+      "value": 0.7848542984716433
     },
     {
       "sample_id": "cnn-test-b8b6e729fff27c4eef87887e61d3448de9c063f6#4",
-      "value": 0.7647465195520428
+      "value": 0.8133440755268709
     },
     {
       "sample_id": "cnn-test-b8b6e729fff27c4eef87887e61d3448de9c063f6#5",
-      "value": 0.7096501578502195
+      "value": 0.7805665545120878
     },
     {
       "sample_id": "cnn-test-b8b6e729fff27c4eef87887e61d3448de9c063f6#6",
-      "value": 0.7353074339374616
+      "value": 0.766360075091321
     },
     {
       "sample_id": "cnn-test-b8b6e729fff27c4eef87887e61d3448de9c063f6#7",
-      "value": 0.6147082180364606
+      "value": 0.6819740153717969
     },
     {
       "sample_id": "cnn-test-b8b6e729fff27c4eef87887e61d3448de9c063f6#8",
-      "value": 0.707314831130307
+      "value": 0.7587543604205936
     },
     {
       "sample_id": "cnn-test-b8b6e729fff27c4eef87887e61d3448de9c063f6#9",
-      "value": 0.7240143399442804
+      "value": 0.7666934853639638
     },
     {
       "sample_id": "cnn-test-b8b6e729fff27c4eef87887e61d3448de9c063f6#10",
-      "value": 0.7440561768026072
+      "value": 0.7529948546969066
     },
     {
       "sample_id": "cnn-test-b8b6e729fff27c4eef87887e61d3448de9c063f6#11",
-      "value": 0.8301272471672867
+      "value": 0.8591054950462941
     },
     {
       "sample_id": "cnn-test-b8b6e729fff27c4eef87887e61d3448de9c063f6#12",
-      "value": 0.7739808767163776
+      "value": 0.8728659774833312
     },
     {
       "sample_id": "cnn-test-b8b6e729fff27c4eef87887e61d3448de9c063f6#13",
-      "value": 0.6178914044179497
+      "value": 0.7212235998634329
     },
     {
       "sample_id": "cnn-test-b8b6e729fff27c4eef87887e61d3448de9c063f6#14",
-      "value": 0.7523962016820832
+      "value": 0.7855535461603674
     },
     {
       "sample_id": "cnn-test-b8b6e729fff27c4eef87887e61d3448de9c063f6#15",
-      "value": 0.7154298509779651
+      "value": 0.7798466628820763
     },
     {
       "sample_id": "cnn-test-bcdb32ae644040a721da880fff9c1d502048cd8b#0",
-      "value": 0.7624211063360004
+      "value": 0.787505942597373
     },
     {
       "sample_id": "cnn-test-bcdb32ae644040a721da880fff9c1d502048cd8b#1",
-      "value": 0.5939299619370927
+      "value": 0.6517054560881909
     },
     {
       "sample_id": "cnn-test-bcdb32ae644040a721da880fff9c1d502048cd8b#2",
-      "value": 0.6218629008195824
+      "value": 0.6720057634161187
     },
     {
       "sample_id": "cnn-test-bcdb32ae644040a721da880fff9c1d502048cd8b#3",
-      "value": 0.7359241654512456
+      "value": 0.7801380226693718
     },
     {
       "sample_id": "cnn-test-bcdb32ae644040a721da880fff9c1d502048cd8b#4",
-      "value": 0.6247912177086266
+      "value": 0.6582376660571236
     },
     {
       "sample_id": "cnn-test-bcdb32ae644040a721da880fff9c1d502048cd8b#5",
-      "value": 0.6507748011517583
+      "value": 0.7346699489613955
     },
     {
       "sample_id": "cnn-test-bcdb32ae644040a721da880fff9c1d502048cd8b#6",
-      "value": 0.66103210974698
+      "value": 0.7237106879926504
     },
     {
       "sample_id": "cnn-test-bcdb32ae644040a721da880fff9c1d502048cd8b#7",
-      "value": 0.6617966339455634
+      "value": 0.7399190963246665
     },
     {
       "sample_id": "cnn-test-bcdb32ae644040a721da880fff9c1d502048cd8b#8",
-      "value": 0.8218293088330441
+      "value": 0.892710487584487
     },
     {
       "sample_id": "cnn-test-bcdb32ae644040a721da880fff9c1d502048cd8b#9",
-      "value": 0.6097776043154437
+      "value": 0.73856162957919
     },
     {
       "sample_id": "cnn-test-bcdb32ae644040a721da880fff9c1d502048cd8b#10",
-      "value": 0.6338746093627667
+      "value": 0.6714683513470645
     },
     {
       "sample_id": "cnn-test-bcdb32ae644040a721da880fff9c1d502048cd8b#11",
-      "value": 0.661190686903168
+      "value": 0.745442366188786
     },
     {
       "sample_id": "cnn-test-bcdb32ae644040a721da880fff9c1d502048cd8b#12",
-      "value": 0.749623937149642
+      "value": 0.8422703497040166
     },
     {
       "sample_id": "cnn-test-bcdb32ae644040a721da880fff9c1d502048cd8b#13",
-      "value": 0.6074472813755983
+      "value": 0.6486672517331254
     },
     {
       "sample_id": "cnn-test-bcdb32ae644040a721da880fff9c1d502048cd8b#14",
-      "value": 0.576543857366081
+      "value": 0.592025401318408
     },
     {
       "sample_id": "cnn-test-bcdb32ae644040a721da880fff9c1d502048cd8b#15",
-      "value": 0.6637293676864848
+      "value": 0.7501091641119265
     },
     {
       "sample_id": "cnn-test-c05bda9b387ec8ae43803170b6f59b4b82505db9#0",
-      "value": 0.6993215951862385
+      "value": 0.7048286702117625
     },
     {
       "sample_id": "cnn-test-c05bda9b387ec8ae43803170b6f59b4b82505db9#1",
-      "value": 0.7300751686493375
+      "value": 0.7607497227707011
     },
     {
       "sample_id": "cnn-test-c05bda9b387ec8ae43803170b6f59b4b82505db9#2",
-      "value": 0.8019963655927606
+      "value": 0.8178875710986464
     },
     {
       "sample_id": "cnn-test-c05bda9b387ec8ae43803170b6f59b4b82505db9#3",
-      "value": 0.6955798758656622
+      "value": 0.7199872265014141
     },
     {
       "sample_id": "cnn-test-c05bda9b387ec8ae43803170b6f59b4b82505db9#4",
-      "value": 0.6825143108376477
+      "value": 0.7277406119730216
     },
     {
       "sample_id": "cnn-test-c05bda9b387ec8ae43803170b6f59b4b82505db9#5",
-      "value": 0.8336862898236297
+      "value": 0.8482805740245398
     },
     {
       "sample_id": "cnn-test-c05bda9b387ec8ae43803170b6f59b4b82505db9#6",
-      "value": 0.7678041964658511
+      "value": 0.7998234069134144
     },
     {
       "sample_id": "cnn-test-c05bda9b387ec8ae43803170b6f59b4b82505db9#7",
-      "value": 0.6950564539832944
+      "value": 0.7087924690968065
     },
     {
       "sample_id": "cnn-test-c05bda9b387ec8ae43803170b6f59b4b82505db9#8",
-      "value": 0.7039402526768732
+      "value": 0.7660963900063176
     },
     {
       "sample_id": "cnn-test-c05bda9b387ec8ae43803170b6f59b4b82505db9#9",
-      "value": 0.6884051217507307
+      "value": 0.7447679072997015
     },
     {
       "sample_id": "cnn-test-c05bda9b387ec8ae43803170b6f59b4b82505db9#10",
-      "value": 0.7849445201117073
+      "value": 0.8107952048424468
     },
     {
       "sample_id": "cnn-test-c05bda9b387ec8ae43803170b6f59b4b82505db9#11",
-      "value": 0.8069958375832291
+      "value": 0.8337218295812908
     },
     {
       "sample_id": "cnn-test-c05bda9b387ec8ae43803170b6f59b4b82505db9#12",
-      "value": 0.8011361134483787
+      "value": 0.8784864451905467
     },
     {
       "sample_id": "cnn-test-c05bda9b387ec8ae43803170b6f59b4b82505db9#13",
-      "value": 0.5497432797391342
+      "value": 0.6470751711119589
     },
     {
       "sample_id": "cnn-test-c05bda9b387ec8ae43803170b6f59b4b82505db9#14",
-      "value": 0.7491838126489178
+      "value": 0.7756306341182181
     },
     {
       "sample_id": "cnn-test-c05bda9b387ec8ae43803170b6f59b4b82505db9#15",
-      "value": 0.6933870245875005
+      "value": 0.7139324001788985
     },
     {
       "sample_id": "cnn-test-d75b043ebefc3098aea84d92bb8bec0f509b1563#0",
-      "value": 0.6497287654132127
+      "value": 0.7087399903112572
     },
     {
       "sample_id": "cnn-test-d75b043ebefc3098aea84d92bb8bec0f509b1563#1",
-      "value": 0.7006790980768806
+      "value": 0.7678640829480662
     },
     {
       "sample_id": "cnn-test-d75b043ebefc3098aea84d92bb8bec0f509b1563#2",
-      "value": 0.7549862827623149
+      "value": 0.8255138624350625
     },
     {
       "sample_id": "cnn-test-d75b043ebefc3098aea84d92bb8bec0f509b1563#3",
-      "value": 0.6590240732145579
+      "value": 0.7662231338702156
     },
     {
       "sample_id": "cnn-test-d75b043ebefc3098aea84d92bb8bec0f509b1563#4",
-      "value": 0.7224736167841862
+      "value": 0.7912909279364354
     },
     {
       "sample_id": "cnn-test-d75b043ebefc3098aea84d92bb8bec0f509b1563#5",
-      "value": 0.6602475326025993
+      "value": 0.7409632278485297
     },
     {
       "sample_id": "cnn-test-d75b043ebefc3098aea84d92bb8bec0f509b1563#6",
-      "value": 0.7536050053005908
+      "value": 0.8241325849733384
     },
     {
       "sample_id": "cnn-test-d75b043ebefc3098aea84d92bb8bec0f509b1563#7",
-      "value": 0.6205295663668048
+      "value": 0.737710742178897
     },
     {
       "sample_id": "cnn-test-d75b043ebefc3098aea84d92bb8bec0f509b1563#8",
-      "value": 0.7580712914969236
+      "value": 0.7752120289323743
     },
     {
       "sample_id": "cnn-test-d75b043ebefc3098aea84d92bb8bec0f509b1563#9",
-      "value": 0.7491519295540621
+      "value": 0.8319485697309914
     },
     {
       "sample_id": "cnn-test-d75b043ebefc3098aea84d92bb8bec0f509b1563#10",
-      "value": 0.7666857580993005
+      "value": 0.8243262387046104
     },
     {
       "sample_id": "cnn-test-d75b043ebefc3098aea84d92bb8bec0f509b1563#11",
-      "value": 0.7841365958787868
+      "value": 0.8288801757762013
     },
     {
       "sample_id": "cnn-test-d75b043ebefc3098aea84d92bb8bec0f509b1563#12",
-      "value": 0.7729314203861715
+      "value": 0.8716743516134149
     },
     {
       "sample_id": "cnn-test-d75b043ebefc3098aea84d92bb8bec0f509b1563#13",
-      "value": 0.6394014561257868
+      "value": 0.7517816035202521
     },
     {
       "sample_id": "cnn-test-d75b043ebefc3098aea84d92bb8bec0f509b1563#14",
-      "value": 0.598873145573975
+      "value": 0.661327434961354
     },
     {
       "sample_id": "cnn-test-d75b043ebefc3098aea84d92bb8bec0f509b1563#15",
-      "value": 0.6865949964400666
+      "value": 0.7650731402080406
     },
     {
       "sample_id": "cnn-test-e2bccd4dec93c9bb7b327827dae004c2d494ec31#0",
-      "value": 0.6108800235856507
+      "value": 0.6154462386101245
     },
     {
       "sample_id": "cnn-test-e2bccd4dec93c9bb7b327827dae004c2d494ec31#1",
-      "value": 0.6757492789646561
+      "value": 0.7087029134699169
     },
     {
       "sample_id": "cnn-test-e2bccd4dec93c9bb7b327827dae004c2d494ec31#2",
-      "value": 0.7313413719806655
+      "value": 0.7760770332418995
     },
     {
       "sample_id": "cnn-test-e2bccd4dec93c9bb7b327827dae004c2d494ec31#3",
-      "value": 0.6304084515903841
+      "value": 0.660071504794821
     },
     {
       "sample_id": "cnn-test-e2bccd4dec93c9bb7b327827dae004c2d494ec31#4",
-      "value": 0.7669378850526751
+      "value": 0.7878776894013837
     },
     {
       "sample_id": "cnn-test-e2bccd4dec93c9bb7b327827dae004c2d494ec31#5",
-      "value": 0.6753874759247391
+      "value": 0.7261183731370596
     },
     {
       "sample_id": "cnn-test-e2bccd4dec93c9bb7b327827dae004c2d494ec31#6",
-      "value": 0.8321083863638005
+      "value": 0.85287900548935
     },
     {
       "sample_id": "cnn-test-e2bccd4dec93c9bb7b327827dae004c2d494ec31#7",
-      "value": 0.587144875839195
+      "value": 0.6257739090689078
     },
     {
       "sample_id": "cnn-test-e2bccd4dec93c9bb7b327827dae004c2d494ec31#8",
-      "value": 0.6325318411359103
+      "value": 0.6560026044304366
     },
     {
       "sample_id": "cnn-test-e2bccd4dec93c9bb7b327827dae004c2d494ec31#9",
-      "value": 0.6745354566143401
+      "value": 0.752513275959744
     },
     {
       "sample_id": "cnn-test-e2bccd4dec93c9bb7b327827dae004c2d494ec31#10",
-      "value": 0.6197149836894014
+      "value": 0.7571390951274943
     },
     {
       "sample_id": "cnn-test-e2bccd4dec93c9bb7b327827dae004c2d494ec31#11",
-      "value": 0.8022573949062016
+      "value": 0.842298985618784
     },
     {
       "sample_id": "cnn-test-e2bccd4dec93c9bb7b327827dae004c2d494ec31#12",
-      "value": 0.7142579039939896
+      "value": 0.7893770634998252
     },
     {
       "sample_id": "cnn-test-e2bccd4dec93c9bb7b327827dae004c2d494ec31#13",
-      "value": 0.533231531321954
+      "value": 0.5923347886531647
     },
     {
       "sample_id": "cnn-test-e2bccd4dec93c9bb7b327827dae004c2d494ec31#14",
-      "value": 0.6246419704137384
+      "value": 0.643185719922213
     },
     {
       "sample_id": "cnn-test-e2bccd4dec93c9bb7b327827dae004c2d494ec31#15",
-      "value": 0.5964983375564041
+      "value": 0.6509582742857226
     },
     {
       "sample_id": "cnn-test-e49792c337d3f4c13e22f710efa44cf6a4e59aba#0",
-      "value": 0.7197673810302674
+      "value": 0.751318547893307
     },
     {
       "sample_id": "cnn-test-e49792c337d3f4c13e22f710efa44cf6a4e59aba#1",
-      "value": 0.745251652912407
+      "value": 0.8196509461882658
     },
     {
       "sample_id": "cnn-test-e49792c337d3f4c13e22f710efa44cf6a4e59aba#2",
-      "value": 0.8178713284886272
+      "value": 0.8810817373393967
     },
     {
       "sample_id": "cnn-test-e49792c337d3f4c13e22f710efa44cf6a4e59aba#3",
-      "value": 0.5851977782212802
+      "value": 0.6468517451764576
     },
     {
       "sample_id": "cnn-test-e49792c337d3f4c13e22f710efa44cf6a4e59aba#4",
-      "value": 0.7211929965791902
+      "value": 0.7934251327685377
     },
     {
       "sample_id": "cnn-test-e49792c337d3f4c13e22f710efa44cf6a4e59aba#5",
-      "value": 0.7742716733151648
+      "value": 0.8501882597160634
     },
     {
       "sample_id": "cnn-test-e49792c337d3f4c13e22f710efa44cf6a4e59aba#6",
-      "value": 0.8188507024036435
+      "value": 0.8760819348298785
     },
     {
       "sample_id": "cnn-test-e49792c337d3f4c13e22f710efa44cf6a4e59aba#7",
-      "value": 0.6481588015997772
+      "value": 0.7029643540449172
     },
     {
       "sample_id": "cnn-test-e49792c337d3f4c13e22f710efa44cf6a4e59aba#8",
-      "value": 0.7288582630507844
+      "value": 0.7417336146552257
     },
     {
       "sample_id": "cnn-test-e49792c337d3f4c13e22f710efa44cf6a4e59aba#9",
-      "value": 0.6775312957190297
+      "value": 0.7257406456736865
     },
     {
       "sample_id": "cnn-test-e49792c337d3f4c13e22f710efa44cf6a4e59aba#10",
-      "value": 0.8304543281642521
+      "value": 0.8811749764570104
     },
     {
       "sample_id": "cnn-test-e49792c337d3f4c13e22f710efa44cf6a4e59aba#11",
-      "value": 0.7764057238084439
+      "value": 0.8086810513433459
     },
     {
       "sample_id": "cnn-test-e49792c337d3f4c13e22f710efa44cf6a4e59aba#12",
-      "value": 0.7169778370980373
+      "value": 0.7549961883678094
     },
     {
       "sample_id": "cnn-test-e49792c337d3f4c13e22f710efa44cf6a4e59aba#13",
-      "value": 0.7876541470043952
+      "value": 0.8450949057429216
     },
     {
       "sample_id": "cnn-test-e49792c337d3f4c13e22f710efa44cf6a4e59aba#14",
-      "value": 0.6239877107430315
+      "value": 0.6981701208608749
     },
     {
       "sample_id": "cnn-test-e49792c337d3f4c13e22f710efa44cf6a4e59aba#15",
-      "value": 0.7566213345688286
+      "value": 0.8110313821461265
     },
     {
       "sample_id": "cnn-test-fbbafa743a8c2ecd2cedf65c6c61956b2db8ec5c#0",
-      "value": 0.6742925753809494
+      "value": 0.7550429859460666
     },
     {
       "sample_id": "cnn-test-fbbafa743a8c2ecd2cedf65c6c61956b2db8ec5c#1",
-      "value": 0.7270156314743971
+      "value": 0.8300806907239194
     },
     {
       "sample_id": "cnn-test-fbbafa743a8c2ecd2cedf65c6c61956b2db8ec5c#2",
-      "value": 0.7014212438613172
+      "value": 0.8104002934179974
     },
     {
       "sample_id": "cnn-test-fbbafa743a8c2ecd2cedf65c6c61956b2db8ec5c#3",
-      "value": 0.6017720869771979
+      "value": 0.6735526656997836
     },
     {
       "sample_id": "cnn-test-fbbafa743a8c2ecd2cedf65c6c61956b2db8ec5c#4",
-      "value": 0.7201888111505089
+      "value": 0.7760926477899153
     },
     {
       "sample_id": "cnn-test-fbbafa743a8c2ecd2cedf65c6c61956b2db8ec5c#5",
-      "value": 0.8015198149785212
+      "value": 0.8802091529351619
     },
     {
       "sample_id": "cnn-test-fbbafa743a8c2ecd2cedf65c6c61956b2db8ec5c#6",
-      "value": 0.7998537416823388
+      "value": 0.8784356271432248
     },
     {
       "sample_id": "cnn-test-fbbafa743a8c2ecd2cedf65c6c61956b2db8ec5c#7",
-      "value": 0.6105266234782588
+      "value": 0.6989285756043239
     },
     {
       "sample_id": "cnn-test-fbbafa743a8c2ecd2cedf65c6c61956b2db8ec5c#8",
-      "value": 0.6750089339813833
+      "value": 0.7161298953731494
     },
     {
       "sample_id": "cnn-test-fbbafa743a8c2ecd2cedf65c6c61956b2db8ec5c#9",
-      "value": 0.6155811107931377
+      "value": 0.7359984427810582
     },
     {
       "sample_id": "cnn-test-fbbafa743a8c2ecd2cedf65c6c61956b2db8ec5c#10",
-      "value": 0.7245705685200877
+      "value": 0.8273100714195926
     },
     {
       "sample_id": "cnn-test-fbbafa743a8c2ecd2cedf65c6c61956b2db8ec5c#11",
-      "value": 0.8196985032417596
+      "value": 0.87215806187952
     },
     {
       "sample_id": "cnn-test-fbbafa743a8c2ecd2cedf65c6c61956b2db8ec5c#12",
-      "value": 0.713243301605007
+      "value": 0.800271034245977
     },
     {
       "sample_id": "cnn-test-fbbafa743a8c2ecd2cedf65c6c61956b2db8ec5c#13",
-      "value": 0.6467970197403049
+      "value": 0.6824988296606488
     },
     {
       "sample_id": "cnn-test-fbbafa743a8c2ecd2cedf65c6c61956b2db8ec5c#14",
-      "value": 0.6185646436305436
+      "value": 0.731965787706849
     },
     {
       "sample_id": "cnn-test-fbbafa743a8c2ecd2cedf65c6c61956b2db8ec5c#15",
-      "value": 0.6316094701698911
+      "value": 0.7004907268876543
     },
     {
       "sample_id": "dm-test-02c955067d00f38b6978b805d5a8701a787f78ac#0",
-      "value": 0.6694747442069129
+      "value": 0.7085285590621747
     },
     {
       "sample_id": "dm-test-02c955067d00f38b6978b805d5a8701a787f78ac#1",
-      "value": 0.6670856627183955
+      "value": 0.6965121219806143
     },
     {
       "sample_id": "dm-test-02c955067d00f38b6978b805d5a8701a787f78ac#2",
-      "value": 0.6827408374259738
+      "value": 0.7795791832468424
     },
     {
       "sample_id": "dm-test-02c955067d00f38b6978b805d5a8701a787f78ac#3",
-      "value": 0.6941131978052164
+      "value": 0.7489380425295723
     },
     {
       "sample_id": "dm-test-02c955067d00f38b6978b805d5a8701a787f78ac#4",
-      "value": 0.6946106305618873
+      "value": 0.7458281291235529
     },
     {
       "sample_id": "dm-test-02c955067d00f38b6978b805d5a8701a787f78ac#5",
-      "value": 0.7455544455258317
+      "value": 0.8169581597291282
     },
     {
       "sample_id": "dm-test-02c955067d00f38b6978b805d5a8701a787f78ac#6",
-      "value": 0.7263250848664897
+      "value": 0.785800436608791
     },
     {
       "sample_id": "dm-test-02c955067d00f38b6978b805d5a8701a787f78ac#7",
-      "value": 0.7207167908441212
+      "value": 0.7783805014634003
     },
     {
       "sample_id": "dm-test-02c955067d00f38b6978b805d5a8701a787f78ac#8",
-      "value": 0.5574393433870414
+      "value": 0.6404947492325421
     },
     {
       "sample_id": "dm-test-02c955067d00f38b6978b805d5a8701a787f78ac#9",
-      "value": 0.6635957998105833
+      "value": 0.7233515549983168
     },
     {
       "sample_id": "dm-test-02c955067d00f38b6978b805d5a8701a787f78ac#10",
-      "value": 0.7987385275621742
+      "value": 0.8556320098736571
     },
     {
       "sample_id": "dm-test-02c955067d00f38b6978b805d5a8701a787f78ac#11",
-      "value": 0.7987385275621742
+      "value": 0.8556320098736571
     },
     {
       "sample_id": "dm-test-02c955067d00f38b6978b805d5a8701a787f78ac#12",
-      "value": 0.804538181877121
+      "value": 0.8642404663692994
     },
     {
       "sample_id": "dm-test-02c955067d00f38b6978b805d5a8701a787f78ac#13",
-      "value": 0.7870385191273588
+      "value": 0.8123221052519869
     },
     {
       "sample_id": "dm-test-02c955067d00f38b6978b805d5a8701a787f78ac#14",
-      "value": 0.6644841578643091
+      "value": 0.7967265701722273
     },
     {
       "sample_id": "dm-test-02c955067d00f38b6978b805d5a8701a787f78ac#15",
-      "value": 0.6874327490691956
+      "value": 0.7172130071267186
     },
     {
       "sample_id": "dm-test-03e271b4305517e02c9ead82d57327d32b99102e#0",
-      "value": 0.6194036307117882
+      "value": 0.6328458457497483
     },
     {
       "sample_id": "dm-test-03e271b4305517e02c9ead82d57327d32b99102e#1",
-      "value": 0.5898564698938688
+      "value": 0.6688513043840132
     },
     {
       "sample_id": "dm-test-03e271b4305517e02c9ead82d57327d32b99102e#2",
-      "value": 0.5856999836868159
+      "value": 0.6585990010747936
     },
     {
       "sample_id": "dm-test-03e271b4305517e02c9ead82d57327d32b99102e#3",
-      "value": 0.7061476514019533
+      "value": 0.7474974443511887
     },
     {
       "sample_id": "dm-test-03e271b4305517e02c9ead82d57327d32b99102e#4",
-      "value": 0.6609100956653338
+      "value": 0.6983069184763302
     },
     {
       "sample_id": "dm-test-03e271b4305517e02c9ead82d57327d32b99102e#5",
-      "value": 0.7124131695714603
+      "value": 0.7544572086661473
     },
     {
       "sample_id": "dm-test-03e271b4305517e02c9ead82d57327d32b99102e#6",
-      "value": 0.7304364168323868
+      "value": 0.7753128888402129
     },
     {
       "sample_id": "dm-test-03e271b4305517e02c9ead82d57327d32b99102e#7",
-      "value": 0.6437108792430338
+      "value": 0.6805243523725394
     },
     {
       "sample_id": "dm-test-03e271b4305517e02c9ead82d57327d32b99102e#8",
-      "value": 0.7246923777614498
+      "value": 0.7714310205470715
     },
     {
       "sample_id": "dm-test-03e271b4305517e02c9ead82d57327d32b99102e#9",
-      "value": 0.6363417288771226
+      "value": 0.6913550276466763
     },
     {
       "sample_id": "dm-test-03e271b4305517e02c9ead82d57327d32b99102e#10",
-      "value": 0.6896492856793567
+      "value": 0.7408875859022351
     },
     {
       "sample_id": "dm-test-03e271b4305517e02c9ead82d57327d32b99102e#11",
-      "value": 0.7313999128087895
+      "value": 0.7763155723863785
     },
     {
       "sample_id": "dm-test-03e271b4305517e02c9ead82d57327d32b99102e#12",
-      "value": 0.7170436383812847
+      "value": 0.7902318064707298
     },
     {
       "sample_id": "dm-test-03e271b4305517e02c9ead82d57327d32b99102e#13",
-      "value": 0.5799681664055223
+      "value": 0.6436383100151136
     },
     {
       "sample_id": "dm-test-03e271b4305517e02c9ead82d57327d32b99102e#14",
-      "value": 0.566804849156563
+      "value": 0.64281643137626
     },
     {
       "sample_id": "dm-test-03e271b4305517e02c9ead82d57327d32b99102e#15",
-      "value": 0.5478670208003356
+      "value": 0.6034247840885878
     },
     {
       "sample_id": "dm-test-051db270afc32571a08c15124330efe89d80fea8#0",
-      "value": 0.7574190867703214
+      "value": 0.8021085445956344
     },
     {
       "sample_id": "dm-test-051db270afc32571a08c15124330efe89d80fea8#1",
-      "value": 0.8432653431265745
+      "value": 0.8820678059918
     },
     {
       "sample_id": "dm-test-051db270afc32571a08c15124330efe89d80fea8#2",
-      "value": 0.8293778761283019
+      "value": 0.8420385940775788
     },
     {
       "sample_id": "dm-test-051db270afc32571a08c15124330efe89d80fea8#3",
-      "value": 0.8396665002883085
+      "value": 0.8781369875697179
     },
     {
       "sample_id": "dm-test-051db270afc32571a08c15124330efe89d80fea8#4",
-      "value": 0.8432653431265745
+      "value": 0.8820678059918
     },
     {
       "sample_id": "dm-test-051db270afc32571a08c15124330efe89d80fea8#5",
-      "value": 0.8349552148169112
+      "value": 0.8737576776821365
     },
     {
       "sample_id": "dm-test-051db270afc32571a08c15124330efe89d80fea8#6",
-      "value": 0.8316559161415211
+      "value": 0.8506395651547131
     },
     {
       "sample_id": "dm-test-051db270afc32571a08c15124330efe89d80fea8#7",
-      "value": 0.8446972023371196
+      "value": 0.8832844724170014
     },
     {
       "sample_id": "dm-test-051db270afc32571a08c15124330efe89d80fea8#8",
@@ -1003,63 +1003,63 @@
     },
     {
       "sample_id": "dm-test-051db270afc32571a08c15124330efe89d80fea8#9",
-      "value": 0.772383313973613
+      "value": 0.8494793199771257
     },
     {
       "sample_id": "dm-test-051db270afc32571a08c15124330efe89d80fea8#10",
-      "value": 0.8293778761283019
+      "value": 0.8420385940775788
     },
     {
       "sample_id": "dm-test-051db270afc32571a08c15124330efe89d80fea8#11",
-      "value": 0.8293778761283019
+      "value": 0.8420385940775788
     },
     {
       "sample_id": "dm-test-051db270afc32571a08c15124330efe89d80fea8#12",
-      "value": 0.8459201191338449
+      "value": 0.9225452007498288
     },
     {
       "sample_id": "dm-test-051db270afc32571a08c15124330efe89d80fea8#13",
-      "value": 0.846526356064541
+      "value": 0.8856153862270112
     },
     {
       "sample_id": "dm-test-051db270afc32571a08c15124330efe89d80fea8#14",
-      "value": 0.8335786219632317
+      "value": 0.8723275868329815
     },
     {
       "sample_id": "dm-test-051db270afc32571a08c15124330efe89d80fea8#15",
-      "value": 0.8207481190005711
+      "value": 0.8486874918559456
     },
     {
       "sample_id": "dm-test-0783c68a744df6afa009d16e72709f2b4d90dea1#0",
-      "value": 0.6388864808787914
+      "value": 0.6808680930427696
     },
     {
       "sample_id": "dm-test-0783c68a744df6afa009d16e72709f2b4d90dea1#1",
-      "value": 0.6649614544416308
+      "value": 0.7363853172370657
     },
     {
       "sample_id": "dm-test-0783c68a744df6afa009d16e72709f2b4d90dea1#2",
-      "value": 0.6937181010536838
+      "value": 0.7343943325730159
     },
     {
       "sample_id": "dm-test-0783c68a744df6afa009d16e72709f2b4d90dea1#3",
-      "value": 0.6247336865689881
+      "value": 0.7142460762559129
     },
     {
       "sample_id": "dm-test-0783c68a744df6afa009d16e72709f2b4d90dea1#4",
-      "value": 0.6906349948498636
+      "value": 0.7313112263691957
     },
     {
       "sample_id": "dm-test-0783c68a744df6afa009d16e72709f2b4d90dea1#5",
-      "value": 0.6881164541830541
+      "value": 0.7350338743197189
     },
     {
       "sample_id": "dm-test-0783c68a744df6afa009d16e72709f2b4d90dea1#6",
-      "value": 0.6957367435283396
+      "value": 0.7365884032532549
     },
     {
       "sample_id": "dm-test-0783c68a744df6afa009d16e72709f2b4d90dea1#7",
-      "value": 0.6475710000722852
+      "value": 0.7214059441447229
     },
     {
       "sample_id": "dm-test-0783c68a744df6afa009d16e72709f2b4d90dea1#8",
@@ -1067,63 +1067,63 @@
     },
     {
       "sample_id": "dm-test-0783c68a744df6afa009d16e72709f2b4d90dea1#9",
-      "value": 0.6475710000722852
+      "value": 0.7214059441447229
     },
     {
       "sample_id": "dm-test-0783c68a744df6afa009d16e72709f2b4d90dea1#10",
-      "value": 0.6937181010536838
+      "value": 0.7343943325730159
     },
     {
       "sample_id": "dm-test-0783c68a744df6afa009d16e72709f2b4d90dea1#11",
-      "value": 0.6906962933335633
+      "value": 0.7311099175251424
     },
     {
       "sample_id": "dm-test-0783c68a744df6afa009d16e72709f2b4d90dea1#12",
-      "value": 0.7583567147857905
+      "value": 0.8698575606598303
     },
     {
       "sample_id": "dm-test-0783c68a744df6afa009d16e72709f2b4d90dea1#13",
-      "value": 0.6402283636898757
+      "value": 0.7444816398223332
     },
     {
       "sample_id": "dm-test-0783c68a744df6afa009d16e72709f2b4d90dea1#14",
-      "value": 0.6760581903839137
+      "value": 0.6952061492696489
     },
     {
       "sample_id": "dm-test-0783c68a744df6afa009d16e72709f2b4d90dea1#15",
-      "value": 0.660165395938231
+      "value": 0.7166310698945669
     },
     {
       "sample_id": "dm-test-096e418a953af86df0d1560bec95bc7bfee2e34b#0",
-      "value": 0.5265561071898581
+      "value": 0.5833319926440321
     },
     {
       "sample_id": "dm-test-096e418a953af86df0d1560bec95bc7bfee2e34b#1",
-      "value": 0.6077623922401272
+      "value": 0.6558049482469946
     },
     {
       "sample_id": "dm-test-096e418a953af86df0d1560bec95bc7bfee2e34b#2",
-      "value": 0.5937201250923968
+      "value": 0.6194959061687025
     },
     {
       "sample_id": "dm-test-096e418a953af86df0d1560bec95bc7bfee2e34b#3",
-      "value": 0.6795730561722125
+      "value": 0.7102515729461025
     },
     {
       "sample_id": "dm-test-096e418a953af86df0d1560bec95bc7bfee2e34b#4",
-      "value": 0.6978357970768999
+      "value": 0.7689377156040432
     },
     {
       "sample_id": "dm-test-096e418a953af86df0d1560bec95bc7bfee2e34b#5",
-      "value": 0.6907787444499878
+      "value": 0.7457334315505099
     },
     {
       "sample_id": "dm-test-096e418a953af86df0d1560bec95bc7bfee2e34b#6",
-      "value": 0.6826762269062153
+      "value": 0.7221122285512506
     },
     {
       "sample_id": "dm-test-096e418a953af86df0d1560bec95bc7bfee2e34b#7",
-      "value": 0.5503549167322617
+      "value": 0.5838095864358253
     },
     {
       "sample_id": "dm-test-096e418a953af86df0d1560bec95bc7bfee2e34b#8",
@@ -1131,191 +1131,191 @@
     },
     {
       "sample_id": "dm-test-096e418a953af86df0d1560bec95bc7bfee2e34b#9",
-      "value": 0.5524646356006145
+      "value": 0.5780694246816181
     },
     {
       "sample_id": "dm-test-096e418a953af86df0d1560bec95bc7bfee2e34b#10",
-      "value": 0.7002468758328092
+      "value": 0.713437880445649
     },
     {
       "sample_id": "dm-test-096e418a953af86df0d1560bec95bc7bfee2e34b#11",
-      "value": 0.6994590229805406
+      "value": 0.7698978268023909
     },
     {
       "sample_id": "dm-test-096e418a953af86df0d1560bec95bc7bfee2e34b#12",
-      "value": 0.6707149039494219
+      "value": 0.6923597138135261
     },
     {
       "sample_id": "dm-test-096e418a953af86df0d1560bec95bc7bfee2e34b#13",
-      "value": 0.6508032558314135
+      "value": 0.6775110122213858
     },
     {
       "sample_id": "dm-test-096e418a953af86df0d1560bec95bc7bfee2e34b#14",
-      "value": 0.5236407563240402
+      "value": 0.5731033441206014
     },
     {
       "sample_id": "dm-test-096e418a953af86df0d1560bec95bc7bfee2e34b#15",
-      "value": 0.6043494698407159
+      "value": 0.6272456607851674
     },
     {
       "sample_id": "dm-test-0cd10ad50ceef529d96a255ed12ac9cd001ba9db#0",
-      "value": 0.7153843970750051
+      "value": 0.7565559482403629
     },
     {
       "sample_id": "dm-test-0cd10ad50ceef529d96a255ed12ac9cd001ba9db#1",
-      "value": 0.7274217939812688
+      "value": 0.8027411412246095
     },
     {
       "sample_id": "dm-test-0cd10ad50ceef529d96a255ed12ac9cd001ba9db#2",
-      "value": 0.8328856658490865
+      "value": 0.8903331280579662
     },
     {
       "sample_id": "dm-test-0cd10ad50ceef529d96a255ed12ac9cd001ba9db#3",
-      "value": 0.7808437448324246
+      "value": 0.8788044373281348
     },
     {
       "sample_id": "dm-test-0cd10ad50ceef529d96a255ed12ac9cd001ba9db#4",
-      "value": 0.7808437448324246
+      "value": 0.8788044373281348
     },
     {
       "sample_id": "dm-test-0cd10ad50ceef529d96a255ed12ac9cd001ba9db#5",
-      "value": 0.7923963542459447
+      "value": 0.8257603418880523
     },
     {
       "sample_id": "dm-test-0cd10ad50ceef529d96a255ed12ac9cd001ba9db#6",
-      "value": 0.8020687360407309
+      "value": 0.8674642531416933
     },
     {
       "sample_id": "dm-test-0cd10ad50ceef529d96a255ed12ac9cd001ba9db#7",
-      "value": 0.6684452987339584
+      "value": 0.7627737442890268
     },
     {
       "sample_id": "dm-test-0cd10ad50ceef529d96a255ed12ac9cd001ba9db#8",
-      "value": 0.6778511004673308
+      "value": 0.745855520101026
     },
     {
       "sample_id": "dm-test-0cd10ad50ceef529d96a255ed12ac9cd001ba9db#9",
-      "value": 0.8347375104923461
+      "value": 0.86873485973949
     },
     {
       "sample_id": "dm-test-0cd10ad50ceef529d96a255ed12ac9cd001ba9db#10",
-      "value": 0.8347375104923461
+      "value": 0.86873485973949
     },
     {
       "sample_id": "dm-test-0cd10ad50ceef529d96a255ed12ac9cd001ba9db#11",
-      "value": 0.8347375104923461
+      "value": 0.86873485973949
     },
     {
       "sample_id": "dm-test-0cd10ad50ceef529d96a255ed12ac9cd001ba9db#12",
-      "value": 0.7554162439721435
+      "value": 0.888361287326711
     },
     {
       "sample_id": "dm-test-0cd10ad50ceef529d96a255ed12ac9cd001ba9db#13",
-      "value": 0.804477407924837
+      "value": 0.8383278165193548
     },
     {
       "sample_id": "dm-test-0cd10ad50ceef529d96a255ed12ac9cd001ba9db#14",
-      "value": 0.755859823145586
+      "value": 0.8601403728868203
     },
     {
       "sample_id": "dm-test-0cd10ad50ceef529d96a255ed12ac9cd001ba9db#15",
-      "value": 0.7379195446622351
+      "value": 0.7785020791676964
     },
     {
       "sample_id": "dm-test-0cdd7cdb5d99c36f25f1f4fa0e962d558f7ff07b#0",
-      "value": 0.6568384860849553
+      "value": 0.7031169863496691
     },
     {
       "sample_id": "dm-test-0cdd7cdb5d99c36f25f1f4fa0e962d558f7ff07b#1",
-      "value": 0.6650674703338614
+      "value": 0.705566111974479
     },
     {
       "sample_id": "dm-test-0cdd7cdb5d99c36f25f1f4fa0e962d558f7ff07b#2",
-      "value": 0.682944852095532
+      "value": 0.7256616858330066
     },
     {
       "sample_id": "dm-test-0cdd7cdb5d99c36f25f1f4fa0e962d558f7ff07b#3",
-      "value": 0.6402410206314803
+      "value": 0.6803138207561522
     },
     {
       "sample_id": "dm-test-0cdd7cdb5d99c36f25f1f4fa0e962d558f7ff07b#4",
-      "value": 0.6642985962142914
+      "value": 0.6974962191443891
     },
     {
       "sample_id": "dm-test-0cdd7cdb5d99c36f25f1f4fa0e962d558f7ff07b#5",
-      "value": 0.6465726855627515
+      "value": 0.6830951779394167
     },
     {
       "sample_id": "dm-test-0cdd7cdb5d99c36f25f1f4fa0e962d558f7ff07b#6",
-      "value": 0.682944852095532
+      "value": 0.7256616858330066
     },
     {
       "sample_id": "dm-test-0cdd7cdb5d99c36f25f1f4fa0e962d558f7ff07b#7",
-      "value": 0.6603720904048137
+      "value": 0.6946470955626443
     },
     {
       "sample_id": "dm-test-0cdd7cdb5d99c36f25f1f4fa0e962d558f7ff07b#8",
-      "value": 0.705778215470639
+      "value": 0.7527124524703706
     },
     {
       "sample_id": "dm-test-0cdd7cdb5d99c36f25f1f4fa0e962d558f7ff07b#9",
-      "value": 0.6446709236939254
+      "value": 0.685660064380203
     },
     {
       "sample_id": "dm-test-0cdd7cdb5d99c36f25f1f4fa0e962d558f7ff07b#10",
-      "value": 0.7072661903190793
+      "value": 0.7458550637704668
     },
     {
       "sample_id": "dm-test-0cdd7cdb5d99c36f25f1f4fa0e962d558f7ff07b#11",
-      "value": 0.682944852095532
+      "value": 0.7256616858330066
     },
     {
       "sample_id": "dm-test-0cdd7cdb5d99c36f25f1f4fa0e962d558f7ff07b#12",
-      "value": 0.7883931338639035
+      "value": 0.8649864284992992
     },
     {
       "sample_id": "dm-test-0cdd7cdb5d99c36f25f1f4fa0e962d558f7ff07b#13",
-      "value": 0.637058608558695
+      "value": 0.67358110093536
     },
     {
       "sample_id": "dm-test-0cdd7cdb5d99c36f25f1f4fa0e962d558f7ff07b#14",
-      "value": 0.6258392639357258
+      "value": 0.6568776854977009
     },
     {
       "sample_id": "dm-test-0cdd7cdb5d99c36f25f1f4fa0e962d558f7ff07b#15",
-      "value": 0.5802870710817184
+      "value": 0.6254054394439393
     },
     {
       "sample_id": "dm-test-0f0789390d67698283cc87b2e046b5c5cd77edb7#0",
-      "value": 0.745800265067159
+      "value": 0.771229601379666
     },
     {
       "sample_id": "dm-test-0f0789390d67698283cc87b2e046b5c5cd77edb7#1",
-      "value": 0.8409003112273886
+      "value": 0.8672854284522713
     },
     {
       "sample_id": "dm-test-0f0789390d67698283cc87b2e046b5c5cd77edb7#2",
-      "value": 0.7259391712170169
+      "value": 0.819389944639743
     },
     {
       "sample_id": "dm-test-0f0789390d67698283cc87b2e046b5c5cd77edb7#3",
-      "value": 0.7510270438315357
+      "value": 0.7990407242039742
     },
     {
       "sample_id": "dm-test-0f0789390d67698283cc87b2e046b5c5cd77edb7#4",
-      "value": 0.7577733542289242
+      "value": 0.8200722509552518
     },
     {
       "sample_id": "dm-test-0f0789390d67698283cc87b2e046b5c5cd77edb7#5",
-      "value": 0.818416161360774
+      "value": 0.8448012785856568
     },
     {
       "sample_id": "dm-test-0f0789390d67698283cc87b2e046b5c5cd77edb7#6",
-      "value": 0.7870938399728314
+      "value": 0.8250632853156534
     },
     {
       "sample_id": "dm-test-0f0789390d67698283cc87b2e046b5c5cd77edb7#7",
-      "value": 0.6993439039623626
+      "value": 0.7837337378556966
     },
     {
       "sample_id": "dm-test-0f0789390d67698283cc87b2e046b5c5cd77edb7#8",
@@ -1323,43 +1323,43 @@
     },
     {
       "sample_id": "dm-test-0f0789390d67698283cc87b2e046b5c5cd77edb7#9",
-      "value": 0.6770013886856774
+      "value": 0.7765466702404871
     },
     {
       "sample_id": "dm-test-0f0789390d67698283cc87b2e046b5c5cd77edb7#10",
-      "value": 0.7694012349453203
+      "value": 0.8381728073958289
     },
     {
       "sample_id": "dm-test-0f0789390d67698283cc87b2e046b5c5cd77edb7#11",
-      "value": 0.8482983929080682
+      "value": 0.8862678382508902
     },
     {
       "sample_id": "dm-test-0f0789390d67698283cc87b2e046b5c5cd77edb7#12",
-      "value": 0.8001313722131468
+      "value": 0.8929458491097901
     },
     {
       "sample_id": "dm-test-0f0789390d67698283cc87b2e046b5c5cd77edb7#13",
-      "value": 0.7745645584429682
+      "value": 0.800949675667851
     },
     {
       "sample_id": "dm-test-0f0789390d67698283cc87b2e046b5c5cd77edb7#14",
-      "value": 0.749365734171567
+      "value": 0.7732409276083594
     },
     {
       "sample_id": "dm-test-0f0789390d67698283cc87b2e046b5c5cd77edb7#15",
-      "value": 0.7043080953233378
+      "value": 0.7835553373782314
     },
     {
       "sample_id": "dm-test-130ff8f2dfb6ab67861d5924b0ff5acd63c7d8ce#0",
-      "value": 0.6093325697672582
+      "value": 0.6178218086101752
     },
     {
       "sample_id": "dm-test-130ff8f2dfb6ab67861d5924b0ff5acd63c7d8ce#1",
-      "value": 0.6590752734922337
+      "value": 0.6933866142001025
     },
     {
       "sample_id": "dm-test-130ff8f2dfb6ab67861d5924b0ff5acd63c7d8ce#2",
-      "value": 0.6901495377759351
+      "value": 0.7319123349014349
     },
     {
       "sample_id": "dm-test-130ff8f2dfb6ab67861d5924b0ff5acd63c7d8ce#3",
@@ -1367,19 +1367,19 @@
     },
     {
       "sample_id": "dm-test-130ff8f2dfb6ab67861d5924b0ff5acd63c7d8ce#4",
-      "value": 0.5332131005931037
+      "value": 0.5989492818753841
     },
     {
       "sample_id": "dm-test-130ff8f2dfb6ab67861d5924b0ff5acd63c7d8ce#5",
-      "value": 0.6949919049730116
+      "value": 0.7231737189534954
     },
     {
       "sample_id": "dm-test-130ff8f2dfb6ab67861d5924b0ff5acd63c7d8ce#6",
-      "value": 0.6887569177739717
+      "value": 0.7311769731313346
     },
     {
       "sample_id": "dm-test-130ff8f2dfb6ab67861d5924b0ff5acd63c7d8ce#7",
-      "value": 0.6656021010824685
+      "value": 0.6893345861491794
     },
     {
       "sample_id": "dm-test-130ff8f2dfb6ab67861d5924b0ff5acd63c7d8ce#8",
@@ -1387,19 +1387,19 @@
     },
     {
       "sample_id": "dm-test-130ff8f2dfb6ab67861d5924b0ff5acd63c7d8ce#9",
-      "value": 0.6325152575699594
+      "value": 0.7064432176435906
     },
     {
       "sample_id": "dm-test-130ff8f2dfb6ab67861d5924b0ff5acd63c7d8ce#10",
-      "value": 0.665216887884503
+      "value": 0.6817546631559196
     },
     {
       "sample_id": "dm-test-130ff8f2dfb6ab67861d5924b0ff5acd63c7d8ce#11",
-      "value": 0.6901495377759351
+      "value": 0.7319123349014349
     },
     {
       "sample_id": "dm-test-130ff8f2dfb6ab67861d5924b0ff5acd63c7d8ce#12",
-      "value": 0.8022536225504769
+      "value": 0.8635777662146857
     },
     {
       "sample_id": "dm-test-130ff8f2dfb6ab67861d5924b0ff5acd63c7d8ce#13",
@@ -1407,15 +1407,15 @@
     },
     {
       "sample_id": "dm-test-130ff8f2dfb6ab67861d5924b0ff5acd63c7d8ce#14",
-      "value": 0.5548923799548029
+      "value": 0.6150845646658736
     },
     {
       "sample_id": "dm-test-130ff8f2dfb6ab67861d5924b0ff5acd63c7d8ce#15",
-      "value": 0.5798137136091069
+      "value": 0.6838396958287127
     },
     {
       "sample_id": "dm-test-14c813567696f4e63a39993c09d4edb454036179#0",
-      "value": 0.6566250332060516
+      "value": 0.6891053662309088
     },
     {
       "sample_id": "dm-test-14c813567696f4e63a39993c09d4edb454036179#1",
@@ -1423,7 +1423,7 @@
     },
     {
       "sample_id": "dm-test-14c813567696f4e63a39993c09d4edb454036179#2",
-      "value": 0.7072996499022465
+      "value": 0.7591594071652589
     },
     {
       "sample_id": "dm-test-14c813567696f4e63a39993c09d4edb454036179#3",
@@ -1431,83 +1431,83 @@
     },
     {
       "sample_id": "dm-test-14c813567696f4e63a39993c09d4edb454036179#4",
-      "value": 0.7287741318857703
+      "value": 0.7450611279484711
     },
     {
       "sample_id": "dm-test-14c813567696f4e63a39993c09d4edb454036179#5",
-      "value": 0.7553589379691097
+      "value": 0.7662169353442435
     },
     {
       "sample_id": "dm-test-14c813567696f4e63a39993c09d4edb454036179#6",
-      "value": 0.784889352999004
+      "value": 0.7962609593906906
     },
     {
       "sample_id": "dm-test-14c813567696f4e63a39993c09d4edb454036179#7",
-      "value": 0.7235807446944004
+      "value": 0.767221274525431
     },
     {
       "sample_id": "dm-test-14c813567696f4e63a39993c09d4edb454036179#8",
-      "value": 0.6314867935174331
+      "value": 0.6610252023936556
     },
     {
       "sample_id": "dm-test-14c813567696f4e63a39993c09d4edb454036179#9",
-      "value": 0.7773723227485636
+      "value": 0.8257757079075796
     },
     {
       "sample_id": "dm-test-14c813567696f4e63a39993c09d4edb454036179#10",
-      "value": 0.6312750695822679
+      "value": 0.6625621097920893
     },
     {
       "sample_id": "dm-test-14c813567696f4e63a39993c09d4edb454036179#11",
-      "value": 0.7852406186606542
+      "value": 0.7966286742992322
     },
     {
       "sample_id": "dm-test-14c813567696f4e63a39993c09d4edb454036179#12",
-      "value": 0.759697163929521
+      "value": 0.7933986017319041
     },
     {
       "sample_id": "dm-test-14c813567696f4e63a39993c09d4edb454036179#13",
-      "value": 0.6973090937372189
+      "value": 0.7326728383463009
     },
     {
       "sample_id": "dm-test-14c813567696f4e63a39993c09d4edb454036179#14",
-      "value": 0.7017834731336827
+      "value": 0.7358291152124873
     },
     {
       "sample_id": "dm-test-14c813567696f4e63a39993c09d4edb454036179#15",
-      "value": 0.7108119171462653
+      "value": 0.7249079745408824
     },
     {
       "sample_id": "dm-test-155754e1f2bc83f6836af78703edd4d00f19f381#0",
-      "value": 0.6175152572194467
+      "value": 0.7028038088347595
     },
     {
       "sample_id": "dm-test-155754e1f2bc83f6836af78703edd4d00f19f381#1",
-      "value": 0.6857454484027213
+      "value": 0.7321981997934177
     },
     {
       "sample_id": "dm-test-155754e1f2bc83f6836af78703edd4d00f19f381#2",
-      "value": 0.7856936559058295
+      "value": 0.8035722597917411
     },
     {
       "sample_id": "dm-test-155754e1f2bc83f6836af78703edd4d00f19f381#3",
-      "value": 0.6354725812251125
+      "value": 0.6994828326413104
     },
     {
       "sample_id": "dm-test-155754e1f2bc83f6836af78703edd4d00f19f381#4",
-      "value": 0.615176085704965
+      "value": 0.689588403291474
     },
     {
       "sample_id": "dm-test-155754e1f2bc83f6836af78703edd4d00f19f381#5",
-      "value": 0.7357238629716585
+      "value": 0.762541768800526
     },
     {
       "sample_id": "dm-test-155754e1f2bc83f6836af78703edd4d00f19f381#6",
-      "value": 0.8022412138475404
+      "value": 0.8302629542381738
     },
     {
       "sample_id": "dm-test-155754e1f2bc83f6836af78703edd4d00f19f381#7",
-      "value": 0.7763829212877075
+      "value": 0.8646343675614586
     },
     {
       "sample_id": "dm-test-155754e1f2bc83f6836af78703edd4d00f19f381#8",
@@ -1515,127 +1515,127 @@
     },
     {
       "sample_id": "dm-test-155754e1f2bc83f6836af78703edd4d00f19f381#9",
-      "value": 0.7325467988702568
+      "value": 0.7658189301516721
     },
     {
       "sample_id": "dm-test-155754e1f2bc83f6836af78703edd4d00f19f381#10",
-      "value": 0.7856936559058295
+      "value": 0.8035722597917411
     },
     {
       "sample_id": "dm-test-155754e1f2bc83f6836af78703edd4d00f19f381#11",
-      "value": 0.7554985322355902
+      "value": 0.807850675018856
     },
     {
       "sample_id": "dm-test-155754e1f2bc83f6836af78703edd4d00f19f381#12",
-      "value": 0.8311270236405042
+      "value": 0.9242831543496419
     },
     {
       "sample_id": "dm-test-155754e1f2bc83f6836af78703edd4d00f19f381#13",
-      "value": 0.717187301959012
+      "value": 0.7669948700852971
     },
     {
       "sample_id": "dm-test-155754e1f2bc83f6836af78703edd4d00f19f381#14",
-      "value": 0.6354528650342787
+      "value": 0.6705824725877845
     },
     {
       "sample_id": "dm-test-155754e1f2bc83f6836af78703edd4d00f19f381#15",
-      "value": 0.6100242784080967
+      "value": 0.6724811313627814
     },
     {
       "sample_id": "dm-test-1747dcd6a007ee97954b6b10cde549bf82f6a4eb#0",
-      "value": 0.8354967033547963
+      "value": 0.8823301092214267
     },
     {
       "sample_id": "dm-test-1747dcd6a007ee97954b6b10cde549bf82f6a4eb#1",
-      "value": 0.8266214850937854
+      "value": 0.8713888320969604
     },
     {
       "sample_id": "dm-test-1747dcd6a007ee97954b6b10cde549bf82f6a4eb#2",
-      "value": 0.8318848687254053
+      "value": 0.8782382738396777
     },
     {
       "sample_id": "dm-test-1747dcd6a007ee97954b6b10cde549bf82f6a4eb#3",
-      "value": 0.7841554309579
+      "value": 0.8535025761881967
     },
     {
       "sample_id": "dm-test-1747dcd6a007ee97954b6b10cde549bf82f6a4eb#4",
-      "value": 0.8016464776177012
+      "value": 0.8285619675144597
     },
     {
       "sample_id": "dm-test-1747dcd6a007ee97954b6b10cde549bf82f6a4eb#5",
-      "value": 0.7296170275027518
+      "value": 0.8175392478467893
     },
     {
       "sample_id": "dm-test-1747dcd6a007ee97954b6b10cde549bf82f6a4eb#6",
-      "value": 0.8858058274968797
+      "value": 0.9110588948509679
     },
     {
       "sample_id": "dm-test-1747dcd6a007ee97954b6b10cde549bf82f6a4eb#7",
-      "value": 0.7241588545316118
+      "value": 0.8272823403834276
     },
     {
       "sample_id": "dm-test-1747dcd6a007ee97954b6b10cde549bf82f6a4eb#8",
-      "value": 0.7772120300725469
+      "value": 0.823369859562054
     },
     {
       "sample_id": "dm-test-1747dcd6a007ee97954b6b10cde549bf82f6a4eb#9",
-      "value": 0.8442679107333435
+      "value": 0.8944081205592962
     },
     {
       "sample_id": "dm-test-1747dcd6a007ee97954b6b10cde549bf82f6a4eb#10",
-      "value": 0.7598554186104559
+      "value": 0.8672155541720074
     },
     {
       "sample_id": "dm-test-1747dcd6a007ee97954b6b10cde549bf82f6a4eb#11",
-      "value": 0.8318848687254053
+      "value": 0.8782382738396777
     },
     {
       "sample_id": "dm-test-1747dcd6a007ee97954b6b10cde549bf82f6a4eb#12",
-      "value": 0.8836340398932816
+      "value": 0.9628352835671237
     },
     {
       "sample_id": "dm-test-1747dcd6a007ee97954b6b10cde549bf82f6a4eb#13",
-      "value": 0.7461677593198681
+      "value": 0.8026199587742612
     },
     {
       "sample_id": "dm-test-1747dcd6a007ee97954b6b10cde549bf82f6a4eb#14",
-      "value": 0.7830082676813969
+      "value": 0.8206145991770287
     },
     {
       "sample_id": "dm-test-1747dcd6a007ee97954b6b10cde549bf82f6a4eb#15",
-      "value": 0.7546711261900663
+      "value": 0.7850142928841493
     },
     {
       "sample_id": "dm-test-1749a22e2b6facaa057213cb9b33261b319bbd2b#0",
-      "value": 0.6335230359765562
+      "value": 0.6623414570994565
     },
     {
       "sample_id": "dm-test-1749a22e2b6facaa057213cb9b33261b319bbd2b#1",
-      "value": 0.672605705059948
+      "value": 0.7134209643413888
     },
     {
       "sample_id": "dm-test-1749a22e2b6facaa057213cb9b33261b319bbd2b#2",
-      "value": 0.6895418212410447
+      "value": 0.7108291328541574
     },
     {
       "sample_id": "dm-test-1749a22e2b6facaa057213cb9b33261b319bbd2b#3",
-      "value": 0.5933087460204325
+      "value": 0.6543293686182138
     },
     {
       "sample_id": "dm-test-1749a22e2b6facaa057213cb9b33261b319bbd2b#4",
-      "value": 0.6633957466343009
+      "value": 0.7020905660077809
     },
     {
       "sample_id": "dm-test-1749a22e2b6facaa057213cb9b33261b319bbd2b#5",
-      "value": 0.6639200639315682
+      "value": 0.6896684759481637
     },
     {
       "sample_id": "dm-test-1749a22e2b6facaa057213cb9b33261b319bbd2b#6",
-      "value": 0.697485230699051
+      "value": 0.7295240002019558
     },
     {
       "sample_id": "dm-test-1749a22e2b6facaa057213cb9b33261b319bbd2b#7",
-      "value": 0.6015597552132068
+      "value": 0.6411794023053691
     },
     {
       "sample_id": "dm-test-1749a22e2b6facaa057213cb9b33261b319bbd2b#8",
@@ -1643,63 +1643,63 @@
     },
     {
       "sample_id": "dm-test-1749a22e2b6facaa057213cb9b33261b319bbd2b#9",
-      "value": 0.5931625183961996
+      "value": 0.6341414027901721
     },
     {
       "sample_id": "dm-test-1749a22e2b6facaa057213cb9b33261b319bbd2b#10",
-      "value": 0.6895418212410447
+      "value": 0.7108291328541573
     },
     {
       "sample_id": "dm-test-1749a22e2b6facaa057213cb9b33261b319bbd2b#11",
-      "value": 0.7125282055793427
+      "value": 0.746155572748204
     },
     {
       "sample_id": "dm-test-1749a22e2b6facaa057213cb9b33261b319bbd2b#12",
-      "value": 0.8384047827088134
+      "value": 0.8866231496409357
     },
     {
       "sample_id": "dm-test-1749a22e2b6facaa057213cb9b33261b319bbd2b#13",
-      "value": 0.6894379286652487
+      "value": 0.7288373632204964
     },
     {
       "sample_id": "dm-test-1749a22e2b6facaa057213cb9b33261b319bbd2b#14",
-      "value": 0.6659817187485014
+      "value": 0.6992970382081394
     },
     {
       "sample_id": "dm-test-1749a22e2b6facaa057213cb9b33261b319bbd2b#15",
-      "value": 0.5705036599414397
+      "value": 0.593920369055875
     },
     {
       "sample_id": "dm-test-18243373494a1722ddcd162ec67b63dd749633ab#0",
-      "value": 0.6144162941124907
+      "value": 0.621117545647053
     },
     {
       "sample_id": "dm-test-18243373494a1722ddcd162ec67b63dd749633ab#1",
-      "value": 0.6648057134025854
+      "value": 0.6850962738461299
     },
     {
       "sample_id": "dm-test-18243373494a1722ddcd162ec67b63dd749633ab#2",
-      "value": 0.6739621294893229
+      "value": 0.7044492341994721
     },
     {
       "sample_id": "dm-test-18243373494a1722ddcd162ec67b63dd749633ab#3",
-      "value": 0.619518251321865
+      "value": 0.6377020148387701
     },
     {
       "sample_id": "dm-test-18243373494a1722ddcd162ec67b63dd749633ab#4",
-      "value": 0.5890302919221829
+      "value": 0.646227770306659
     },
     {
       "sample_id": "dm-test-18243373494a1722ddcd162ec67b63dd749633ab#5",
-      "value": 0.670547219499222
+      "value": 0.6908377799427665
     },
     {
       "sample_id": "dm-test-18243373494a1722ddcd162ec67b63dd749633ab#6",
-      "value": 0.7177257882599666
+      "value": 0.7729936896521581
     },
     {
       "sample_id": "dm-test-18243373494a1722ddcd162ec67b63dd749633ab#7",
-      "value": 0.6259445003459153
+      "value": 0.6546439805086108
     },
     {
       "sample_id": "dm-test-18243373494a1722ddcd162ec67b63dd749633ab#8",
@@ -1707,319 +1707,319 @@
     },
     {
       "sample_id": "dm-test-18243373494a1722ddcd162ec67b63dd749633ab#9",
-      "value": 0.6064405110889072
+      "value": 0.6471853711305453
     },
     {
       "sample_id": "dm-test-18243373494a1722ddcd162ec67b63dd749633ab#10",
-      "value": 0.6739621294893229
+      "value": 0.7044492341994721
     },
     {
       "sample_id": "dm-test-18243373494a1722ddcd162ec67b63dd749633ab#11",
-      "value": 0.7397880426197133
+      "value": 0.773511171510522
     },
     {
       "sample_id": "dm-test-18243373494a1722ddcd162ec67b63dd749633ab#12",
-      "value": 0.8072622290611354
+      "value": 0.8385942580860924
     },
     {
       "sample_id": "dm-test-18243373494a1722ddcd162ec67b63dd749633ab#13",
-      "value": 0.569038897348468
+      "value": 0.592915717580461
     },
     {
       "sample_id": "dm-test-18243373494a1722ddcd162ec67b63dd749633ab#14",
-      "value": 0.6316645388271718
+      "value": 0.6557649940109189
     },
     {
       "sample_id": "dm-test-18243373494a1722ddcd162ec67b63dd749633ab#15",
-      "value": 0.5967946477134606
+      "value": 0.6364978365708245
     },
     {
       "sample_id": "dm-test-207df192edc1836250b69d1bc5b9e6a38206eb78#0",
-      "value": 0.8300331959897991
+      "value": 0.8732517764304274
     },
     {
       "sample_id": "dm-test-207df192edc1836250b69d1bc5b9e6a38206eb78#1",
-      "value": 0.8977056134519438
+      "value": 0.9391264808041533
     },
     {
       "sample_id": "dm-test-207df192edc1836250b69d1bc5b9e6a38206eb78#2",
-      "value": 0.8759794622584387
+      "value": 0.9396868007588998
     },
     {
       "sample_id": "dm-test-207df192edc1836250b69d1bc5b9e6a38206eb78#3",
-      "value": 0.8461922595838925
+      "value": 0.8875502136619856
     },
     {
       "sample_id": "dm-test-207df192edc1836250b69d1bc5b9e6a38206eb78#4",
-      "value": 0.8641990793795588
+      "value": 0.9026983285603213
     },
     {
       "sample_id": "dm-test-207df192edc1836250b69d1bc5b9e6a38206eb78#5",
-      "value": 0.881462419772316
+      "value": 0.9449783794910367
     },
     {
       "sample_id": "dm-test-207df192edc1836250b69d1bc5b9e6a38206eb78#6",
-      "value": 0.8759794622584387
+      "value": 0.9396868007588998
     },
     {
       "sample_id": "dm-test-207df192edc1836250b69d1bc5b9e6a38206eb78#7",
-      "value": 0.8010944030346294
+      "value": 0.8896379252738404
     },
     {
       "sample_id": "dm-test-207df192edc1836250b69d1bc5b9e6a38206eb78#8",
-      "value": 0.8212559087620285
+      "value": 0.8232242108871483
     },
     {
       "sample_id": "dm-test-207df192edc1836250b69d1bc5b9e6a38206eb78#9",
-      "value": 0.7473142994925945
+      "value": 0.8527415581207619
     },
     {
       "sample_id": "dm-test-207df192edc1836250b69d1bc5b9e6a38206eb78#10",
-      "value": 0.9295012987388698
+      "value": 0.9622960178950214
     },
     {
       "sample_id": "dm-test-207df192edc1836250b69d1bc5b9e6a38206eb78#11",
-      "value": 0.9295012987388698
+      "value": 0.9622960178950214
     },
     {
       "sample_id": "dm-test-207df192edc1836250b69d1bc5b9e6a38206eb78#12",
-      "value": 0.8020558511919275
+      "value": 0.9070631184994798
     },
     {
       "sample_id": "dm-test-207df192edc1836250b69d1bc5b9e6a38206eb78#13",
-      "value": 0.7527205010580936
+      "value": 0.8706655545504998
     },
     {
       "sample_id": "dm-test-207df192edc1836250b69d1bc5b9e6a38206eb78#14",
-      "value": 0.8299841597074678
+      "value": 0.8797588169270997
     },
     {
       "sample_id": "dm-test-207df192edc1836250b69d1bc5b9e6a38206eb78#15",
-      "value": 0.7801684919404124
+      "value": 0.832236273968633
     },
     {
       "sample_id": "dm-test-2377095dda83df778e34304b7a09813808105d3b#0",
-      "value": 0.7054376228212512
+      "value": 0.8360399070315943
     },
     {
       "sample_id": "dm-test-2377095dda83df778e34304b7a09813808105d3b#1",
-      "value": 0.8923287385655057
+      "value": 0.9283998525670332
     },
     {
       "sample_id": "dm-test-2377095dda83df778e34304b7a09813808105d3b#2",
-      "value": 0.7881082910303707
+      "value": 0.8530291535953957
     },
     {
       "sample_id": "dm-test-2377095dda83df778e34304b7a09813808105d3b#3",
-      "value": 0.8593563105359349
+      "value": 0.913756468064796
     },
     {
       "sample_id": "dm-test-2377095dda83df778e34304b7a09813808105d3b#4",
-      "value": 0.7318059170788945
+      "value": 0.828773156513433
     },
     {
       "sample_id": "dm-test-2377095dda83df778e34304b7a09813808105d3b#5",
-      "value": 0.8918261217624285
+      "value": 0.9279757176227447
     },
     {
       "sample_id": "dm-test-2377095dda83df778e34304b7a09813808105d3b#6",
-      "value": 0.8002637958576863
+      "value": 0.8663468617586053
     },
     {
       "sample_id": "dm-test-2377095dda83df778e34304b7a09813808105d3b#7",
-      "value": 0.5916407696948665
+      "value": 0.7744249593166846
     },
     {
       "sample_id": "dm-test-2377095dda83df778e34304b7a09813808105d3b#8",
-      "value": 0.6319931890914968
+      "value": 0.7039387167190464
     },
     {
       "sample_id": "dm-test-2377095dda83df778e34304b7a09813808105d3b#9",
-      "value": 0.6030343308768545
+      "value": 0.8010096747862795
     },
     {
       "sample_id": "dm-test-2377095dda83df778e34304b7a09813808105d3b#10",
-      "value": 0.7881082910303707
+      "value": 0.8530291535953957
     },
     {
       "sample_id": "dm-test-2377095dda83df778e34304b7a09813808105d3b#11",
-      "value": 0.8945801605125584
+      "value": 0.9308469321984658
     },
     {
       "sample_id": "dm-test-2377095dda83df778e34304b7a09813808105d3b#12",
-      "value": 0.6795454408648132
+      "value": 0.8128824411131935
     },
     {
       "sample_id": "dm-test-2377095dda83df778e34304b7a09813808105d3b#13",
-      "value": 0.8641686603442924
+      "value": 0.9187730266075769
     },
     {
       "sample_id": "dm-test-2377095dda83df778e34304b7a09813808105d3b#14",
-      "value": 0.7058852897378153
+      "value": 0.7662372934330831
     },
     {
       "sample_id": "dm-test-2377095dda83df778e34304b7a09813808105d3b#15",
-      "value": 0.7359191394779617
+      "value": 0.800787741039936
     },
     {
       "sample_id": "dm-test-23e8c1d71474d239aa9ae37b9a05031b0054b8ce#0",
-      "value": 0.5890049963143945
+      "value": 0.6296788726004621
     },
     {
       "sample_id": "dm-test-23e8c1d71474d239aa9ae37b9a05031b0054b8ce#1",
-      "value": 0.602554266799515
+      "value": 0.6746090179691934
     },
     {
       "sample_id": "dm-test-23e8c1d71474d239aa9ae37b9a05031b0054b8ce#2",
-      "value": 0.6786195237200733
+      "value": 0.728521158953973
     },
     {
       "sample_id": "dm-test-23e8c1d71474d239aa9ae37b9a05031b0054b8ce#3",
-      "value": 0.5788099791389638
+      "value": 0.6463476961800906
     },
     {
       "sample_id": "dm-test-23e8c1d71474d239aa9ae37b9a05031b0054b8ce#4",
-      "value": 0.6238585372996449
+      "value": 0.6987766361816439
     },
     {
       "sample_id": "dm-test-23e8c1d71474d239aa9ae37b9a05031b0054b8ce#5",
-      "value": 0.6417954860923863
+      "value": 0.6876624673814442
     },
     {
       "sample_id": "dm-test-23e8c1d71474d239aa9ae37b9a05031b0054b8ce#6",
-      "value": 0.6484658342851315
+      "value": 0.7270374714764828
     },
     {
       "sample_id": "dm-test-23e8c1d71474d239aa9ae37b9a05031b0054b8ce#7",
-      "value": 0.5724721544558825
+      "value": 0.605554621534035
     },
     {
       "sample_id": "dm-test-23e8c1d71474d239aa9ae37b9a05031b0054b8ce#8",
-      "value": 0.7221437289480334
+      "value": 0.7312230914385673
     },
     {
       "sample_id": "dm-test-23e8c1d71474d239aa9ae37b9a05031b0054b8ce#9",
-      "value": 0.6679118754902772
+      "value": 0.682121843798224
     },
     {
       "sample_id": "dm-test-23e8c1d71474d239aa9ae37b9a05031b0054b8ce#10",
-      "value": 0.7194527177831391
+      "value": 0.7613049576137282
     },
     {
       "sample_id": "dm-test-23e8c1d71474d239aa9ae37b9a05031b0054b8ce#11",
-      "value": 0.7194527177831391
+      "value": 0.7613049576137282
     },
     {
       "sample_id": "dm-test-23e8c1d71474d239aa9ae37b9a05031b0054b8ce#12",
-      "value": 0.7565396587081102
+      "value": 0.8097805097578088
     },
     {
       "sample_id": "dm-test-23e8c1d71474d239aa9ae37b9a05031b0054b8ce#13",
-      "value": 0.696783547117648
+      "value": 0.7366077775693567
     },
     {
       "sample_id": "dm-test-23e8c1d71474d239aa9ae37b9a05031b0054b8ce#14",
-      "value": 0.6096144028651554
+      "value": 0.6548438220699746
     },
     {
       "sample_id": "dm-test-23e8c1d71474d239aa9ae37b9a05031b0054b8ce#15",
-      "value": 0.566847713856558
+      "value": 0.6032612177928415
     },
     {
       "sample_id": "dm-test-26e4e19d945cedcb489f28808c730658139c9415#0",
-      "value": 0.5896749078818935
+      "value": 0.6176781907308624
     },
     {
       "sample_id": "dm-test-26e4e19d945cedcb489f28808c730658139c9415#1",
-      "value": 0.6560239942042037
+      "value": 0.7108493159726071
     },
     {
       "sample_id": "dm-test-26e4e19d945cedcb489f28808c730658139c9415#2",
-      "value": 0.6758119243751084
+      "value": 0.71547767906948
     },
     {
       "sample_id": "dm-test-26e4e19d945cedcb489f28808c730658139c9415#3",
-      "value": 0.637810555150431
+      "value": 0.6644844716529027
     },
     {
       "sample_id": "dm-test-26e4e19d945cedcb489f28808c730658139c9415#4",
-      "value": 0.619190688594775
+      "value": 0.679737322851956
     },
     {
       "sample_id": "dm-test-26e4e19d945cedcb489f28808c730658139c9415#5",
-      "value": 0.6565406235327987
+      "value": 0.7114596414095345
     },
     {
       "sample_id": "dm-test-26e4e19d945cedcb489f28808c730658139c9415#6",
-      "value": 0.6300497606339005
+      "value": 0.6911889894856529
     },
     {
       "sample_id": "dm-test-26e4e19d945cedcb489f28808c730658139c9415#7",
-      "value": 0.5831727195443932
+      "value": 0.6115090025840485
     },
     {
       "sample_id": "dm-test-26e4e19d945cedcb489f28808c730658139c9415#8",
-      "value": 0.584448039245794
+      "value": 0.6874043393505778
     },
     {
       "sample_id": "dm-test-26e4e19d945cedcb489f28808c730658139c9415#9",
-      "value": 0.547804826953842
+      "value": 0.5941846019027056
     },
     {
       "sample_id": "dm-test-26e4e19d945cedcb489f28808c730658139c9415#10",
-      "value": 0.6427782531984628
+      "value": 0.6874034808132539
     },
     {
       "sample_id": "dm-test-26e4e19d945cedcb489f28808c730658139c9415#11",
-      "value": 0.6599470309286571
+      "value": 0.7147723526970605
     },
     {
       "sample_id": "dm-test-26e4e19d945cedcb489f28808c730658139c9415#12",
-      "value": 0.6728070293929639
+      "value": 0.7981527318347785
     },
     {
       "sample_id": "dm-test-26e4e19d945cedcb489f28808c730658139c9415#13",
-      "value": 0.6604636602572521
+      "value": 0.715382678133988
     },
     {
       "sample_id": "dm-test-26e4e19d945cedcb489f28808c730658139c9415#14",
-      "value": 0.557422191665073
+      "value": 0.6194570172851478
     },
     {
       "sample_id": "dm-test-26e4e19d945cedcb489f28808c730658139c9415#15",
-      "value": 0.5968785848260914
+      "value": 0.6220341319402557
     },
     {
       "sample_id": "dm-test-2a48112ddee712f2364f128076cb2db555a043b1#0",
-      "value": 0.6168315703288558
+      "value": 0.638284864749964
     },
     {
       "sample_id": "dm-test-2a48112ddee712f2364f128076cb2db555a043b1#1",
-      "value": 0.72407993705006
+      "value": 0.7595953269660985
     },
     {
       "sample_id": "dm-test-2a48112ddee712f2364f128076cb2db555a043b1#2",
-      "value": 0.7426633800595334
+      "value": 0.7682565103154779
     },
     {
       "sample_id": "dm-test-2a48112ddee712f2364f128076cb2db555a043b1#3",
-      "value": 0.7128160646444318
+      "value": 0.7482624676706662
     },
     {
       "sample_id": "dm-test-2a48112ddee712f2364f128076cb2db555a043b1#4",
-      "value": 0.6868936113126116
+      "value": 0.7333775714526231
     },
     {
       "sample_id": "dm-test-2a48112ddee712f2364f128076cb2db555a043b1#5",
-      "value": 0.7260893760960053
+      "value": 0.7542563800448278
     },
     {
       "sample_id": "dm-test-2a48112ddee712f2364f128076cb2db555a043b1#6",
-      "value": 0.6982336770966544
+      "value": 0.7467077808618067
     },
     {
       "sample_id": "dm-test-2a48112ddee712f2364f128076cb2db555a043b1#7",
-      "value": 0.6541895757375256
+      "value": 0.6695940762724893
     },
     {
       "sample_id": "dm-test-2a48112ddee712f2364f128076cb2db555a043b1#8",
@@ -2027,191 +2027,191 @@
     },
     {
       "sample_id": "dm-test-2a48112ddee712f2364f128076cb2db555a043b1#9",
-      "value": 0.6340198501081772
+      "value": 0.6517459291844482
     },
     {
       "sample_id": "dm-test-2a48112ddee712f2364f128076cb2db555a043b1#10",
-      "value": 0.5863019340533846
+      "value": 0.6395615881957704
     },
     {
       "sample_id": "dm-test-2a48112ddee712f2364f128076cb2db555a043b1#11",
-      "value": 0.7326714240521076
+      "value": 0.7685919533248251
     },
     {
       "sample_id": "dm-test-2a48112ddee712f2364f128076cb2db555a043b1#12",
-      "value": 0.7889273489112641
+      "value": 0.8340468214161119
     },
     {
       "sample_id": "dm-test-2a48112ddee712f2364f128076cb2db555a043b1#13",
-      "value": 0.6509023163504221
+      "value": 0.6761219357846245
     },
     {
       "sample_id": "dm-test-2a48112ddee712f2364f128076cb2db555a043b1#14",
-      "value": 0.6338079534597256
+      "value": 0.6452824905279508
     },
     {
       "sample_id": "dm-test-2a48112ddee712f2364f128076cb2db555a043b1#15",
-      "value": 0.6151414606351112
+      "value": 0.6356271048332134
     },
     {
       "sample_id": "dm-test-2abe0f81f5b22c8a406165717e3bd7fce6fe47c6#0",
-      "value": 0.6375590898653875
+      "value": 0.7116316575545002
     },
     {
       "sample_id": "dm-test-2abe0f81f5b22c8a406165717e3bd7fce6fe47c6#1",
-      "value": 0.6637834852357264
+      "value": 0.7316091398536656
     },
     {
       "sample_id": "dm-test-2abe0f81f5b22c8a406165717e3bd7fce6fe47c6#2",
-      "value": 0.702896003057234
+      "value": 0.7665010681817277
     },
     {
       "sample_id": "dm-test-2abe0f81f5b22c8a406165717e3bd7fce6fe47c6#3",
-      "value": 0.699647077330943
+      "value": 0.7465493313647749
     },
     {
       "sample_id": "dm-test-2abe0f81f5b22c8a406165717e3bd7fce6fe47c6#4",
-      "value": 0.7024409676482749
+      "value": 0.765465302630283
     },
     {
       "sample_id": "dm-test-2abe0f81f5b22c8a406165717e3bd7fce6fe47c6#5",
-      "value": 0.6779803651058812
+      "value": 0.7273568039725182
     },
     {
       "sample_id": "dm-test-2abe0f81f5b22c8a406165717e3bd7fce6fe47c6#6",
-      "value": 0.8035588234762066
+      "value": 0.8289495451060499
     },
     {
       "sample_id": "dm-test-2abe0f81f5b22c8a406165717e3bd7fce6fe47c6#7",
-      "value": 0.6811080115760682
+      "value": 0.7070837395390542
     },
     {
       "sample_id": "dm-test-2abe0f81f5b22c8a406165717e3bd7fce6fe47c6#8",
-      "value": 0.6563344777228616
+      "value": 0.7131472428294225
     },
     {
       "sample_id": "dm-test-2abe0f81f5b22c8a406165717e3bd7fce6fe47c6#9",
-      "value": 0.6947466525797276
+      "value": 0.7299216118995835
     },
     {
       "sample_id": "dm-test-2abe0f81f5b22c8a406165717e3bd7fce6fe47c6#10",
-      "value": 0.7791069852418833
+      "value": 0.8103751545977712
     },
     {
       "sample_id": "dm-test-2abe0f81f5b22c8a406165717e3bd7fce6fe47c6#11",
-      "value": 0.7791069852418833
+      "value": 0.8103751545977712
     },
     {
       "sample_id": "dm-test-2abe0f81f5b22c8a406165717e3bd7fce6fe47c6#12",
-      "value": 0.8034728003058615
+      "value": 0.9102528126604674
     },
     {
       "sample_id": "dm-test-2abe0f81f5b22c8a406165717e3bd7fce6fe47c6#13",
-      "value": 0.6966427130485032
+      "value": 0.7449789859475647
     },
     {
       "sample_id": "dm-test-2abe0f81f5b22c8a406165717e3bd7fce6fe47c6#14",
-      "value": 0.7275075435454528
+      "value": 0.7853340637622915
     },
     {
       "sample_id": "dm-test-2abe0f81f5b22c8a406165717e3bd7fce6fe47c6#15",
-      "value": 0.6954429135111753
+      "value": 0.743409957441816
     },
     {
       "sample_id": "dm-test-2c37d44d03ce2e91310339d884d33ee5aabf9abc#0",
-      "value": 0.6779786136532695
+      "value": 0.7241316587044903
     },
     {
       "sample_id": "dm-test-2c37d44d03ce2e91310339d884d33ee5aabf9abc#1",
-      "value": 0.6734292789985176
+      "value": 0.7182672132026832
     },
     {
       "sample_id": "dm-test-2c37d44d03ce2e91310339d884d33ee5aabf9abc#2",
-      "value": 0.680266603433563
+      "value": 0.7216200231072675
     },
     {
       "sample_id": "dm-test-2c37d44d03ce2e91310339d884d33ee5aabf9abc#3",
-      "value": 0.680266603433563
+      "value": 0.7216200231072675
     },
     {
       "sample_id": "dm-test-2c37d44d03ce2e91310339d884d33ee5aabf9abc#4",
-      "value": 0.7324176003795383
+      "value": 0.7812924248069102
     },
     {
       "sample_id": "dm-test-2c37d44d03ce2e91310339d884d33ee5aabf9abc#5",
-      "value": 0.6752384528211648
+      "value": 0.7200924208412447
     },
     {
       "sample_id": "dm-test-2c37d44d03ce2e91310339d884d33ee5aabf9abc#6",
-      "value": 0.680266603433563
+      "value": 0.7216200231072675
     },
     {
       "sample_id": "dm-test-2c37d44d03ce2e91310339d884d33ee5aabf9abc#7",
-      "value": 0.7900099967159705
+      "value": 0.8842180775389643
     },
     {
       "sample_id": "dm-test-2c37d44d03ce2e91310339d884d33ee5aabf9abc#8",
-      "value": 0.7900516694153783
+      "value": 0.8644161278062662
     },
     {
       "sample_id": "dm-test-2c37d44d03ce2e91310339d884d33ee5aabf9abc#9",
-      "value": 0.7139426694675367
+      "value": 0.7432511286139477
     },
     {
       "sample_id": "dm-test-2c37d44d03ce2e91310339d884d33ee5aabf9abc#10",
-      "value": 0.680266603433563
+      "value": 0.7216200231072675
     },
     {
       "sample_id": "dm-test-2c37d44d03ce2e91310339d884d33ee5aabf9abc#11",
-      "value": 0.7331534941450383
+      "value": 0.7642782546562085
     },
     {
       "sample_id": "dm-test-2c37d44d03ce2e91310339d884d33ee5aabf9abc#12",
-      "value": 0.7459429970313752
+      "value": 0.800032644066807
     },
     {
       "sample_id": "dm-test-2c37d44d03ce2e91310339d884d33ee5aabf9abc#13",
-      "value": 0.743207124008408
+      "value": 0.8154918662452763
     },
     {
       "sample_id": "dm-test-2c37d44d03ce2e91310339d884d33ee5aabf9abc#14",
-      "value": 0.8195895467582369
+      "value": 0.9043696050880644
     },
     {
       "sample_id": "dm-test-2c37d44d03ce2e91310339d884d33ee5aabf9abc#15",
-      "value": 0.6295628080478247
+      "value": 0.7053671618473165
     },
     {
       "sample_id": "dm-test-2c6695b438980783754f7db28129ec2fbb3e6e21#0",
-      "value": 0.6815401389537801
+      "value": 0.6947829212071158
     },
     {
       "sample_id": "dm-test-2c6695b438980783754f7db28129ec2fbb3e6e21#1",
-      "value": 0.7890378353667652
+      "value": 0.8325484628700774
     },
     {
       "sample_id": "dm-test-2c6695b438980783754f7db28129ec2fbb3e6e21#2",
-      "value": 0.7862481286116583
+      "value": 0.8575642763396906
     },
     {
       "sample_id": "dm-test-2c6695b438980783754f7db28129ec2fbb3e6e21#3",
-      "value": 0.7347531075841861
+      "value": 0.8284892390851802
     },
     {
       "sample_id": "dm-test-2c6695b438980783754f7db28129ec2fbb3e6e21#4",
-      "value": 0.7850092296312097
+      "value": 0.8052021336149904
     },
     {
       "sample_id": "dm-test-2c6695b438980783754f7db28129ec2fbb3e6e21#5",
-      "value": 0.7444685629852922
+      "value": 0.8291376139107626
     },
     {
       "sample_id": "dm-test-2c6695b438980783754f7db28129ec2fbb3e6e21#6",
-      "value": 0.8195974203205278
+      "value": 0.8401251967862596
     },
     {
       "sample_id": "dm-test-2c6695b438980783754f7db28129ec2fbb3e6e21#7",
-      "value": 0.7735545088170337
+      "value": 0.8429830100287461
     },
     {
       "sample_id": "dm-test-2c6695b438980783754f7db28129ec2fbb3e6e21#8",
@@ -2219,255 +2219,255 @@
     },
     {
       "sample_id": "dm-test-2c6695b438980783754f7db28129ec2fbb3e6e21#9",
-      "value": 0.7537599594611396
+      "value": 0.8390876107648632
     },
     {
       "sample_id": "dm-test-2c6695b438980783754f7db28129ec2fbb3e6e21#10",
-      "value": 0.743302893573095
+      "value": 0.7924222096534718
     },
     {
       "sample_id": "dm-test-2c6695b438980783754f7db28129ec2fbb3e6e21#11",
-      "value": 0.8246378565466393
+      "value": 0.8383230408571273
     },
     {
       "sample_id": "dm-test-2c6695b438980783754f7db28129ec2fbb3e6e21#12",
-      "value": 0.8477020339825546
+      "value": 0.9254894017405525
     },
     {
       "sample_id": "dm-test-2c6695b438980783754f7db28129ec2fbb3e6e21#13",
-      "value": 0.7003077606822982
+      "value": 0.7899533023416808
     },
     {
       "sample_id": "dm-test-2c6695b438980783754f7db28129ec2fbb3e6e21#14",
-      "value": 0.7638807474179682
+      "value": 0.8169638016270194
     },
     {
       "sample_id": "dm-test-2c6695b438980783754f7db28129ec2fbb3e6e21#15",
-      "value": 0.7392477110980158
+      "value": 0.7883851926041485
     },
     {
       "sample_id": "dm-test-2cf8c2d1d2ceb1980249f77e703f9039e63799d0#0",
-      "value": 0.632741194830881
+      "value": 0.7248951404893064
     },
     {
       "sample_id": "dm-test-2cf8c2d1d2ceb1980249f77e703f9039e63799d0#1",
-      "value": 0.6718405465746734
+      "value": 0.8164588311160075
     },
     {
       "sample_id": "dm-test-2cf8c2d1d2ceb1980249f77e703f9039e63799d0#2",
-      "value": 0.66118071064274
+      "value": 0.7782199918887894
     },
     {
       "sample_id": "dm-test-2cf8c2d1d2ceb1980249f77e703f9039e63799d0#3",
-      "value": 0.721859466710397
+      "value": 0.882514960410004
     },
     {
       "sample_id": "dm-test-2cf8c2d1d2ceb1980249f77e703f9039e63799d0#4",
-      "value": 0.7179890850587383
+      "value": 0.8779426447440528
     },
     {
       "sample_id": "dm-test-2cf8c2d1d2ceb1980249f77e703f9039e63799d0#5",
-      "value": 0.7179890850587383
+      "value": 0.8779426447440528
     },
     {
       "sample_id": "dm-test-2cf8c2d1d2ceb1980249f77e703f9039e63799d0#6",
-      "value": 0.70460595993832
+      "value": 0.8570768079798691
     },
     {
       "sample_id": "dm-test-2cf8c2d1d2ceb1980249f77e703f9039e63799d0#7",
-      "value": 0.6635038853799089
+      "value": 0.7791007417606423
     },
     {
       "sample_id": "dm-test-2cf8c2d1d2ceb1980249f77e703f9039e63799d0#8",
-      "value": 0.600035580902765
+      "value": 0.6269346719664944
     },
     {
       "sample_id": "dm-test-2cf8c2d1d2ceb1980249f77e703f9039e63799d0#9",
-      "value": 0.6247919509900655
+      "value": 0.7221334133152634
     },
     {
       "sample_id": "dm-test-2cf8c2d1d2ceb1980249f77e703f9039e63799d0#10",
-      "value": 0.66118071064274
+      "value": 0.7782199918887894
     },
     {
       "sample_id": "dm-test-2cf8c2d1d2ceb1980249f77e703f9039e63799d0#11",
-      "value": 0.8430820074055473
+      "value": 0.9121836786630354
     },
     {
       "sample_id": "dm-test-2cf8c2d1d2ceb1980249f77e703f9039e63799d0#12",
-      "value": 0.6918719156646492
+      "value": 0.8350538689193514
     },
     {
       "sample_id": "dm-test-2cf8c2d1d2ceb1980249f77e703f9039e63799d0#13",
-      "value": 0.6590723505495865
+      "value": 0.7503802070645298
     },
     {
       "sample_id": "dm-test-2cf8c2d1d2ceb1980249f77e703f9039e63799d0#14",
-      "value": 0.6046944454549875
+      "value": 0.6876787445242875
     },
     {
       "sample_id": "dm-test-2cf8c2d1d2ceb1980249f77e703f9039e63799d0#15",
-      "value": 0.6541293857266454
+      "value": 0.778745542584779
     },
     {
       "sample_id": "dm-test-2cfc33d01364162579f46b2764914a03a29453ce#0",
-      "value": 0.6049828063581028
+      "value": 0.7090949287501664
     },
     {
       "sample_id": "dm-test-2cfc33d01364162579f46b2764914a03a29453ce#1",
-      "value": 0.6268424947405717
+      "value": 0.7140586887054179
     },
     {
       "sample_id": "dm-test-2cfc33d01364162579f46b2764914a03a29453ce#2",
-      "value": 0.6750335080962598
+      "value": 0.7522381469817624
     },
     {
       "sample_id": "dm-test-2cfc33d01364162579f46b2764914a03a29453ce#3",
-      "value": 0.6892104179040669
+      "value": 0.7477982314891899
     },
     {
       "sample_id": "dm-test-2cfc33d01364162579f46b2764914a03a29453ce#4",
-      "value": 0.6453407464540946
+      "value": 0.7187771971826759
     },
     {
       "sample_id": "dm-test-2cfc33d01364162579f46b2764914a03a29453ce#5",
-      "value": 0.6706154747681814
+      "value": 0.7286181824534815
     },
     {
       "sample_id": "dm-test-2cfc33d01364162579f46b2764914a03a29453ce#6",
-      "value": 0.7186768694132288
+      "value": 0.7809288297120776
     },
     {
       "sample_id": "dm-test-2cfc33d01364162579f46b2764914a03a29453ce#7",
-      "value": 0.5339806535948626
+      "value": 0.5931402265662049
     },
     {
       "sample_id": "dm-test-2cfc33d01364162579f46b2764914a03a29453ce#8",
-      "value": 0.5149339883047744
+      "value": 0.7171760420737036
     },
     {
       "sample_id": "dm-test-2cfc33d01364162579f46b2764914a03a29453ce#9",
-      "value": 0.533182740176908
+      "value": 0.6171373174200513
     },
     {
       "sample_id": "dm-test-2cfc33d01364162579f46b2764914a03a29453ce#10",
-      "value": 0.6875889224487396
+      "value": 0.7459034326604398
     },
     {
       "sample_id": "dm-test-2cfc33d01364162579f46b2764914a03a29453ce#11",
-      "value": 0.7793041660088104
+      "value": 0.8127794545095818
     },
     {
       "sample_id": "dm-test-2cfc33d01364162579f46b2764914a03a29453ce#12",
-      "value": 0.6318550226366502
+      "value": 0.6749719988783487
     },
     {
       "sample_id": "dm-test-2cfc33d01364162579f46b2764914a03a29453ce#13",
-      "value": 0.5927072906148263
+      "value": 0.6803681684332141
     },
     {
       "sample_id": "dm-test-2cfc33d01364162579f46b2764914a03a29453ce#14",
-      "value": 0.6066509730802464
+      "value": 0.7068126839842793
     },
     {
       "sample_id": "dm-test-2cfc33d01364162579f46b2764914a03a29453ce#15",
-      "value": 0.6412954672588436
+      "value": 0.7234203458243156
     },
     {
       "sample_id": "dm-test-2feca9acf532e33f1ab7442c442c8e19787d8d7b#0",
-      "value": 0.7915495196469942
+      "value": 0.8952051236856192
     },
     {
       "sample_id": "dm-test-2feca9acf532e33f1ab7442c442c8e19787d8d7b#1",
-      "value": 0.7463203028003212
+      "value": 0.8463349389769628
     },
     {
       "sample_id": "dm-test-2feca9acf532e33f1ab7442c442c8e19787d8d7b#2",
-      "value": 0.7869587974567654
+      "value": 0.8585470819299851
     },
     {
       "sample_id": "dm-test-2feca9acf532e33f1ab7442c442c8e19787d8d7b#3",
-      "value": 0.7081275438089916
+      "value": 0.8034249169813196
     },
     {
       "sample_id": "dm-test-2feca9acf532e33f1ab7442c442c8e19787d8d7b#4",
-      "value": 0.7339578888112425
+      "value": 0.8319718630816679
     },
     {
       "sample_id": "dm-test-2feca9acf532e33f1ab7442c442c8e19787d8d7b#5",
-      "value": 0.8220358989508685
+      "value": 0.8758652559562851
     },
     {
       "sample_id": "dm-test-2feca9acf532e33f1ab7442c442c8e19787d8d7b#6",
-      "value": 0.8379273151246944
+      "value": 0.9247600473668106
     },
     {
       "sample_id": "dm-test-2feca9acf532e33f1ab7442c442c8e19787d8d7b#7",
-      "value": 0.696707002559352
+      "value": 0.7864243758626606
     },
     {
       "sample_id": "dm-test-2feca9acf532e33f1ab7442c442c8e19787d8d7b#8",
-      "value": 0.7660854889449192
+      "value": 0.8053635318808876
     },
     {
       "sample_id": "dm-test-2feca9acf532e33f1ab7442c442c8e19787d8d7b#9",
-      "value": 0.6803900069393176
+      "value": 0.7631897429082195
     },
     {
       "sample_id": "dm-test-2feca9acf532e33f1ab7442c442c8e19787d8d7b#10",
-      "value": 0.8060571667888005
+      "value": 0.8885851934252392
     },
     {
       "sample_id": "dm-test-2feca9acf532e33f1ab7442c442c8e19787d8d7b#11",
-      "value": 0.8792859792420246
+      "value": 0.9221661825524908
     },
     {
       "sample_id": "dm-test-2feca9acf532e33f1ab7442c442c8e19787d8d7b#12",
-      "value": 0.718816489204874
+      "value": 0.8074235661540211
     },
     {
       "sample_id": "dm-test-2feca9acf532e33f1ab7442c442c8e19787d8d7b#13",
-      "value": 0.7463203028003212
+      "value": 0.8463349389769628
     },
     {
       "sample_id": "dm-test-2feca9acf532e33f1ab7442c442c8e19787d8d7b#14",
-      "value": 0.7346740345006166
+      "value": 0.8254555098414924
     },
     {
       "sample_id": "dm-test-2feca9acf532e33f1ab7442c442c8e19787d8d7b#15",
-      "value": 0.6716568559080965
+      "value": 0.7661467565427825
     },
     {
       "sample_id": "dm-test-31114653cd606fd3f4b1035f98dedd71f8282cd2#0",
-      "value": 0.5942006852519072
+      "value": 0.6300511880693918
     },
     {
       "sample_id": "dm-test-31114653cd606fd3f4b1035f98dedd71f8282cd2#1",
-      "value": 0.6958898976041678
+      "value": 0.7586835487424622
     },
     {
       "sample_id": "dm-test-31114653cd606fd3f4b1035f98dedd71f8282cd2#2",
-      "value": 0.7679686836859799
+      "value": 0.8106893953860946
     },
     {
       "sample_id": "dm-test-31114653cd606fd3f4b1035f98dedd71f8282cd2#3",
-      "value": 0.6355006573260701
+      "value": 0.703262487771343
     },
     {
       "sample_id": "dm-test-31114653cd606fd3f4b1035f98dedd71f8282cd2#4",
-      "value": 0.6671160087907669
+      "value": 0.7374769754576183
     },
     {
       "sample_id": "dm-test-31114653cd606fd3f4b1035f98dedd71f8282cd2#5",
-      "value": 0.7284665888761982
+      "value": 0.7938908117704746
     },
     {
       "sample_id": "dm-test-31114653cd606fd3f4b1035f98dedd71f8282cd2#6",
-      "value": 0.7284665888761982
+      "value": 0.7938908117704746
     },
     {
       "sample_id": "dm-test-31114653cd606fd3f4b1035f98dedd71f8282cd2#7",
-      "value": 0.625203229234559
+      "value": 0.7080090616583279
     },
     {
       "sample_id": "dm-test-31114653cd606fd3f4b1035f98dedd71f8282cd2#8",
@@ -2475,511 +2475,511 @@
     },
     {
       "sample_id": "dm-test-31114653cd606fd3f4b1035f98dedd71f8282cd2#9",
-      "value": 0.661329825655674
+      "value": 0.7191366388853256
     },
     {
       "sample_id": "dm-test-31114653cd606fd3f4b1035f98dedd71f8282cd2#10",
-      "value": 0.7918144991529822
+      "value": 0.8145180103471438
     },
     {
       "sample_id": "dm-test-31114653cd606fd3f4b1035f98dedd71f8282cd2#11",
-      "value": 0.7284665888761982
+      "value": 0.7938908117704746
     },
     {
       "sample_id": "dm-test-31114653cd606fd3f4b1035f98dedd71f8282cd2#12",
-      "value": 0.8308204961139416
+      "value": 0.8797160917091759
     },
     {
       "sample_id": "dm-test-31114653cd606fd3f4b1035f98dedd71f8282cd2#13",
-      "value": 0.7070763710097058
+      "value": 0.7698700221480003
     },
     {
       "sample_id": "dm-test-31114653cd606fd3f4b1035f98dedd71f8282cd2#14",
-      "value": 0.6755270978566609
+      "value": 0.7327689438838162
     },
     {
       "sample_id": "dm-test-31114653cd606fd3f4b1035f98dedd71f8282cd2#15",
-      "value": 0.56188118140576
+      "value": 0.6352021308089327
     },
     {
       "sample_id": "dm-test-36352fd1c61fd0c593ee7b84cbe213aa9b444439#0",
-      "value": 0.6145535887366252
+      "value": 0.7123515960856273
     },
     {
       "sample_id": "dm-test-36352fd1c61fd0c593ee7b84cbe213aa9b444439#1",
-      "value": 0.7414499537168059
+      "value": 0.8065435425136266
     },
     {
       "sample_id": "dm-test-36352fd1c61fd0c593ee7b84cbe213aa9b444439#2",
-      "value": 0.72431405924808
+      "value": 0.7810398860216662
     },
     {
       "sample_id": "dm-test-36352fd1c61fd0c593ee7b84cbe213aa9b444439#3",
-      "value": 0.684435007628946
+      "value": 0.7741723552270745
     },
     {
       "sample_id": "dm-test-36352fd1c61fd0c593ee7b84cbe213aa9b444439#4",
-      "value": 0.7779616585946384
+      "value": 0.834176144936579
     },
     {
       "sample_id": "dm-test-36352fd1c61fd0c593ee7b84cbe213aa9b444439#5",
-      "value": 0.7670395784964846
+      "value": 0.8222039485371543
     },
     {
       "sample_id": "dm-test-36352fd1c61fd0c593ee7b84cbe213aa9b444439#6",
-      "value": 0.7405052377893018
+      "value": 0.7985854779962538
     },
     {
       "sample_id": "dm-test-36352fd1c61fd0c593ee7b84cbe213aa9b444439#7",
-      "value": 0.6586174459465923
+      "value": 0.7292431635140113
     },
     {
       "sample_id": "dm-test-36352fd1c61fd0c593ee7b84cbe213aa9b444439#8",
-      "value": 0.6229708309391491
+      "value": 0.6515702061755305
     },
     {
       "sample_id": "dm-test-36352fd1c61fd0c593ee7b84cbe213aa9b444439#9",
-      "value": 0.7105689566525841
+      "value": 0.799993022487911
     },
     {
       "sample_id": "dm-test-36352fd1c61fd0c593ee7b84cbe213aa9b444439#10",
-      "value": 0.6863182907468266
+      "value": 0.7361763313198106
     },
     {
       "sample_id": "dm-test-36352fd1c61fd0c593ee7b84cbe213aa9b444439#11",
-      "value": 0.8519919445286516
+      "value": 0.889211651279428
     },
     {
       "sample_id": "dm-test-36352fd1c61fd0c593ee7b84cbe213aa9b444439#12",
-      "value": 0.8304800810501215
+      "value": 0.8679177047252443
     },
     {
       "sample_id": "dm-test-36352fd1c61fd0c593ee7b84cbe213aa9b444439#13",
-      "value": 0.733850809181413
+      "value": 0.8542782725106243
     },
     {
       "sample_id": "dm-test-36352fd1c61fd0c593ee7b84cbe213aa9b444439#14",
-      "value": 0.7702934940868552
+      "value": 0.8405790478420861
     },
     {
       "sample_id": "dm-test-36352fd1c61fd0c593ee7b84cbe213aa9b444439#15",
-      "value": 0.6610397642046475
+      "value": 0.7346207973247807
     },
     {
       "sample_id": "dm-test-3785743303ddb8b594be7c449a37458b99e83812#0",
-      "value": 0.5415244289604566
+      "value": 0.5911301515430211
     },
     {
       "sample_id": "dm-test-3785743303ddb8b594be7c449a37458b99e83812#1",
-      "value": 0.6245911417586246
+      "value": 0.6542065001968554
     },
     {
       "sample_id": "dm-test-3785743303ddb8b594be7c449a37458b99e83812#2",
-      "value": 0.6363651272481508
+      "value": 0.6773776805713246
     },
     {
       "sample_id": "dm-test-3785743303ddb8b594be7c449a37458b99e83812#3",
-      "value": 0.539111836558777
+      "value": 0.6112953748844051
     },
     {
       "sample_id": "dm-test-3785743303ddb8b594be7c449a37458b99e83812#4",
-      "value": 0.5931791369652174
+      "value": 0.639637460624669
     },
     {
       "sample_id": "dm-test-3785743303ddb8b594be7c449a37458b99e83812#5",
-      "value": 0.5706934890986146
+      "value": 0.5956199376383545
     },
     {
       "sample_id": "dm-test-3785743303ddb8b594be7c449a37458b99e83812#6",
-      "value": 0.6545548015932993
+      "value": 0.6857280873199079
     },
     {
       "sample_id": "dm-test-3785743303ddb8b594be7c449a37458b99e83812#7",
-      "value": 0.5642681212402848
+      "value": 0.5816153768666535
     },
     {
       "sample_id": "dm-test-3785743303ddb8b594be7c449a37458b99e83812#8",
-      "value": 0.7189537519888111
+      "value": 0.7896162223778691
     },
     {
       "sample_id": "dm-test-3785743303ddb8b594be7c449a37458b99e83812#9",
-      "value": 0.5749854621473082
+      "value": 0.5993507187193091
     },
     {
       "sample_id": "dm-test-3785743303ddb8b594be7c449a37458b99e83812#10",
-      "value": 0.6363651272481508
+      "value": 0.6773776805713245
     },
     {
       "sample_id": "dm-test-3785743303ddb8b594be7c449a37458b99e83812#11",
-      "value": 0.6588261671258578
+      "value": 0.6799298437223152
     },
     {
       "sample_id": "dm-test-3785743303ddb8b594be7c449a37458b99e83812#12",
-      "value": 0.6723330168505413
+      "value": 0.679602885904531
     },
     {
       "sample_id": "dm-test-3785743303ddb8b594be7c449a37458b99e83812#13",
-      "value": 0.5793208419631727
+      "value": 0.6006735933713053
     },
     {
       "sample_id": "dm-test-3785743303ddb8b594be7c449a37458b99e83812#14",
-      "value": 0.5142016478388532
+      "value": 0.581636682860536
     },
     {
       "sample_id": "dm-test-3785743303ddb8b594be7c449a37458b99e83812#15",
-      "value": 0.5976197437538159
+      "value": 0.6326616315005109
     },
     {
       "sample_id": "dm-test-3ba3bde4a1440134bb38ec22ba50db59986b544c#0",
-      "value": 0.5693921748426142
+      "value": 0.5917311903783443
     },
     {
       "sample_id": "dm-test-3ba3bde4a1440134bb38ec22ba50db59986b544c#1",
-      "value": 0.6356717007139314
+      "value": 0.6925353076686275
     },
     {
       "sample_id": "dm-test-3ba3bde4a1440134bb38ec22ba50db59986b544c#2",
-      "value": 0.7459574012574407
+      "value": 0.7850541026050725
     },
     {
       "sample_id": "dm-test-3ba3bde4a1440134bb38ec22ba50db59986b544c#3",
-      "value": 0.609205783925874
+      "value": 0.6869178362084563
     },
     {
       "sample_id": "dm-test-3ba3bde4a1440134bb38ec22ba50db59986b544c#4",
-      "value": 0.6650951969611121
+      "value": 0.6961508668924266
     },
     {
       "sample_id": "dm-test-3ba3bde4a1440134bb38ec22ba50db59986b544c#5",
-      "value": 0.6341554537064451
+      "value": 0.6652581646081462
     },
     {
       "sample_id": "dm-test-3ba3bde4a1440134bb38ec22ba50db59986b544c#6",
-      "value": 0.748749983889077
+      "value": 0.7879898640099534
     },
     {
       "sample_id": "dm-test-3ba3bde4a1440134bb38ec22ba50db59986b544c#7",
-      "value": 0.5219287062787981
+      "value": 0.5931173402616559
     },
     {
       "sample_id": "dm-test-3ba3bde4a1440134bb38ec22ba50db59986b544c#8",
-      "value": 0.516350482208847
+      "value": 0.5992055017978074
     },
     {
       "sample_id": "dm-test-3ba3bde4a1440134bb38ec22ba50db59986b544c#9",
-      "value": 0.6309842636702877
+      "value": 0.6715633763521914
     },
     {
       "sample_id": "dm-test-3ba3bde4a1440134bb38ec22ba50db59986b544c#10",
-      "value": 0.6839765221361404
+      "value": 0.7620470974941603
     },
     {
       "sample_id": "dm-test-3ba3bde4a1440134bb38ec22ba50db59986b544c#11",
-      "value": 0.7459574012574407
+      "value": 0.7850541026050725
     },
     {
       "sample_id": "dm-test-3ba3bde4a1440134bb38ec22ba50db59986b544c#12",
-      "value": 0.8031682199429397
+      "value": 0.8552976391129133
     },
     {
       "sample_id": "dm-test-3ba3bde4a1440134bb38ec22ba50db59986b544c#13",
-      "value": 0.5580324246243652
+      "value": 0.6029539438438479
     },
     {
       "sample_id": "dm-test-3ba3bde4a1440134bb38ec22ba50db59986b544c#14",
-      "value": 0.5225079545769229
+      "value": 0.5689356028927551
     },
     {
       "sample_id": "dm-test-3ba3bde4a1440134bb38ec22ba50db59986b544c#15",
-      "value": 0.516071833288136
+      "value": 0.5655238709821013
     },
     {
       "sample_id": "dm-test-4001b252a072ac149c70840b22299cc6cfab3bae#0",
-      "value": 0.5969440608044752
+      "value": 0.6468336918981661
     },
     {
       "sample_id": "dm-test-4001b252a072ac149c70840b22299cc6cfab3bae#1",
-      "value": 0.694277305636921
+      "value": 0.7593896252685836
     },
     {
       "sample_id": "dm-test-4001b252a072ac149c70840b22299cc6cfab3bae#2",
-      "value": 0.7174795134586643
+      "value": 0.7486233011691955
     },
     {
       "sample_id": "dm-test-4001b252a072ac149c70840b22299cc6cfab3bae#3",
-      "value": 0.5395771637237963
+      "value": 0.6275668271324717
     },
     {
       "sample_id": "dm-test-4001b252a072ac149c70840b22299cc6cfab3bae#4",
-      "value": 0.6592757621953781
+      "value": 0.7071997206276849
     },
     {
       "sample_id": "dm-test-4001b252a072ac149c70840b22299cc6cfab3bae#5",
-      "value": 0.7690553038526327
+      "value": 0.806309264400018
     },
     {
       "sample_id": "dm-test-4001b252a072ac149c70840b22299cc6cfab3bae#6",
-      "value": 0.7254893406816136
+      "value": 0.7955670453166103
     },
     {
       "sample_id": "dm-test-4001b252a072ac149c70840b22299cc6cfab3bae#7",
-      "value": 0.6929318823621075
+      "value": 0.7342167965413026
     },
     {
       "sample_id": "dm-test-4001b252a072ac149c70840b22299cc6cfab3bae#8",
-      "value": 0.6226326652956892
+      "value": 0.6250858707578755
     },
     {
       "sample_id": "dm-test-4001b252a072ac149c70840b22299cc6cfab3bae#9",
-      "value": 0.5938513962045078
+      "value": 0.6741047102595594
     },
     {
       "sample_id": "dm-test-4001b252a072ac149c70840b22299cc6cfab3bae#10",
-      "value": 0.6674799787209488
+      "value": 0.6937095551444575
     },
     {
       "sample_id": "dm-test-4001b252a072ac149c70840b22299cc6cfab3bae#11",
-      "value": 0.7258463122964475
+      "value": 0.7959976352766075
     },
     {
       "sample_id": "dm-test-4001b252a072ac149c70840b22299cc6cfab3bae#12",
-      "value": 0.6656804666129701
+      "value": 0.7471188620595521
     },
     {
       "sample_id": "dm-test-4001b252a072ac149c70840b22299cc6cfab3bae#13",
-      "value": 0.6880810538720091
+      "value": 0.7308016371958569
     },
     {
       "sample_id": "dm-test-4001b252a072ac149c70840b22299cc6cfab3bae#14",
-      "value": 0.6106830851510919
+      "value": 0.6825740866998258
     },
     {
       "sample_id": "dm-test-4001b252a072ac149c70840b22299cc6cfab3bae#15",
-      "value": 0.6290760257922619
+      "value": 0.6800947278152172
     },
     {
       "sample_id": "dm-test-46609841ffd23e9c22d1507edf7b176ecc4d834f#0",
-      "value": 0.57126414834927
+      "value": 0.6351770983537329
     },
     {
       "sample_id": "dm-test-46609841ffd23e9c22d1507edf7b176ecc4d834f#1",
-      "value": 0.6447401702292416
+      "value": 0.7182963124067188
     },
     {
       "sample_id": "dm-test-46609841ffd23e9c22d1507edf7b176ecc4d834f#2",
-      "value": 0.6071566935938024
+      "value": 0.6952803177096694
     },
     {
       "sample_id": "dm-test-46609841ffd23e9c22d1507edf7b176ecc4d834f#3",
-      "value": 0.6422057398392971
+      "value": 0.7299152001082884
     },
     {
       "sample_id": "dm-test-46609841ffd23e9c22d1507edf7b176ecc4d834f#4",
-      "value": 0.5170671237576413
+      "value": 0.609728315973241
     },
     {
       "sample_id": "dm-test-46609841ffd23e9c22d1507edf7b176ecc4d834f#5",
-      "value": 0.6748313026775179
+      "value": 0.7203209571602173
     },
     {
       "sample_id": "dm-test-46609841ffd23e9c22d1507edf7b176ecc4d834f#6",
-      "value": 0.6323121567112424
+      "value": 0.7080480903176015
     },
     {
       "sample_id": "dm-test-46609841ffd23e9c22d1507edf7b176ecc4d834f#7",
-      "value": 0.5297441656158263
+      "value": 0.589273169999017
     },
     {
       "sample_id": "dm-test-46609841ffd23e9c22d1507edf7b176ecc4d834f#8",
-      "value": 0.6383662255338005
+      "value": 0.8513318739563325
     },
     {
       "sample_id": "dm-test-46609841ffd23e9c22d1507edf7b176ecc4d834f#9",
-      "value": 0.555825658746848
+      "value": 0.636212740399713
     },
     {
       "sample_id": "dm-test-46609841ffd23e9c22d1507edf7b176ecc4d834f#10",
-      "value": 0.6565231503833083
+      "value": 0.7129209868176655
     },
     {
       "sample_id": "dm-test-46609841ffd23e9c22d1507edf7b176ecc4d834f#11",
-      "value": 0.6740866650984844
+      "value": 0.7476428072759619
     },
     {
       "sample_id": "dm-test-46609841ffd23e9c22d1507edf7b176ecc4d834f#12",
-      "value": 0.6942892910527286
+      "value": 0.8013716613812173
     },
     {
       "sample_id": "dm-test-46609841ffd23e9c22d1507edf7b176ecc4d834f#13",
-      "value": 0.6585614261249083
+      "value": 0.7022110672863292
     },
     {
       "sample_id": "dm-test-46609841ffd23e9c22d1507edf7b176ecc4d834f#14",
-      "value": 0.57442217525188
+      "value": 0.6807996250386973
     },
     {
       "sample_id": "dm-test-46609841ffd23e9c22d1507edf7b176ecc4d834f#15",
-      "value": 0.5908279463085062
+      "value": 0.6578900110984957
     },
     {
       "sample_id": "dm-test-4a593dc4c7e0b4d09bfdc66bb315c47b54eb15df#0",
-      "value": 0.5697694423677653
+      "value": 0.6044675113581863
     },
     {
       "sample_id": "dm-test-4a593dc4c7e0b4d09bfdc66bb315c47b54eb15df#1",
-      "value": 0.6666052721702963
+      "value": 0.6932006362779419
     },
     {
       "sample_id": "dm-test-4a593dc4c7e0b4d09bfdc66bb315c47b54eb15df#2",
-      "value": 0.6074498612057622
+      "value": 0.6415003204413154
     },
     {
       "sample_id": "dm-test-4a593dc4c7e0b4d09bfdc66bb315c47b54eb15df#3",
-      "value": 0.617353976070311
+      "value": 0.6302560038967647
     },
     {
       "sample_id": "dm-test-4a593dc4c7e0b4d09bfdc66bb315c47b54eb15df#4",
-      "value": 0.5674867371230699
+      "value": 0.6008349372162064
     },
     {
       "sample_id": "dm-test-4a593dc4c7e0b4d09bfdc66bb315c47b54eb15df#5",
-      "value": 0.63455560770532
+      "value": 0.6612454142463372
     },
     {
       "sample_id": "dm-test-4a593dc4c7e0b4d09bfdc66bb315c47b54eb15df#6",
-      "value": 0.7090767232901595
+      "value": 0.7244113928196448
     },
     {
       "sample_id": "dm-test-4a593dc4c7e0b4d09bfdc66bb315c47b54eb15df#7",
-      "value": 0.5611199233459533
+      "value": 0.6481264155490565
     },
     {
       "sample_id": "dm-test-4a593dc4c7e0b4d09bfdc66bb315c47b54eb15df#8",
-      "value": 0.5100636081844786
+      "value": 0.6353297922877565
     },
     {
       "sample_id": "dm-test-4a593dc4c7e0b4d09bfdc66bb315c47b54eb15df#9",
-      "value": 0.5597377309400422
+      "value": 0.5828504356825753
     },
     {
       "sample_id": "dm-test-4a593dc4c7e0b4d09bfdc66bb315c47b54eb15df#10",
-      "value": 0.6613250430841251
+      "value": 0.674053830741428
     },
     {
       "sample_id": "dm-test-4a593dc4c7e0b4d09bfdc66bb315c47b54eb15df#11",
-      "value": 0.7182142109671504
+      "value": 0.7618991513071002
     },
     {
       "sample_id": "dm-test-4a593dc4c7e0b4d09bfdc66bb315c47b54eb15df#12",
-      "value": 0.6099280396276433
+      "value": 0.6717957470748951
     },
     {
       "sample_id": "dm-test-4a593dc4c7e0b4d09bfdc66bb315c47b54eb15df#13",
-      "value": 0.6229498300417666
+      "value": 0.6359310895255997
     },
     {
       "sample_id": "dm-test-4a593dc4c7e0b4d09bfdc66bb315c47b54eb15df#14",
-      "value": 0.619991838917208
+      "value": 0.6573549334517492
     },
     {
       "sample_id": "dm-test-4a593dc4c7e0b4d09bfdc66bb315c47b54eb15df#15",
-      "value": 0.5956023674279632
+      "value": 0.6266476220321715
     },
     {
       "sample_id": "dm-test-4e0de0ec6d5b9df174f54d03158de8f30aac861f#0",
-      "value": 0.6000012198620058
+      "value": 0.644289050188344
     },
     {
       "sample_id": "dm-test-4e0de0ec6d5b9df174f54d03158de8f30aac861f#1",
-      "value": 0.5422673066660605
+      "value": 0.6346251536005811
     },
     {
       "sample_id": "dm-test-4e0de0ec6d5b9df174f54d03158de8f30aac861f#2",
-      "value": 0.6717227449173612
+      "value": 0.709363521608704
     },
     {
       "sample_id": "dm-test-4e0de0ec6d5b9df174f54d03158de8f30aac861f#3",
-      "value": 0.5665950281138875
+      "value": 0.6485001618776661
     },
     {
       "sample_id": "dm-test-4e0de0ec6d5b9df174f54d03158de8f30aac861f#4",
-      "value": 0.6414393357330129
+      "value": 0.6781168267286075
     },
     {
       "sample_id": "dm-test-4e0de0ec6d5b9df174f54d03158de8f30aac861f#5",
-      "value": 0.700366523683058
+      "value": 0.7383343493443023
     },
     {
       "sample_id": "dm-test-4e0de0ec6d5b9df174f54d03158de8f30aac861f#6",
-      "value": 0.7027091109084626
+      "value": 0.7331689596711048
     },
     {
       "sample_id": "dm-test-4e0de0ec6d5b9df174f54d03158de8f30aac861f#7",
-      "value": 0.5823563322257748
+      "value": 0.6045815747841639
     },
     {
       "sample_id": "dm-test-4e0de0ec6d5b9df174f54d03158de8f30aac861f#8",
-      "value": 0.7345439443503793
+      "value": 0.7671760384554063
     },
     {
       "sample_id": "dm-test-4e0de0ec6d5b9df174f54d03158de8f30aac861f#9",
-      "value": 0.6024976258127648
+      "value": 0.6259354879658087
     },
     {
       "sample_id": "dm-test-4e0de0ec6d5b9df174f54d03158de8f30aac861f#10",
-      "value": 0.6717227449173612
+      "value": 0.709363521608704
     },
     {
       "sample_id": "dm-test-4e0de0ec6d5b9df174f54d03158de8f30aac861f#11",
-      "value": 0.7302556932137424
+      "value": 0.7725184366594796
     },
     {
       "sample_id": "dm-test-4e0de0ec6d5b9df174f54d03158de8f30aac861f#12",
-      "value": 0.7277885524083719
+      "value": 0.7782443812216143
     },
     {
       "sample_id": "dm-test-4e0de0ec6d5b9df174f54d03158de8f30aac861f#13",
-      "value": 0.6439557747716047
+      "value": 0.6875811519414669
     },
     {
       "sample_id": "dm-test-4e0de0ec6d5b9df174f54d03158de8f30aac861f#14",
-      "value": 0.522753126841159
+      "value": 0.6297359146625653
     },
     {
       "sample_id": "dm-test-4e0de0ec6d5b9df174f54d03158de8f30aac861f#15",
-      "value": 0.5568765445488661
+      "value": 0.6161005913685432
     },
     {
       "sample_id": "dm-test-4f3b35b540ba05f0f82d71a694ec23dde4dc3e01#0",
-      "value": 0.7122712467850987
+      "value": 0.7638882016754447
     },
     {
       "sample_id": "dm-test-4f3b35b540ba05f0f82d71a694ec23dde4dc3e01#1",
-      "value": 0.8061937573067736
+      "value": 0.8623355707728974
     },
     {
       "sample_id": "dm-test-4f3b35b540ba05f0f82d71a694ec23dde4dc3e01#2",
-      "value": 0.8365289940871428
+      "value": 0.8926708075532667
     },
     {
       "sample_id": "dm-test-4f3b35b540ba05f0f82d71a694ec23dde4dc3e01#3",
-      "value": 0.7541247908512968
+      "value": 0.8254821754899342
     },
     {
       "sample_id": "dm-test-4f3b35b540ba05f0f82d71a694ec23dde4dc3e01#4",
-      "value": 0.8255379439378913
+      "value": 0.8816797574040152
     },
     {
       "sample_id": "dm-test-4f3b35b540ba05f0f82d71a694ec23dde4dc3e01#5",
-      "value": 0.8741387577762054
+      "value": 0.9062665046786055
     },
     {
       "sample_id": "dm-test-4f3b35b540ba05f0f82d71a694ec23dde4dc3e01#6",
-      "value": 0.8370169339178504
+      "value": 0.8931967501633716
     },
     {
       "sample_id": "dm-test-4f3b35b540ba05f0f82d71a694ec23dde4dc3e01#7",
-      "value": 0.7589542615381352
+      "value": 0.830960505898524
     },
     {
       "sample_id": "dm-test-4f3b35b540ba05f0f82d71a694ec23dde4dc3e01#8",
@@ -2987,95 +2987,95 @@
     },
     {
       "sample_id": "dm-test-4f3b35b540ba05f0f82d71a694ec23dde4dc3e01#9",
-      "value": 0.7002656866236388
+      "value": 0.7441818154484843
     },
     {
       "sample_id": "dm-test-4f3b35b540ba05f0f82d71a694ec23dde4dc3e01#10",
-      "value": 0.8365289940871428
+      "value": 0.8926708075532667
     },
     {
       "sample_id": "dm-test-4f3b35b540ba05f0f82d71a694ec23dde4dc3e01#11",
-      "value": 0.8365289940871428
+      "value": 0.8926708075532667
     },
     {
       "sample_id": "dm-test-4f3b35b540ba05f0f82d71a694ec23dde4dc3e01#12",
-      "value": 0.8307490039154123
+      "value": 0.8943705678124326
     },
     {
       "sample_id": "dm-test-4f3b35b540ba05f0f82d71a694ec23dde4dc3e01#13",
-      "value": 0.770239481163745
+      "value": 0.8063819960228766
     },
     {
       "sample_id": "dm-test-4f3b35b540ba05f0f82d71a694ec23dde4dc3e01#14",
-      "value": 0.7516416377484559
+      "value": 0.8223029625259489
     },
     {
       "sample_id": "dm-test-4f3b35b540ba05f0f82d71a694ec23dde4dc3e01#15",
-      "value": 0.7453999041642002
+      "value": 0.7808582535111179
     },
     {
       "sample_id": "dm-test-4fb64a2298e18626db776fccf834be87388827e0#0",
-      "value": 0.6772944175292319
+      "value": 0.7225406066145057
     },
     {
       "sample_id": "dm-test-4fb64a2298e18626db776fccf834be87388827e0#1",
-      "value": 0.8021484426556093
+      "value": 0.8198548265904617
     },
     {
       "sample_id": "dm-test-4fb64a2298e18626db776fccf834be87388827e0#2",
-      "value": 0.8021484426556093
+      "value": 0.8198548265904617
     },
     {
       "sample_id": "dm-test-4fb64a2298e18626db776fccf834be87388827e0#3",
-      "value": 0.7478300084132657
+      "value": 0.7738543384756543
     },
     {
       "sample_id": "dm-test-4fb64a2298e18626db776fccf834be87388827e0#4",
-      "value": 0.8021484426556093
+      "value": 0.8198548265904617
     },
     {
       "sample_id": "dm-test-4fb64a2298e18626db776fccf834be87388827e0#5",
-      "value": 0.7260688251311661
+      "value": 0.7630395167344828
     },
     {
       "sample_id": "dm-test-4fb64a2298e18626db776fccf834be87388827e0#6",
-      "value": 0.7924922686404576
+      "value": 0.805772056591597
     },
     {
       "sample_id": "dm-test-4fb64a2298e18626db776fccf834be87388827e0#7",
-      "value": 0.6283814586381292
+      "value": 0.6557926966335111
     },
     {
       "sample_id": "dm-test-4fb64a2298e18626db776fccf834be87388827e0#8",
-      "value": 0.7214419205090191
+      "value": 0.7387547875682251
     },
     {
       "sample_id": "dm-test-4fb64a2298e18626db776fccf834be87388827e0#9",
-      "value": 0.6243966152149651
+      "value": 0.6468201687838271
     },
     {
       "sample_id": "dm-test-4fb64a2298e18626db776fccf834be87388827e0#10",
-      "value": 0.8070315921693617
+      "value": 0.8247379761042142
     },
     {
       "sample_id": "dm-test-4fb64a2298e18626db776fccf834be87388827e0#11",
-      "value": 0.8021484426556093
+      "value": 0.8198548265904617
     },
     {
       "sample_id": "dm-test-4fb64a2298e18626db776fccf834be87388827e0#12",
-      "value": 0.7261508296618333
+      "value": 0.7839186305983764
     },
     {
       "sample_id": "dm-test-4fb64a2298e18626db776fccf834be87388827e0#13",
-      "value": 0.7275929356028922
+      "value": 0.7626414542926883
     },
     {
       "sample_id": "dm-test-4fb64a2298e18626db776fccf834be87388827e0#14",
-      "value": 0.7118404896713281
+      "value": 0.7896300606543968
     },
     {
       "sample_id": "dm-test-4fb64a2298e18626db776fccf834be87388827e0#15",
-      "value": 0.6565825665792975
+      "value": 0.6917082215800845
     },
     {
       "sample_id": "dm-test-54b857a66cbd8473d6732e5da52d48612e636a37#0",
@@ -3083,31 +3083,31 @@
     },
     {
       "sample_id": "dm-test-54b857a66cbd8473d6732e5da52d48612e636a37#1",
-      "value": 0.7219852903535876
+      "value": 0.7885629092473798
     },
     {
       "sample_id": "dm-test-54b857a66cbd8473d6732e5da52d48612e636a37#2",
-      "value": 0.7609398991836671
+      "value": 0.869502820904004
     },
     {
       "sample_id": "dm-test-54b857a66cbd8473d6732e5da52d48612e636a37#3",
-      "value": 0.7158202679440095
+      "value": 0.7751563272350026
     },
     {
       "sample_id": "dm-test-54b857a66cbd8473d6732e5da52d48612e636a37#4",
-      "value": 0.6277295533257113
+      "value": 0.6742350023797626
     },
     {
       "sample_id": "dm-test-54b857a66cbd8473d6732e5da52d48612e636a37#5",
-      "value": 0.7696481256589025
+      "value": 0.8634178856843658
     },
     {
       "sample_id": "dm-test-54b857a66cbd8473d6732e5da52d48612e636a37#6",
-      "value": 0.8370543233539838
+      "value": 0.8992941863521094
     },
     {
       "sample_id": "dm-test-54b857a66cbd8473d6732e5da52d48612e636a37#7",
-      "value": 0.6542154231630696
+      "value": 0.757198263870345
     },
     {
       "sample_id": "dm-test-54b857a66cbd8473d6732e5da52d48612e636a37#8",
@@ -3115,63 +3115,63 @@
     },
     {
       "sample_id": "dm-test-54b857a66cbd8473d6732e5da52d48612e636a37#9",
-      "value": 0.7076334683769361
+      "value": 0.7519643253802663
     },
     {
       "sample_id": "dm-test-54b857a66cbd8473d6732e5da52d48612e636a37#10",
-      "value": 0.8167362053979401
+      "value": 0.8388623652542848
     },
     {
       "sample_id": "dm-test-54b857a66cbd8473d6732e5da52d48612e636a37#11",
-      "value": 0.8374153776804315
+      "value": 0.8997136716320616
     },
     {
       "sample_id": "dm-test-54b857a66cbd8473d6732e5da52d48612e636a37#12",
-      "value": 0.7084256396453132
+      "value": 0.7947958393130504
     },
     {
       "sample_id": "dm-test-54b857a66cbd8473d6732e5da52d48612e636a37#13",
-      "value": 0.7889253975428375
+      "value": 0.8509270807310786
     },
     {
       "sample_id": "dm-test-54b857a66cbd8473d6732e5da52d48612e636a37#14",
-      "value": 0.6309922773737523
+      "value": 0.7413378805068223
     },
     {
       "sample_id": "dm-test-54b857a66cbd8473d6732e5da52d48612e636a37#15",
-      "value": 0.7068438357841871
+      "value": 0.7495200237608974
     },
     {
       "sample_id": "dm-test-5be0a9584b051175d9f4842a143b76385335d96a#0",
-      "value": 0.6360023274795139
+      "value": 0.6710782553870722
     },
     {
       "sample_id": "dm-test-5be0a9584b051175d9f4842a143b76385335d96a#1",
-      "value": 0.7727233081514185
+      "value": 0.803891261533774
     },
     {
       "sample_id": "dm-test-5be0a9584b051175d9f4842a143b76385335d96a#2",
-      "value": 0.764575643936691
+      "value": 0.8099162445345223
     },
     {
       "sample_id": "dm-test-5be0a9584b051175d9f4842a143b76385335d96a#3",
-      "value": 0.7095522499916624
+      "value": 0.76634098444569
     },
     {
       "sample_id": "dm-test-5be0a9584b051175d9f4842a143b76385335d96a#4",
-      "value": 0.5611290269623234
+      "value": 0.6811242469170532
     },
     {
       "sample_id": "dm-test-5be0a9584b051175d9f4842a143b76385335d96a#5",
-      "value": 0.7371494018380829
+      "value": 0.7920863820363805
     },
     {
       "sample_id": "dm-test-5be0a9584b051175d9f4842a143b76385335d96a#6",
-      "value": 0.7641815316242534
+      "value": 0.8095221322220846
     },
     {
       "sample_id": "dm-test-5be0a9584b051175d9f4842a143b76385335d96a#7",
-      "value": 0.5987496055897231
+      "value": 0.6397228794824609
     },
     {
       "sample_id": "dm-test-5be0a9584b051175d9f4842a143b76385335d96a#8",
@@ -3179,58 +3179,58 @@
     },
     {
       "sample_id": "dm-test-5be0a9584b051175d9f4842a143b76385335d96a#9",
-      "value": 0.6643336987572588
+      "value": 0.7360023391145873
     },
     {
       "sample_id": "dm-test-5be0a9584b051175d9f4842a143b76385335d96a#10",
-      "value": 0.6870029452593664
+      "value": 0.7416672350653767
     },
     {
       "sample_id": "dm-test-5be0a9584b051175d9f4842a143b76385335d96a#11",
-      "value": 0.764575643936691
+      "value": 0.8099162445345223
     },
     {
       "sample_id": "dm-test-5be0a9584b051175d9f4842a143b76385335d96a#12",
-      "value": 0.6650909826510808
+      "value": 0.72940633495435
     },
     {
       "sample_id": "dm-test-5be0a9584b051175d9f4842a143b76385335d96a#13",
-      "value": 0.7768117718824897
+      "value": 0.8081121322291129
     },
     {
       "sample_id": "dm-test-5be0a9584b051175d9f4842a143b76385335d96a#14",
-      "value": 0.7548698073734714
+      "value": 0.7848863088833639
     },
     {
       "sample_id": "dm-test-5be0a9584b051175d9f4842a143b76385335d96a#15",
-      "value": 0.6837940012718009
+      "value": 0.7314080943601681
     }
   ],
   "summary_level": {
     "dimensions": [
       {
         "name": "coherence",
-        "spearman": 0.3610597052153253,
-        "pearson": 0.3700549990089825,
-        "kendall_tau": 0.25651439162524997
+        "spearman": 0.35838650341997746,
+        "pearson": 0.366066011114254,
+        "kendall_tau": 0.2566976415889151
       },
       {
         "name": "consistency",
-        "spearman": 0.16220756750411025,
-        "pearson": 0.1791945709757702,
-        "kendall_tau": 0.1270386742406514
+        "spearman": 0.1967832055122968,
+        "pearson": 0.20819019865755037,
+        "kendall_tau": 0.15455239870762544
       },
       {
         "name": "fluency",
-        "spearman": 0.1259456897511192,
-        "pearson": 0.12342972278891591,
-        "kendall_tau": 0.09618013893420177
+        "spearman": 0.15566125489252441,
+        "pearson": 0.16513847059699494,
+        "kendall_tau": 0.11912570224734989
       },
       {
         "name": "relevance",
-        "spearman": 0.31925200866609593,
-        "pearson": 0.31744934527719737,
-        "kendall_tau": 0.22913153839264597
+        "spearman": 0.29402158726330874,
+        "pearson": 0.2941432484892767,
+        "kendall_tau": 0.21050251704491782
       }
     ]
   },
@@ -3238,27 +3238,27 @@
     "dimensions": [
       {
         "name": "coherence",
-        "spearman": 0.5117647058823529,
-        "pearson": 0.5592217226206977,
-        "kendall_tau": 0.5
+        "spearman": 0.5823529411764706,
+        "pearson": 0.6296789014167936,
+        "kendall_tau": 0.5333333333333333
       },
       {
         "name": "consistency",
-        "spearman": 0.5798382732396814,
-        "pearson": 0.26714897726757825,
-        "kendall_tau": 0.4435185266405332
+        "spearman": 0.6651951764069441,
+        "pearson": 0.38717912404811156,
+        "kendall_tau": 0.510464719340991
       },
       {
         "name": "fluency",
-        "spearman": 0.2823529411764706,
-        "pearson": 0.3325327049748655,
-        "kendall_tau": 0.26666666666666666
+        "spearman": 0.43529411764705883,
+        "pearson": 0.4497543172301883,
+        "kendall_tau": 0.36666666666666664
       },
       {
         "name": "relevance",
-        "spearman": 0.3205882352941177,
-        "pearson": 0.37118162062747917,
-        "kendall_tau": 0.31666666666666665
+        "spearman": 0.4676470588235294,
+        "pearson": 0.4815022104435769,
+        "kendall_tau": 0.45
       }
     ]
   }

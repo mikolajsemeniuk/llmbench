@@ -1,4 +1,4 @@
-// cmd/ablation reads BGS ablation reports from a directory (default
+// cmd/ablation reads LGS ablation reports from a directory (default
 // `ablation/`) and renders a LaTeX table of the lead-bias λ sweep on
 // the held-out development split, with the dev-selected λ* re-evaluated
 // on the test split. The dev-selected canonical row is flagged with a ★.
@@ -103,7 +103,7 @@ func parseRow(path string) (Row, bool) {
 	if err := json.Unmarshal(raw, &r); err != nil {
 		log.Fatalf("decode %s: %v", path, err)
 	}
-	if r.Metric != "bgs" {
+	if r.Metric != "lgs" {
 		return Row{}, false
 	}
 
@@ -218,8 +218,8 @@ func renderLatex(rows []Row) string {
 	var b strings.Builder
 	fmt.Fprintln(&b, `\begin{table*}[t]`)
 	fmt.Fprintln(&b, `\centering`)
-	fmt.Fprintln(&b, `\caption{Ablation of BGS on SummEval (summary-level Spearman $\rho$). The metric is $\mathrm{score} = \mathrm{mean}_j\, \max_i\, w(i)\cdot\cos(c_j, s_i)$ with exponential lead-bias prior $w(i)=\exp(-\lambda \cdot i / n)$ on source-sentence position. The exponent $\lambda$ is selected on a held-out development split (50 articles) and re-evaluated on the test split (50 articles); the dev-selected canonical row is marked $\star$.}`)
-	fmt.Fprintln(&b, `\label{tab:ablation_bgs}`)
+	fmt.Fprintln(&b, `\caption{Ablation of LGS on SummEval (summary-level Spearman $\rho$). The metric is $\mathrm{score} = \mathrm{mean}_j\, \max_i\, w(i)\cdot\cos(c_j, s_i)$ with exponential lead-bias prior $w(i)=\exp(-\lambda \cdot i / n)$ on source-sentence position. The exponent $\lambda$ is selected on a held-out development split (50 articles) and re-evaluated on the test split (50 articles); the dev-selected canonical row is marked $\star$.}`)
+	fmt.Fprintln(&b, `\label{tab:ablation_lgs}`)
 	fmt.Fprintln(&b, `\begin{tabular}{lrrrr}`)
 	fmt.Fprintln(&b, `\toprule`)
 	fmt.Fprintln(&b, `Variant & Coh & Con & Flu & Rel \\`)

@@ -1,4 +1,4 @@
-// cmd/bgs runs BGS, our reference-free embedding-only summary-quality
+// cmd/lgs runs LGS, our reference-free embedding-only summary-quality
 // metric, on SummEval. The metric is
 //
 //	w(i)  = exp(−λ · i / n)
@@ -51,7 +51,7 @@ var (
 
 func main() {
 	flag.StringVar(&input, "input", "", "path to dataset JSON/JSONL file")
-	flag.StringVar(&output, "output", "output/bgs.json", "write results to file")
+	flag.StringVar(&output, "output", "output/lgs.json", "write results to file")
 	flag.StringVar(&embedHost, "embed-host", "http://localhost:11434", "Ollama host (sentence embeddings)")
 	flag.StringVar(&embedModel, "embed-model", "nomic-embed-text", "Ollama embedding model")
 	flag.Float64Var(&leadBiasLambda, "lead-bias-lambda", 0.5, "λ in source weight w(i)=exp(−λ·i/n); 0 disables the prior")
@@ -87,11 +87,11 @@ func main() {
 	}
 	samples = applyDocSplit(samples, docSplit)
 
-	scorer := metrics.NewBGS(embedHost, embedModel)
+	scorer := metrics.NewLGS(embedHost, embedModel)
 	scorer.MinSentenceLen = minSentLen
 	scorer.LeadBiasLambda = leadBiasLambda
 
-	log.Printf("BGS: λ=%.3f lead-bias, split=%s, %d samples", leadBiasLambda, docSplit, len(samples))
+	log.Printf("LGS: λ=%.3f lead-bias, split=%s, %d samples", leadBiasLambda, docSplit, len(samples))
 
 	type cached struct {
 		sents []string
@@ -101,7 +101,7 @@ func main() {
 
 	bar := progressbar.NewOptions(
 		len(samples),
-		progressbar.OptionSetDescription("bgs"),
+		progressbar.OptionSetDescription("lgs"),
 		progressbar.OptionSetWidth(20),
 		progressbar.OptionSetPredictTime(true),
 		progressbar.OptionShowIts(),
@@ -145,12 +145,12 @@ func main() {
 
 	elapsed := time.Since(start)
 	N := float64(len(samples))
-	log.Printf("BGS: %d samples in %.1fs — mean score=%.3f",
+	log.Printf("LGS: %d samples in %.1fs — mean score=%.3f",
 		len(samples), elapsed.Seconds(), sumScore/N)
 
 	norm := fmt.Sprintf("lead_lambda=%.3f,split=%s", leadBiasLambda, docSplit)
 	report := eval.Report{
-		Metric:     "bgs",
+		Metric:     "lgs",
 		Norm:       norm,
 		Samples:    len(samples),
 		RuntimeSec: elapsed.Seconds(),
@@ -173,7 +173,7 @@ func main() {
 // filteredSplit splits a document into sentences and drops degenerate
 // ones, matching the filter the metric applies internally.
 func filteredSplit(text string, minLen int) []string {
-	raw := metrics.SplitSentencesForBGS(text)
+	raw := metrics.SplitSentencesForLGS(text)
 	out := raw[:0]
 	for _, s := range raw {
 		if len([]rune(s)) >= minLen {
