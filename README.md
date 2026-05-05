@@ -1,6 +1,20 @@
 # LLMBench
 
-Correlation benchmark for summarization metrics on the [SummEval](https://huggingface.co/datasets/mteb/summeval) dataset. Each metric is run against the human-annotated reference summaries; results are aggregated by `cmd/paper` into the LaTeX tables under `paper/`.
+Correlation benchmark for summarization metrics on the [SummEval](https://huggingface.co/datasets/mteb/summeval) dataset, and reference implementation of **BGS** (Bidirectional Grounding Score) — an *efficient, reference-free* embedding-only metric for summary quality.
+
+Reference-based metrics (BERTScore, MoverScore, SMART-Model, BLEU, ROUGE-L, ChrF, METEOR, SMART-String, EmbedScorer, BARTScore, GPTScore) are scored against the human-annotated reference summaries. Source-based metrics (G-Eval, BGS) score the candidate against the source article and need no reference. UniEval uses both source and reference. All correlations and paired-bootstrap comparisons are aggregated by `cmd/paper` and `cmd/compare` into the LaTeX tables under `paper/`.
+
+## BGS positioning
+
+BGS is reference-free and runs on a small Ollama embedder (`nomic-embed-text`, 137M params). It is **not** intended to beat UniEval or G-Eval — those win on raw correlation. The claim is that BGS:
+
+- Beats **BERTScore** significantly on consistency (Δρ=+.094, p<.001), ties on coh / flu / rel — while using a much smaller embedder and no human reference.
+- Beats **SMART-Model** significantly on coh / con / flu (Δρ ∈ [+.045, +.110]).
+- Beats **ChrF** significantly on coherence (Δρ=+.214).
+- Outscores BLEU, ROUGE-L, METEOR, SMART-String, MoverScore, BARTScore, EmbedScorer on the point estimate of every SummEval dimension.
+- Loses to UniEval on every dimension and to G-Eval on consistency. This is openly reported in `paper/comparisons.tex`.
+
+The paper's contribution is "a reference-free metric you can deploy with a single Ollama model" — efficiency and reference-freeness, not SOTA correlation.
 
 ## Requirements
 
@@ -14,22 +28,22 @@ Correlation benchmark for summarization metrics on the [SummEval](https://huggin
 
 ## Metrics
 
-| Metric       | Family       | Backend       | cmd                |
-|--------------|--------------|---------------|--------------------|
-| BLEU         | lexical      | CPU           | `cmd/bleu`         |
-| ROUGE-L      | lexical      | CPU           | `cmd/rouge`        |
-| ChrF         | lexical      | CPU           | `cmd/chrf`         |
-| METEOR       | lexical      | CPU           | `cmd/meteor`       |
-| SMART-String | lexical      | CPU           | `cmd/smartstring`  |
-| EmbedScorer  | embedding    | Ollama        | `cmd/embedscorer`  |
-| SMART-Model  | embedding    | Ollama        | `cmd/smartmodel`   |
-| G-Eval       | LLM judge    | Ollama        | `cmd/geval`        |
-| BERTScore    | model        | model server  | `cmd/bertscorer`   |
-| MoverScore   | model        | model server  | `cmd/moverscorer`  |
-| BARTScore    | model        | model server  | `cmd/bartscorer`   |
-| GPTScore     | model        | model server  | `cmd/gptscorer`    |
-| UniEval      | model        | model server  | `cmd/unieval`      |
-| BGS (ours)   | embedding    | Ollama        | `cmd/bgs`          |
+| Metric       | Family       | Backend       | Input            | cmd                |
+|--------------|--------------|---------------|------------------|--------------------|
+| BLEU         | lexical      | CPU           | reference        | `cmd/bleu`         |
+| ROUGE-L      | lexical      | CPU           | reference        | `cmd/rouge`        |
+| ChrF         | lexical      | CPU           | reference        | `cmd/chrf`         |
+| METEOR       | lexical      | CPU           | reference        | `cmd/meteor`       |
+| SMART-String | lexical      | CPU           | reference        | `cmd/smartstring`  |
+| EmbedScorer  | embedding    | Ollama        | reference        | `cmd/embedscorer`  |
+| SMART-Model  | embedding    | Ollama        | reference        | `cmd/smartmodel`   |
+| BERTScore    | model        | model server  | reference        | `cmd/bertscorer`   |
+| MoverScore   | model        | model server  | reference        | `cmd/moverscorer`  |
+| BARTScore    | model        | model server  | reference        | `cmd/bartscorer`   |
+| GPTScore     | model        | model server  | reference        | `cmd/gptscorer`    |
+| G-Eval       | LLM judge    | Ollama        | source           | `cmd/geval`        |
+| UniEval      | model        | model server  | source + ref     | `cmd/unieval`      |
+| BGS (ours)   | embedding    | Ollama        | source           | `cmd/bgs`          |
 
 G-Eval and UniEval are run once per SummEval dimension (`coherence`, `consistency`, `fluency`, `relevance`).
 
