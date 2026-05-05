@@ -1,25 +1,34 @@
 // cmd/bgs runs Bidirectional Grounding Score (BGS), our reference-free
-// embedding-only metric, on SummEval. BGS = F1 of:
+// embedding-only metric, on SummEval.
 //
-//   - Recall: each candidate sentence's max cosine to any source sentence
-//   - Precision: each salient-core source sentence's max cosine to any
-//     candidate sentence
+// Canonical formulation:
 //
-// The salient core is the top-k% source sentences by degree centrality.
+//	score = recall · coverage^α · diversity^γ
+//	  recall    = mean_j max_i cos(c_j, s_i)
+//	  anchor a(j) = argmax_i cos(c_j, s_i)
+//	  coverage  = |{distinct a(j)}| / m
+//	  diversity = 1 − mean_{j<k} cos(c_j, c_k)   (within-summary)
+//
+// α and γ are selected on a held-out development split
+// (-doc-split first50) and the chosen values are then evaluated on
+// the test split (-doc-split last50) or on the full set
+// (-doc-split all). With α=γ=0 the formula reduces to recall.
 //
 // Per-document caching: SummEval has 16 candidates per article. We
 // embed the source's sentences ONCE per DocumentID and reuse them
 // across the 16 candidates that share the same source.
 //
-// Ablation flags (used by `make benchmark-ablation` to populate
-// ablation/*.json):
+// Ablation flags:
 //
-//	-salience-frac 0.30   → default (top-30% as salient core)
-//	-salience-frac 1.00   → no salience filter (precision over all sources)
-//	-salience-frac 0.10   → very tight salient core
-//	-beta 1               → F1 (precision and recall equally weighted)
-//	-beta 2               → recall-biased F (canonical, β² = 4× weight on R)
-//	-recall-only          → drop precision side entirely (R alone)
+//	-coverage-alpha 0       → coverage term off (default)
+//	-coverage-alpha 1.0     → balanced anchor-coverage penalty
+//	-redundancy-gamma 0     → diversity term off (default)
+//	-redundancy-gamma 1.0   → balanced within-summary diversity penalty
+//	-recall-only            → explicit recall-only mode (same as α=γ=0)
+//	-legacy-precision       → original BGS-F_β with salient-core precision
+//	-doc-split first50      → first 50 articles (dev)
+//	-doc-split last50       → last 50 articles (test, held-out)
+//	-doc-split all          → full SummEval (1600 samples)
 package main
 
 import (
@@ -39,17 +48,23 @@ import (
 )
 
 var (
-	input        string
-	output       string
-	embedHost    string
-	embedModel   string
-	salienceFrac float64
-	salienceMin  int
-	beta         float64
-	recallOnly   bool
-	minSentLen   int
-	n            int
-	bootstrap    int
+	input           string
+	output          string
+	embedHost       string
+	embedModel      string
+	recallTopK      int
+	leadBiasLambda  float64
+	coverageAlpha   float64
+	redundancyGamma float64
+	legacyPrecision bool
+	salienceFrac    float64
+	salienceMin     int
+	beta            float64
+	recallOnly      bool
+	minSentLen      int
+	docSplit        string
+	n               int
+	bootstrap       int
 )
 
 func main() {
@@ -57,11 +72,17 @@ func main() {
 	flag.StringVar(&output, "output", "output/bgs.json", "write results to file")
 	flag.StringVar(&embedHost, "embed-host", "http://localhost:11434", "Ollama host (sentence embeddings)")
 	flag.StringVar(&embedModel, "embed-model", "nomic-embed-text", "Ollama embedding model")
-	flag.Float64Var(&salienceFrac, "salience-frac", 0.30, "fraction of source sentences in salient core (precision side); 1.0 = no filter")
-	flag.IntVar(&salienceMin, "salience-min", 3, "floor on salient-core size for short documents")
-	flag.Float64Var(&beta, "beta", 2.0, "F_β recall-vs-precision weighting; β>1 favours recall (β=2 default from sweep, β=1 → F1)")
-	flag.BoolVar(&recallOnly, "recall-only", false, "skip precision side entirely; score = recall (ablation row in paper/ablation.tex)")
+	flag.IntVar(&recallTopK, "recall-top-k", 1, "k in recall = mean_j (1/k)·Σ top-k cos(c_j, s_i); k=1 → mean-of-max")
+	flag.Float64Var(&leadBiasLambda, "lead-bias-lambda", 0.0, "λ in source weight w(i)=exp(−λ·i/n); 0 disables, larger = stronger lead bias")
+	flag.Float64Var(&coverageAlpha, "coverage-alpha", 0.0, "α in score = recall · coverage^α · diversity^γ; 0 disables coverage term")
+	flag.Float64Var(&redundancyGamma, "redundancy-gamma", 0.0, "γ in score = recall · coverage^α · diversity^γ; 0 disables diversity term")
+	flag.BoolVar(&legacyPrecision, "legacy-precision", false, "use legacy BGS-F_β path (recall + salience-core precision); kept for the ablation row")
+	flag.Float64Var(&salienceFrac, "salience-frac", 0.30, "(legacy only) fraction of source sentences in salient core")
+	flag.IntVar(&salienceMin, "salience-min", 3, "(legacy only) floor on salient-core size for short documents")
+	flag.Float64Var(&beta, "beta", 2.0, "(legacy only) F_β recall-vs-precision weighting; β>1 favours recall")
+	flag.BoolVar(&recallOnly, "recall-only", false, "explicit recall-only mode (equivalent to -coverage-alpha 0)")
 	flag.IntVar(&minSentLen, "min-sent-len", 4, "drop sentences shorter than this many runes")
+	flag.StringVar(&docSplit, "doc-split", "all", "article-level split: all|first50|last50 (held-out hyperparameter selection)")
 	flag.IntVar(&n, "n", 0, "entries limit (0 = all)")
 	flag.IntVar(&bootstrap, "bootstrap", 1000, "bootstrap resamples for 95%% CI (0 = disabled)")
 	flag.Parse()
@@ -71,6 +92,23 @@ func main() {
 	}
 	if beta <= 0 {
 		log.Fatalf("-beta must be > 0, got %v", beta)
+	}
+	if coverageAlpha < 0 {
+		log.Fatalf("-coverage-alpha must be ≥ 0, got %v", coverageAlpha)
+	}
+	if redundancyGamma < 0 {
+		log.Fatalf("-redundancy-gamma must be ≥ 0, got %v", redundancyGamma)
+	}
+	if recallTopK < 1 {
+		log.Fatalf("-recall-top-k must be ≥ 1, got %d", recallTopK)
+	}
+	if leadBiasLambda < 0 {
+		log.Fatalf("-lead-bias-lambda must be ≥ 0, got %v", leadBiasLambda)
+	}
+	switch docSplit {
+	case "all", "first50", "last50":
+	default:
+		log.Fatalf("-doc-split must be all|first50|last50, got %q", docSplit)
 	}
 
 	ctx := context.Background()
@@ -88,18 +126,29 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	samples = applyDocSplit(samples, docSplit)
 
 	scorer := metrics.NewBGS(embedHost, embedModel)
+	scorer.MinSentenceLen = minSentLen
+	scorer.RecallTopK = recallTopK
+	scorer.LeadBiasLambda = leadBiasLambda
+	scorer.CoverageAlpha = coverageAlpha
+	scorer.RedundancyGamma = redundancyGamma
+	scorer.LegacyPrecision = legacyPrecision
 	scorer.SalienceTopFrac = salienceFrac
 	scorer.SalienceMin = salienceMin
-	scorer.MinSentenceLen = minSentLen
 	scorer.Beta = beta
 	scorer.RecallOnly = recallOnly
 
-	if recallOnly {
-		log.Printf("BGS: recall-only mode (precision side disabled)")
-	} else {
-		log.Printf("BGS: salience top-frac=%.2f, min=%d, beta=%.2f", salienceFrac, salienceMin, beta)
+	switch {
+	case recallOnly:
+		log.Printf("BGS: recall-only mode (top-k=%d)", recallTopK)
+	case legacyPrecision:
+		log.Printf("BGS: legacy precision-side mode (top-k=%d, salience top-frac=%.2f, min=%d, beta=%.2f)",
+			recallTopK, salienceFrac, salienceMin, beta)
+	default:
+		log.Printf("BGS: canonical mode (top-k=%d, λ=%.3f lead-bias, α=%.3f coverage, γ=%.3f diversity), split=%s, %d samples",
+			recallTopK, leadBiasLambda, coverageAlpha, redundancyGamma, docSplit, len(samples))
 	}
 
 	type cached struct {
@@ -121,8 +170,8 @@ func main() {
 	scores := make([]float64, len(samples))
 	entries := make([]eval.Score, len(samples))
 
-	var sumP, sumR, sumF1 float64
-	var sumSalient int
+	var sumR, sumCov, sumDiv, sumScore float64
+	var sumDistinct int
 
 	start := time.Now()
 
@@ -149,23 +198,30 @@ func main() {
 		scores[i] = score
 		entries[i] = eval.Score{SampleID: s.ID, Value: score}
 
-		sumP += diag.Precision
 		sumR += diag.Recall
-		sumF1 += diag.FScore
-		sumSalient += diag.NumSalientSents
+		sumCov += diag.Coverage
+		sumDiv += diag.Diversity
+		sumScore += diag.FScore
+		sumDistinct += diag.DistinctAnchors
 
 		bar.Add(1)
 	}
 
 	elapsed := time.Since(start)
 	N := float64(len(samples))
-	log.Printf("BGS: %d samples in %.1fs — mean P=%.3f, R=%.3f, F1=%.3f, mean salient core=%.1f sents",
+	log.Printf("BGS: %d samples in %.1fs — mean R=%.3f, cov=%.3f, div=%.3f, score=%.3f, distinct anchors=%.1f",
 		len(samples), elapsed.Seconds(),
-		sumP/N, sumR/N, sumF1/N, float64(sumSalient)/N)
+		sumR/N, sumCov/N, sumDiv/N, sumScore/N, float64(sumDistinct)/N)
 
-	norm := fmt.Sprintf("salience=%.2f,beta=%.2f", salienceFrac, beta)
-	if recallOnly {
-		norm = "recall_only=true"
+	var norm string
+	switch {
+	case recallOnly:
+		norm = fmt.Sprintf("recall_only=true,top_k=%d", recallTopK)
+	case legacyPrecision:
+		norm = fmt.Sprintf("legacy_precision=true,salience=%.2f,beta=%.2f,top_k=%d", salienceFrac, beta, recallTopK)
+	default:
+		norm = fmt.Sprintf("top_k=%d,lead_lambda=%.3f,coverage_alpha=%.3f,redundancy_gamma=%.3f,split=%s",
+			recallTopK, leadBiasLambda, coverageAlpha, redundancyGamma, docSplit)
 	}
 	report := eval.Report{
 		Metric:     "bgs",
@@ -197,6 +253,58 @@ func filteredSplit(text string, minLen int) []string {
 		if len([]rune(s)) >= minLen {
 			out = append(out, s)
 		}
+	}
+	return out
+}
+
+// applyDocSplit slices the loaded sample list into a document-level
+// development or test half. SummEval has 16 candidates per article so
+// the boundary always lands cleanly between articles. The split is by
+// dataset order, which matches eval.NewDataset's JSONL emission order
+// (deterministic across runs).
+func applyDocSplit(samples []eval.Sample, split string) []eval.Sample {
+	if split == "all" {
+		return samples
+	}
+	docs := uniqueDocsInOrder(samples)
+	if len(docs) < 100 {
+		log.Fatalf("doc-split %q expects ≥100 documents, got %d", split, len(docs))
+	}
+	var keep map[string]struct{}
+	switch split {
+	case "first50":
+		keep = setOf(docs[:50])
+	case "last50":
+		keep = setOf(docs[len(docs)-50:])
+	default:
+		log.Fatalf("invalid doc-split: %s", split)
+	}
+	out := samples[:0]
+	for _, s := range samples {
+		if _, ok := keep[s.DocumentID]; ok {
+			out = append(out, s)
+		}
+	}
+	return out
+}
+
+func uniqueDocsInOrder(samples []eval.Sample) []string {
+	seen := make(map[string]struct{})
+	var docs []string
+	for _, s := range samples {
+		if _, ok := seen[s.DocumentID]; ok {
+			continue
+		}
+		seen[s.DocumentID] = struct{}{}
+		docs = append(docs, s.DocumentID)
+	}
+	return docs
+}
+
+func setOf(ids []string) map[string]struct{} {
+	out := make(map[string]struct{}, len(ids))
+	for _, id := range ids {
+		out[id] = struct{}{}
 	}
 	return out
 }

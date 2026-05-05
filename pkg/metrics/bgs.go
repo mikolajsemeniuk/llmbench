@@ -10,58 +10,118 @@ import (
 // BGS — Bidirectional Grounding Score.
 //
 // Reference-free, embedding-only summary-quality metric. For source D
-// and candidate summary C:
+// and candidate summary C, the canonical formulation combines a
+// sentence-level grounding term with an anchor-coverage term:
 //
-//	Recall    R = mean over c_j of  max_i  cos(emb(c_j), emb(s_i))
-//	Precision P = mean over s_i ∈ salient(D) of  max_j  cos(emb(s_i), emb(c_j))
-//	BGS       = F1(P, R) = 2·P·R / (P + R)
+//	Recall    R    = mean over c_j of  max_i  cos(emb(c_j), emb(s_i))
+//	Anchor a(j)    = argmax_i cos(emb(c_j), emb(s_i))
+//	Coverage C    = |{distinct a(j)}| / m
+//	BGS       = R · C^α
 //
 // Recall is the standard "is each summary sentence anchored in some
-// source sentence?" — penalises hallucination. Precision asks "is each
-// salient source sentence covered by some summary sentence?" — penalises
-// omission of important content.
+// source sentence?" — penalises hallucination. Coverage asks "do the
+// summary sentences spread across the source, or do they all collapse
+// onto a single fact?" — penalises within-summary redundancy and
+// rewards information breadth, in the spirit of Maximal Marginal
+// Relevance (Carbonell & Goldstein 1998) and sub-modular summarisation
+// (Lin & Bilmes 2011), but evaluated on the candidate summary rather
+// than used as a selection objective.
 //
-// Salience filter on the source side is necessary because summaries are
-// short by design: requiring coverage of *every* source sentence would
-// floor precision for any normal summary. We pick a salient core via
-// degree centrality on the source's pairwise cosine graph (sentences
-// most similar to the rest of the document), which is a cheap proxy
-// for extractive importance — the same intuition behind TextRank /
-// LexRank without their iterative PageRank step.
+// Legacy mode (LegacyPrecision=true) preserves the original
+// bidirectional formulation with a precision side over a salient core
+// of source sentences (top-k% by degree centrality) combined via F_β.
+// Empirically this trades coverage of three SummEval dimensions
+// (coh/con/flu) for a small gain on relevance and is reported as an
+// ablation rather than the canonical configuration.
 //
 // Differences from existing baselines in the repo:
 //   - BERTScore: token-level F1 against a *reference* summary
 //     (reference-based). BGS is sentence-level and reference-free.
 //   - SMART-Model: reference-based sentence matching with a different
-//     soft-alignment aggregation. BGS uses simple max-pool both sides.
+//     soft-alignment aggregation. BGS uses simple max-pool plus the
+//     anchor-coverage term, with the source as the grounding target.
 //   - EmbedScorer: a single whole-text cosine with no sentence
-//     structure. BGS exploits sentence granularity and salience.
+//     structure. BGS exploits sentence granularity and anchor diversity.
 type BGS struct {
 	Embedder   *Ollama
 	EmbedModel string
 
+	// LeadBiasLambda imposes an exponential position prior on source
+	// sentences when computing recall. Each cosine cos(c_j, s_i) is
+	// multiplied by w(i) = exp(−λ · i / n) before the top-k aggregation,
+	// where i is the source-sentence index (0 = lead) and n is the
+	// source length. λ=0 (default) disables the prior and reproduces
+	// position-agnostic recall. λ>0 down-weights later sentences,
+	// reflecting the well-documented lead bias of CNN/DailyMail-style
+	// news. Selected on the dev split.
+	LeadBiasLambda float64
+
+	// RecallTopK selects how many top-cosine source sentences contribute
+	// to each candidate sentence's recall score. The recall component is
+	//   recall = mean_j  (1/k) · Σ_{top-k cos(c_j, s_i)}
+	// k=1 (default) reduces to the standard mean-of-max formulation
+	// (each candidate sentence pulled toward its single best source
+	// match). k>1 averages the top-k cosines, giving credit to
+	// candidates supported by multiple source sentences (paraphrastic
+	// fusion, distributed grounding). When k exceeds the source size,
+	// it is clipped to the source size. Selected on the dev split.
+	RecallTopK int
+
+	// CoverageAlpha is the exponent α in the canonical scoring rule
+	//   score = recall · coverage^α · diversity^γ
+	// where coverage = |{distinct argmax-source-anchors}| / m, with
+	// m the number of candidate sentences. α=0 disables the coverage
+	// term (coverage^0 = 1). α>0 rewards summaries whose sentences
+	// anchor to distinct source sentences, penalising collapsed /
+	// redundant summaries that paraphrase the same fact m times.
+	CoverageAlpha float64
+
+	// RedundancyGamma is the exponent γ in the canonical scoring rule
+	//   score = recall · coverage^α · diversity^γ
+	// where diversity = 1 − mean_pairwise_cos(c_j, c_k) computed over
+	// all j<k pairs of candidate sentences. γ=0 disables the diversity
+	// term (diversity^0 = 1). γ>0 penalises candidates whose sentences
+	// are mutually similar (paraphrastic redundancy). Distinct from
+	// CoverageAlpha: redundancy operates on the candidate alone (no
+	// source involvement); coverage operates on where in the source
+	// the candidate sentences anchor. Both can be active at once.
+	//
+	// The canonical α and γ values are selected on a held-out dev
+	// split (cmd/bgs runs with -doc-split first50, sweep over α and
+	// γ grids); the chosen values are then evaluated on the test
+	// split (-doc-split last50).
+	RedundancyGamma float64
+
+	// LegacyPrecision enables the original BGS-F_β path: a precision
+	// side over salient-core source sentences combined with recall via
+	// F_β. Kept for the ablation comparison in paper/ablation.tex.
+	// When false (default), the canonical recall · coverage^α formula
+	// is used.
+	LegacyPrecision bool
+
 	// SalienceTopFrac is the fraction of source sentences that count
-	// as the "salient core" used in the precision side. Default 0.30
-	// (top 30% by degree centrality). Range (0, 1]. Set to 1.0 to
+	// as the "salient core" used in the LEGACY precision side. Default
+	// 0.30 (top 30% by degree centrality). Range (0, 1]. Set to 1.0 to
 	// disable salience filtering (precision over all source sentences).
+	// Has no effect unless LegacyPrecision=true.
 	SalienceTopFrac float64
 
-	// SalienceMin is a floor on the size of the salient core. Avoids
-	// degenerate single-sentence cores on very short documents.
+	// SalienceMin is a floor on the size of the legacy salient core.
+	// Avoids degenerate single-sentence cores on very short documents.
+	// Has no effect unless LegacyPrecision=true.
 	SalienceMin int
 
-	// Beta controls the recall-vs-precision weighting of F_β:
-	//   F_β = (1+β²)·P·R / (β²·P + R)
-	// β = 1 is harmonic mean (F1, default). β > 1 weights recall
-	// more (β² times more); β < 1 weights precision more. SummEval
-	// shows recall as the stronger individual signal, so β=2 is
-	// the natural ablation candidate.
+	// Beta controls the recall-vs-precision weighting in the LEGACY
+	// F_β path: F_β = (1+β²)·P·R / (β²·P + R). β=1 is the harmonic
+	// mean (F1); β>1 weights recall more. Has no effect unless
+	// LegacyPrecision=true.
 	Beta float64
 
-	// RecallOnly disables the precision side entirely: the score is
-	// just the mean candidate→max-source cosine. Used as the bottom
-	// row of the ablation table — "what does the metric look like
-	// if we drop the bidirectional half?".
+	// RecallOnly forces the score to be the recall component only,
+	// bypassing both the coverage term and the legacy precision side.
+	// Equivalent to CoverageAlpha=0 with LegacyPrecision=false but
+	// preserved as an explicit flag for the ablation row that
+	// originally reported "no second component".
 	RecallOnly bool
 
 	// MinSentenceLen drops sentences shorter than this many runes
@@ -71,33 +131,38 @@ type BGS struct {
 
 func NewBGS(host, embedModel string) *BGS {
 	return &BGS{
-		Embedder:        NewOllama(host),
-		EmbedModel:      embedModel,
+		Embedder:       NewOllama(host),
+		EmbedModel:     embedModel,
+		MinSentenceLen: 4,
+		// Canonical defaults: pure recall (k=1, α=γ=0, λ=0). cmd/bgs
+		// sets the values selected on the held-out dev split.
+		RecallTopK:      1,
+		CoverageAlpha:   0.0,
+		RedundancyGamma: 0.0,
+		LeadBiasLambda:  0.0,
+		// Legacy precision-side defaults (only consulted when
+		// LegacyPrecision=true). Preserved so the legacy ablation
+		// rows in paper/ablation.tex remain reproducible.
 		SalienceTopFrac: 0.30,
 		SalienceMin:     3,
-		MinSentenceLen:  4,
-		// Beta=2 chosen empirically: the ablation sweep over β ∈ {1, 2, 3}
-		// at default salience showed β=2 gives the best balance — coh
-		// ρ=.373 ties BERTScore .377 while preserving the +.019 lift on
-		// rel ρ=.356 (vs Grounding-only .337) that motivates the
-		// precision side. β=1 (F1) over-weights precision and drags coh
-		// down to .341; β=3 squeezes a touch more from coh (.377) but
-		// loses on rel (.348). β=2 is also the conventional recall-biased
-		// F-measure in IR literature.
-		Beta: 2.0,
+		Beta:            2.0,
 	}
 }
 
 // BGSDiagnostics carries per-call internals so cmd/bgs can produce
-// run-level statistics without re-running the pipeline. The FScore
-// field is the F_β combined score (β from BGS.Beta); when β=1 it
-// reduces to the harmonic mean.
+// run-level statistics without re-running the pipeline. FScore is the
+// final scalar returned for correlation; the rest are decomposition
+// terms (recall, coverage, diversity, optional precision side from
+// the legacy path).
 type BGSDiagnostics struct {
 	NumSourceSents    int
 	NumCandidateSents int
 	NumSalientSents   int
-	Precision         float64
+	DistinctAnchors   int
 	Recall            float64
+	Coverage          float64
+	Diversity         float64
+	Precision         float64
 	FScore            float64
 }
 
@@ -146,82 +211,173 @@ func (b *BGS) score(
 	candSents []string, candEmbs [][]float64,
 ) (float64, BGSDiagnostics, error) {
 
-	// Recall: every candidate sentence pulled toward its best source match
-	// across the FULL source (no salience filter — the candidate is allowed
-	// to ground itself in any source sentence, salient or not).
+	// Recall (top-k mean, optional lead-bias prior) + anchors. For
+	// each candidate sentence we compute weighted cosines to every
+	// source sentence, then average the top-k largest. k=1 reproduces
+	// the original mean-of-max formulation; λ=0 reproduces the
+	// position-agnostic source weighting. The anchor (argmax index)
+	// is recorded separately for the downstream coverage term.
+	k := b.RecallTopK
+	if k < 1 {
+		k = 1
+	}
+	if k > len(sourceEmbs) {
+		k = len(sourceEmbs)
+	}
+
+	// Pre-compute the source-position weights once per source. λ=0
+	// degenerates to all-ones, which we skip multiplying.
+	var posWeights []float64
+	useLeadBias := b.LeadBiasLambda > 0
+	if useLeadBias {
+		n := len(sourceEmbs)
+		posWeights = make([]float64, n)
+		for i := range n {
+			posWeights[i] = math.Exp(-b.LeadBiasLambda * float64(i) / float64(n))
+		}
+	}
+
 	var recall float64
-	for _, ce := range candEmbs {
+	anchors := make([]int, len(candEmbs))
+	cosBuf := make([]float64, len(sourceEmbs))
+	for j, ce := range candEmbs {
 		best := -2.0
-		for _, se := range sourceEmbs {
-			if c := cosineSimilarity(ce, se); c > best {
+		bestIdx := 0
+		for i, se := range sourceEmbs {
+			c := cosineSimilarity(ce, se)
+			if useLeadBias {
+				c *= posWeights[i]
+			}
+			cosBuf[i] = c
+			if c > best {
 				best = c
+				bestIdx = i
 			}
 		}
-		recall += best
+		anchors[j] = bestIdx
+
+		// Top-k mean. For k=1 this equals best (the argmax cosine);
+		// for larger k we sort the cosine slice descending and average
+		// the first k entries.
+		if k == 1 {
+			recall += best
+			continue
+		}
+		sortDescending(cosBuf)
+		var sum float64
+		for i := 0; i < k; i++ {
+			sum += cosBuf[i]
+		}
+		recall += sum / float64(k)
 	}
 	recall /= float64(len(candEmbs))
 	if recall < 0 {
 		recall = 0
 	}
 
-	// Recall-only mode skips precision and salience selection entirely.
-	// The score is the recall component as-is. Used as an ablation
-	// "no precision side" reference row.
-	if b.RecallOnly {
-		return recall, BGSDiagnostics{
-			NumSourceSents:    len(sourceSents),
-			NumCandidateSents: len(candSents),
-			NumSalientSents:   0,
-			Precision:         0,
-			Recall:            recall,
-			FScore:            recall,
-		}, nil
+	// Anchor coverage: fraction of distinct source-sentence anchors among
+	// candidate sentences. Range [1/m, 1]. A redundant summary whose
+	// sentences all paraphrase the same source fact collapses to a single
+	// anchor → coverage = 1/m. A diverse summary covering m distinct
+	// source facts → coverage = 1.
+	seen := make(map[int]struct{}, len(anchors))
+	for _, a := range anchors {
+		seen[a] = struct{}{}
 	}
+	coverage := float64(len(seen)) / float64(len(candEmbs))
 
-	salient := selectSalientIndices(sourceEmbs, b.SalienceTopFrac, b.SalienceMin)
-
-	// Precision: every salient source sentence pulled toward its best
-	// candidate match. A candidate that misses many salient core sentences
-	// gets a low precision even if all of its sentences happen to be
-	// well-grounded (high recall) — this is what catches omission errors.
-	var precision float64
-	for _, idx := range salient {
-		best := -2.0
-		for _, ce := range candEmbs {
-			if c := cosineSimilarity(sourceEmbs[idx], ce); c > best {
-				best = c
+	// Within-summary diversity: 1 − mean pairwise cosine among
+	// candidate sentences. Single-sentence candidates have no pairs
+	// and default to diversity=1 (no penalty). Range typically
+	// [0.05, 0.7] for natural English summaries. Captures
+	// paraphrastic redundancy that anchor coverage misses (two
+	// candidates can map to different source anchors yet still
+	// say similar things).
+	diversity := 1.0
+	if len(candEmbs) >= 2 {
+		var sumPair float64
+		nPair := 0
+		for j := 0; j < len(candEmbs); j++ {
+			for k := j + 1; k < len(candEmbs); k++ {
+				sumPair += cosineSimilarity(candEmbs[j], candEmbs[k])
+				nPair++
 			}
 		}
-		precision += best
-	}
-	precision /= float64(len(salient))
-
-	// Clamp negatives to 0 before harmonic mean. Cosine similarity is in
-	// [-1, 1] but in practice with sentence embeddings on natural English
-	// it sits in [0.3, 0.95]. The clamp is defensive — it only fires on
-	// pathological inputs and prevents F1 from being undefined.
-	if precision < 0 {
-		precision = 0
+		diversity = 1.0 - sumPair/float64(nPair)
+		if diversity < 0 {
+			diversity = 0
+		}
 	}
 
-	beta := b.Beta
-	if beta <= 0 {
-		beta = 1.0
-	}
-	var fbeta float64
-	denom := beta*beta*precision + recall
-	if denom > 0 {
-		fbeta = (1 + beta*beta) * precision * recall / denom
-	}
-
-	return fbeta, BGSDiagnostics{
+	baseDiag := BGSDiagnostics{
 		NumSourceSents:    len(sourceSents),
 		NumCandidateSents: len(candSents),
-		NumSalientSents:   len(salient),
-		Precision:         precision,
+		DistinctAnchors:   len(seen),
 		Recall:            recall,
-		FScore:            fbeta,
-	}, nil
+		Coverage:          coverage,
+		Diversity:         diversity,
+	}
+
+	// Recall-only mode bypasses both coverage and the legacy precision
+	// side. Kept as an explicit flag so the original "no second
+	// component" ablation row stays reproducible.
+	if b.RecallOnly {
+		baseDiag.FScore = recall
+		return recall, baseDiag, nil
+	}
+
+	// Legacy mode: original BGS-F_β with salient-core precision side.
+	// Preserved for the ablation table that motivated the redesign.
+	if b.LegacyPrecision {
+		salient := selectSalientIndices(sourceEmbs, b.SalienceTopFrac, b.SalienceMin)
+
+		var precision float64
+		for _, idx := range salient {
+			best := -2.0
+			for _, ce := range candEmbs {
+				if c := cosineSimilarity(sourceEmbs[idx], ce); c > best {
+					best = c
+				}
+			}
+			precision += best
+		}
+		precision /= float64(len(salient))
+		if precision < 0 {
+			precision = 0
+		}
+
+		beta := b.Beta
+		if beta <= 0 {
+			beta = 1.0
+		}
+		var fbeta float64
+		denom := beta*beta*precision + recall
+		if denom > 0 {
+			fbeta = (1 + beta*beta) * precision * recall / denom
+		}
+
+		baseDiag.NumSalientSents = len(salient)
+		baseDiag.Precision = precision
+		baseDiag.FScore = fbeta
+		return fbeta, baseDiag, nil
+	}
+
+	// Canonical mode: recall · coverage^α · diversity^γ. With α=γ=0
+	// this reduces to recall-only (any value to the zeroth power is 1).
+	// α>0 enables anchor coverage; γ>0 enables within-summary
+	// diversity; both can be active simultaneously.
+	alpha := b.CoverageAlpha
+	if alpha < 0 {
+		alpha = 0
+	}
+	gamma := b.RedundancyGamma
+	if gamma < 0 {
+		gamma = 0
+	}
+	score := recall * math.Pow(coverage, alpha) * math.Pow(diversity, gamma)
+
+	baseDiag.FScore = score
+	return score, baseDiag, nil
 }
 
 // EmbedSentences exposes embedAll for cmd/bgs so per-document caching
@@ -302,6 +458,13 @@ func selectSalientIndices(sourceEmbs [][]float64, fraction float64, minK int) []
 	}
 	sort.Ints(out)
 	return out
+}
+
+// sortDescending sorts a float64 slice in descending order in place.
+// Wraps stdlib's ascending sort with a reverse view to avoid an
+// allocation that the closure-based sort.Slice would incur.
+func sortDescending(xs []float64) {
+	sort.Sort(sort.Reverse(sort.Float64Slice(xs)))
 }
 
 func filterShortSentences(sents []string, minLen int) []string {
