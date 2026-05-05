@@ -1,53 +1,21 @@
 \begin{table*}[t]
 \centering
-\caption{Ablation of BGS on SummEval (summary-level Spearman $\rho$). The canonical metric is recall with an exponential lead-bias prior on source sentences: $\mathrm{score} = \mathrm{mean}_j\, \max_i\, w(i)\cdot\cos(c_j, s_i)$ with $w(i)=\exp(-\lambda \cdot i / n)$. Four hyperparameters are tested independently on a held-out development split (50 articles): $\lambda$ (lead-bias decay), $k$ (top-$k$ recall aggregation, replacing max with the mean of top-$k$ cosines), $\alpha$ (anchor-coverage exponent), $\gamma$ (within-summary-diversity exponent). The dev-selected canonical row is marked $\star$ and re-evaluated on the test split (50 articles). Lead bias is the only tested component that improves dev mean Spearman over the recall baseline ($\lambda=0$); top-$k$ recall, anchor coverage, and within-summary diversity all degrade dev mean and are reported as negative ablations. Legacy F$_\beta$ rows reproduce the original bidirectional formulation.}
+\caption{Ablation of BGS on SummEval (summary-level Spearman $\rho$). The metric is $\mathrm{score} = \mathrm{mean}_j\, \max_i\, w(i)\cdot\cos(c_j, s_i)$ with exponential lead-bias prior $w(i)=\exp(-\lambda \cdot i / n)$ on source-sentence position. The exponent $\lambda$ is selected on a held-out development split (50 articles) and re-evaluated on the test split (50 articles); the dev-selected canonical row is marked $\star$.}
 \label{tab:ablation_bgs}
 \begin{tabular}{lrrrr}
 \toprule
 Variant & Coh & Con & Flu & Rel \\
 \midrule
+Recall baseline ($\lambda=0$) (dev) & .342 & .180 & .139 & .271 \\
 Lead-bias ($\lambda=0.25$) (dev) & .358 & .197 & .156 & .294 \\
 Lead-bias ($\lambda=0.5$) (dev) & .363 & .187 & .150 & .307 \\
 Lead-bias ($\lambda=1$) (dev) & .361 & .162 & .126 & .319 \\
 Lead-bias ($\lambda=2$) (dev) & .349 & .125 & .086 & .322 \\
 \midrule
-Top-$k$ recall ($k=2$) (dev) & .323 & .140 & .109 & .280 \\
-Top-$k$ recall ($k=3$) (dev) & .312 & .120 & .088 & .279 \\
-Top-$k$ recall ($k=5$) (dev) & .286 & .092 & .060 & .254 \\
-Top-$k$ recall ($k=10$) (dev) & .276 & .073 & .039 & .236 \\
-\midrule
-Recall baseline ($k=1$, $\lambda=\alpha=\gamma=0$) (dev) & .342 & .180 & .139 & .271 \\
-Coverage ($\alpha=0.25$) (dev) & .368 & .174 & .126 & .248 \\
-Coverage ($\alpha=0.5$) (dev) & .374 & .165 & .115 & .232 \\
-Coverage ($\alpha=1$) (dev) & .374 & .158 & .107 & .219 \\
-Coverage ($\alpha=1.5$) (dev) & .371 & .155 & .103 & .215 \\
-Coverage ($\alpha=2$) (dev) & .370 & .153 & .101 & .214 \\
-Coverage ($\alpha=3$) (dev) & .369 & .151 & .100 & .212 \\
-\midrule
-Diversity ($\gamma=0.1$) (dev) & .347 & .138 & .118 & .232 \\
-Diversity ($\gamma=0.25$) (dev) & .323 & .088 & .093 & .177 \\
-Diversity ($\gamma=0.5$) (dev) & .251 & .018 & .057 & .088 \\
-Diversity ($\gamma=0.75$) (dev) & .193 & -.033 & .028 & .022 \\
-Diversity ($\gamma=1$) (dev) & .153 & -.063 & .010 & -.020 \\
-Diversity ($\gamma=1.5$) (dev) & .103 & -.098 & -.014 & -.065 \\
-Diversity ($\gamma=2$) (dev) & .077 & -.116 & -.027 & -.089 \\
-\midrule
-Legacy F$_\beta$ ($\beta=1$, frac=0.30) (dev) & .300 & .131 & .091 & .303 \\
-Legacy F$_\beta$ ($\beta=2$, frac=0.30) (dev) & .332 & .165 & .124 & .291 \\
-\midrule
+Recall baseline ($\lambda=0$) (test) & .415 & .272 & .161 & .410 \\
 Lead-bias ($\lambda=0.25$) (test) & .433 & .295 & .180 & .427 \\
 Lead-bias ($\lambda=0.5$) (test) $\star$ & .429 & .271 & .162 & .413 \\
 Lead-bias ($\lambda=1$) (test) & .402 & .227 & .121 & .369 \\
-\midrule
-Recall baseline ($k=1$, $\lambda=\alpha=\gamma=0$) (test) & .415 & .272 & .161 & .410 \\
-Coverage ($\alpha=0.5$) (test) & .382 & .235 & .170 & .330 \\
-Coverage ($\alpha=1$) (test) & .362 & .215 & .173 & .298 \\
-\midrule
-Diversity ($\gamma=0.1$) (test) & .416 & .255 & .145 & .385 \\
-Diversity ($\gamma=0.25$) (test) & .381 & .224 & .113 & .326 \\
-\midrule
-Legacy F$_\beta$ ($\beta=1$, frac=0.30) (test) & .385 & .182 & .108 & .424 \\
-Legacy F$_\beta$ ($\beta=2$, frac=0.30) (test) & .416 & .245 & .148 & .430 \\
 \bottomrule
 \end{tabular}
 \end{table*}

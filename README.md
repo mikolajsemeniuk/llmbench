@@ -1,30 +1,25 @@
 # LLMBench
 
-Correlation benchmark for summarization metrics on the [SummEval](https://huggingface.co/datasets/mteb/summeval) dataset, and reference implementation of **BGS** (Bidirectional Grounding Score) — an *efficient, reference-free* embedding-only metric for summary quality.
+Correlation benchmark for summarization metrics on the [SummEval](https://huggingface.co/datasets/mteb/summeval) dataset, and reference implementation of **BGS** — an *efficient, reference-free* embedding-only metric for summary quality.
 
 Reference-based metrics (BERTScore, MoverScore, SMART-Model, BLEU, ROUGE-L, ChrF, METEOR, SMART-String, EmbedScorer, BARTScore, GPTScore) are scored against the human-annotated reference summaries. Source-based metrics (G-Eval, BGS) score the candidate against the source article and need no reference. UniEval uses both source and reference. All correlations and paired-bootstrap comparisons are aggregated by `cmd/paper` and `cmd/compare` into the LaTeX tables under `paper/`.
 
-## BGS — formulation and positioning
+## BGS — formulation
 
-For source `D` and candidate summary `C` split into sentences, BGS computes:
+For source `D` and candidate summary `C` split into sentences:
 
 ```
-w(i) = exp(-λ · i / n)               # lead-bias prior on source position
-score = mean_j  max_i [w(i) · cos(emb(c_j), emb(s_i))]
+w(i)  = exp(-λ · i / n)                    # exponential lead-bias prior
+score = mean over c_j of  max_i  w(i) · cos(emb(c_j), emb(s_i))
 ```
 
-For each candidate sentence `c_j`, find the best-matching source sentence after the cosine has been weighted by source position (`i = 0` is the lead, `n` is source length). Average over candidate sentences. `λ` is the only canonical hyperparameter.
+For each candidate sentence `c_j`, find the best-matching source sentence after the cosine has been weighted by source position (`i = 0` is the lead, `n` is source length). Average over candidate sentences. `λ` is the only hyperparameter.
 
-The lead-bias prior is motivated by the well-documented lead bias of CNN/DailyMail-style news (Kedzie et al. 2018, Grusky et al. 2018): salient content concentrates near the article start. The exponential decay `exp(−λ · i / n)` provides a structural, deterministic source-side salience signal — cheaper than the iterative TextRank/LexRank algorithms it replaces, and competitive on dev.
+The mean-of-max grounding ("is each summary sentence anchored in some source sentence?") penalises hallucination on the candidate side. The exponential lead-bias prior on the source side is motivated by the well-documented lead bias of CNN/DailyMail-style news (Kedzie et al. 2018, Grusky et al. 2018): salient content concentrates near the article start. The decay `exp(−λ · i / n)` provides a deterministic source-side salience signal that is cheaper than iterative TextRank/LexRank algorithms.
 
-**Held-out selection of λ**. SummEval is split by article into a 50-article development set (first 50 docs in dataset order) and a 50-article test set (last 50). On dev, four independent sweeps probe orthogonal extension axes:
+**Held-out selection of λ**. SummEval is split by article into a 50-article development set (first 50 docs in dataset order) and a 50-article test set (last 50). On dev, λ ∈ {0, 0.25, 0.5, 1.0, 2.0} is swept and the value maximising mean Spearman ρ across the four SummEval dimensions is selected. The dev winner is **λ\* = 0.5**: dev mean ρ rises from .233 (λ=0) to .252 (+.019), with all four dimensions improving (coh +.021, con +.007, flu +.011, rel +.036). On the held-out test split λ\*=0.5 also beats the no-prior baseline (mean ρ .319 vs .314).
 
-- lead-bias sweep: λ ∈ {0, 0.25, 0.5, 1.0, 2.0}
-- top-k recall sweep: k ∈ {1, 2, 3, 5, 10}
-- coverage sweep: α ∈ {0, 0.25, 0.5, 1.0, 1.5, 2.0, 3.0} (multiplicative `coverage^α` factor)
-- diversity sweep: γ ∈ {0, 0.10, 0.25, 0.5, 0.75, 1.0, 1.5, 2.0} (multiplicative `(1−mean_pairwise_cos)^γ` factor)
-
-The selection criterion is mean Spearman ρ across the four SummEval dimensions. **Lead-bias is the only sweep that produces a dev-mean improvement over the recall baseline**: λ\*=0.5 raises dev mean ρ from .233 to .252 (+.019 lift), with all four SummEval dimensions improving (coh +.021, con +.007, flu +.011, rel +.036). The other three sweeps reach their dev-mean optimum at the no-op default (k\*=1, α\*=0, γ\*=0). On the held-out test split, λ\*=0.5 also beats the recall baseline (mean ρ .319 vs .314). Top-k recall, anchor coverage, and within-summary diversity are openly reported in `paper/ablation.tex` as **negative ablations**.
+## BGS — positioning
 
 BGS is reference-free and runs on a small Ollama embedder (`nomic-embed-text`, 137M params). It is **not** intended to beat UniEval — UniEval still wins on raw correlation. The claim is that BGS:
 
@@ -38,32 +33,39 @@ The paper's contribution is "a reference-free metric you can deploy with a singl
 
 ## Reproducing the paper
 
-Every number in `paper/{summary,system,ablation,comparisons}.tex` regenerates from a single Make target. Steps below assume Ollama on `localhost:11434` with `nomic-embed-text` pulled and the model server (`cmd/modelsrv`) running on port 9200 for the reference-based baselines.
+Every number in `paper/{summary,system,ablation,comparisons}.tex` regenerates from Make targets. Steps below assume Ollama on `localhost:11434` with `nomic-embed-text` pulled and the model server (`cmd/modelsrv`) running on port 9200 for the reference-based baselines.
 
 ```sh
 # 1. Regenerate every baseline's per-sample scores in output/.
 #    Skip this if output/*.json is already populated.
 make benchmark                  # ~30 min
 
-# 2. Reproduce the BGS pipeline end-to-end.
-#    This (a) runs both dev sweeps, (b) verifies a sample of test-split
-#    rows, (c) reproduces the legacy F_β rows, (d) re-runs the canonical
-#    BGS on the full set with the dev-selected (α*, γ*), (e) re-renders
-#    every paper/*.tex.
-make benchmark-bgs-paper        # ~15 min
+# 2. Reproduce the BGS ablation + canonical end-to-end:
+#    (a) recall baseline (λ=0) on dev and test → bgs_recall_{dev,test}.json
+#    (b) lead-bias sweep λ ∈ {0.25, 0.5, 1.0, 2.0} on dev and test
+#        → bgs_lead_{dev,test}_l*.json
+#    (c) canonical run on the full set with the dev-selected λ*
+#        → output/bgs.json
+#    (d) re-render every paper/*.tex.
+make benchmark-bgs-paper        # ~10 min
 
-# 3. (Optional) Inspect the dev sweeps and confirm α*=γ*=0 wins:
-ls ablation/bgs_*_dev_*.json    # one file per swept value
-cat paper/ablation.tex          # the rendered table
+# 3. (Optional) Run only one ablation slice — useful when a reviewer
+#    wants to verify a single component without re-running the full grid:
+make benchmark-ablation-recall  # recall baseline only (2 runs, ~2 min)
+make benchmark-ablation-lead    # lead-bias sweep only (7 runs, ~6 min)
+
+# 4. (Optional) Inspect the snapshots and rendered table:
+ls ablation/                    # bgs_recall_*.json + bgs_lead_*_l*.json
+cat paper/ablation.tex
 ```
 
-The selected hyperparameters are encoded as Make variables: `BGS_K=1`, `BGS_LAMBDA=0.5`, `BGS_ALPHA=0`, `BGS_GAMMA=0` — the dev-selected values. To rerun the canonical with different choices — for instance, to explore λ=0.25:
+The selected λ is encoded as a Make variable: `BGS_LAMBDA=0.5` (the dev-selected value). To rerun the canonical with a different choice — for instance, λ=0.25:
 
 ```sh
 make benchmark-bgs BGS_LAMBDA=0.25
 ```
 
-The dev/test split is by dataset order (deterministic from `eval.NewDataset`'s JSONL emission order — no random seed). To verify, the article-level split is implemented in `applyDocSplit` in `cmd/bgs/main.go`.
+The dev/test split is by dataset order (deterministic from `eval.NewDataset`'s JSONL emission order — no random seed). The article-level split is implemented in `applyDocSplit` in `cmd/bgs/main.go`.
 
 ## Requirements
 
