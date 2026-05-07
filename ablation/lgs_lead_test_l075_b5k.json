@@ -1,0 +1,3361 @@
+{
+  "metric": "lgs",
+  "norm": "lead_lambda=0.750,split=last50,embed_model=nomic-embed-text",
+  "samples": 800,
+  "runtime_sec": 45.697283459,
+  "timestamp": "2026-05-07T19:43:45Z",
+  "scores": [
+    {
+      "sample_id": "dm-test-632cfdb03aacd90a34a470f6a70b47eee62ec5f0#0",
+      "value": 0.6167983007168045
+    },
+    {
+      "sample_id": "dm-test-632cfdb03aacd90a34a470f6a70b47eee62ec5f0#1",
+      "value": 0.5300963950948837
+    },
+    {
+      "sample_id": "dm-test-632cfdb03aacd90a34a470f6a70b47eee62ec5f0#2",
+      "value": 0.6701671108173554
+    },
+    {
+      "sample_id": "dm-test-632cfdb03aacd90a34a470f6a70b47eee62ec5f0#3",
+      "value": 0.5625710212606198
+    },
+    {
+      "sample_id": "dm-test-632cfdb03aacd90a34a470f6a70b47eee62ec5f0#4",
+      "value": 0.6543203017394683
+    },
+    {
+      "sample_id": "dm-test-632cfdb03aacd90a34a470f6a70b47eee62ec5f0#5",
+      "value": 0.7045410023544494
+    },
+    {
+      "sample_id": "dm-test-632cfdb03aacd90a34a470f6a70b47eee62ec5f0#6",
+      "value": 0.629088367921207
+    },
+    {
+      "sample_id": "dm-test-632cfdb03aacd90a34a470f6a70b47eee62ec5f0#7",
+      "value": 0.6154069419024107
+    },
+    {
+      "sample_id": "dm-test-632cfdb03aacd90a34a470f6a70b47eee62ec5f0#8",
+      "value": 0.6772337016183041
+    },
+    {
+      "sample_id": "dm-test-632cfdb03aacd90a34a470f6a70b47eee62ec5f0#9",
+      "value": 0.5642422122789349
+    },
+    {
+      "sample_id": "dm-test-632cfdb03aacd90a34a470f6a70b47eee62ec5f0#10",
+      "value": 0.6768464192679486
+    },
+    {
+      "sample_id": "dm-test-632cfdb03aacd90a34a470f6a70b47eee62ec5f0#11",
+      "value": 0.7465130421989193
+    },
+    {
+      "sample_id": "dm-test-632cfdb03aacd90a34a470f6a70b47eee62ec5f0#12",
+      "value": 0.5871326755912638
+    },
+    {
+      "sample_id": "dm-test-632cfdb03aacd90a34a470f6a70b47eee62ec5f0#13",
+      "value": 0.6959636706191151
+    },
+    {
+      "sample_id": "dm-test-632cfdb03aacd90a34a470f6a70b47eee62ec5f0#14",
+      "value": 0.5420968942429889
+    },
+    {
+      "sample_id": "dm-test-632cfdb03aacd90a34a470f6a70b47eee62ec5f0#15",
+      "value": 0.615375756447992
+    },
+    {
+      "sample_id": "dm-test-6372eff07fd3d6f578f90d6115e01747edccc095#0",
+      "value": 0.7107601110666415
+    },
+    {
+      "sample_id": "dm-test-6372eff07fd3d6f578f90d6115e01747edccc095#1",
+      "value": 0.6928797968048107
+    },
+    {
+      "sample_id": "dm-test-6372eff07fd3d6f578f90d6115e01747edccc095#2",
+      "value": 0.7311229166196137
+    },
+    {
+      "sample_id": "dm-test-6372eff07fd3d6f578f90d6115e01747edccc095#3",
+      "value": 0.7318859078249497
+    },
+    {
+      "sample_id": "dm-test-6372eff07fd3d6f578f90d6115e01747edccc095#4",
+      "value": 0.6801633704571062
+    },
+    {
+      "sample_id": "dm-test-6372eff07fd3d6f578f90d6115e01747edccc095#5",
+      "value": 0.7511495015311053
+    },
+    {
+      "sample_id": "dm-test-6372eff07fd3d6f578f90d6115e01747edccc095#6",
+      "value": 0.8220827352639365
+    },
+    {
+      "sample_id": "dm-test-6372eff07fd3d6f578f90d6115e01747edccc095#7",
+      "value": 0.6779594970901286
+    },
+    {
+      "sample_id": "dm-test-6372eff07fd3d6f578f90d6115e01747edccc095#8",
+      "value": 0.7340910610175789
+    },
+    {
+      "sample_id": "dm-test-6372eff07fd3d6f578f90d6115e01747edccc095#9",
+      "value": 0.6436811386506264
+    },
+    {
+      "sample_id": "dm-test-6372eff07fd3d6f578f90d6115e01747edccc095#10",
+      "value": 0.7694396226555912
+    },
+    {
+      "sample_id": "dm-test-6372eff07fd3d6f578f90d6115e01747edccc095#11",
+      "value": 0.889729974264827
+    },
+    {
+      "sample_id": "dm-test-6372eff07fd3d6f578f90d6115e01747edccc095#12",
+      "value": 0.7401389260143002
+    },
+    {
+      "sample_id": "dm-test-6372eff07fd3d6f578f90d6115e01747edccc095#13",
+      "value": 0.6867212571848542
+    },
+    {
+      "sample_id": "dm-test-6372eff07fd3d6f578f90d6115e01747edccc095#14",
+      "value": 0.6939529606968128
+    },
+    {
+      "sample_id": "dm-test-6372eff07fd3d6f578f90d6115e01747edccc095#15",
+      "value": 0.7224130526114867
+    },
+    {
+      "sample_id": "dm-test-6721edf88c95f480a4db2c63649dbb03736aeadf#0",
+      "value": 0.7601325362880198
+    },
+    {
+      "sample_id": "dm-test-6721edf88c95f480a4db2c63649dbb03736aeadf#1",
+      "value": 0.8338781650943567
+    },
+    {
+      "sample_id": "dm-test-6721edf88c95f480a4db2c63649dbb03736aeadf#2",
+      "value": 0.7632082868274579
+    },
+    {
+      "sample_id": "dm-test-6721edf88c95f480a4db2c63649dbb03736aeadf#3",
+      "value": 0.8345200575333372
+    },
+    {
+      "sample_id": "dm-test-6721edf88c95f480a4db2c63649dbb03736aeadf#4",
+      "value": 0.8320325271164236
+    },
+    {
+      "sample_id": "dm-test-6721edf88c95f480a4db2c63649dbb03736aeadf#5",
+      "value": 0.8345200575333372
+    },
+    {
+      "sample_id": "dm-test-6721edf88c95f480a4db2c63649dbb03736aeadf#6",
+      "value": 0.8215198551918926
+    },
+    {
+      "sample_id": "dm-test-6721edf88c95f480a4db2c63649dbb03736aeadf#7",
+      "value": 0.7074636052694109
+    },
+    {
+      "sample_id": "dm-test-6721edf88c95f480a4db2c63649dbb03736aeadf#8",
+      "value": 0.7111229784478573
+    },
+    {
+      "sample_id": "dm-test-6721edf88c95f480a4db2c63649dbb03736aeadf#9",
+      "value": 0.7195433305266543
+    },
+    {
+      "sample_id": "dm-test-6721edf88c95f480a4db2c63649dbb03736aeadf#10",
+      "value": 0.8326744195554041
+    },
+    {
+      "sample_id": "dm-test-6721edf88c95f480a4db2c63649dbb03736aeadf#11",
+      "value": 0.8895247498564615
+    },
+    {
+      "sample_id": "dm-test-6721edf88c95f480a4db2c63649dbb03736aeadf#12",
+      "value": 0.7651338571951498
+    },
+    {
+      "sample_id": "dm-test-6721edf88c95f480a4db2c63649dbb03736aeadf#13",
+      "value": 0.761459598709167
+    },
+    {
+      "sample_id": "dm-test-6721edf88c95f480a4db2c63649dbb03736aeadf#14",
+      "value": 0.7479547927239086
+    },
+    {
+      "sample_id": "dm-test-6721edf88c95f480a4db2c63649dbb03736aeadf#15",
+      "value": 0.7707350145729335
+    },
+    {
+      "sample_id": "dm-test-6c1341bedf92a304318545fbf1aad88651de7909#0",
+      "value": 0.5446284458364812
+    },
+    {
+      "sample_id": "dm-test-6c1341bedf92a304318545fbf1aad88651de7909#1",
+      "value": 0.5885658911362717
+    },
+    {
+      "sample_id": "dm-test-6c1341bedf92a304318545fbf1aad88651de7909#2",
+      "value": 0.6750584590591554
+    },
+    {
+      "sample_id": "dm-test-6c1341bedf92a304318545fbf1aad88651de7909#3",
+      "value": 0.5487724566256951
+    },
+    {
+      "sample_id": "dm-test-6c1341bedf92a304318545fbf1aad88651de7909#4",
+      "value": 0.5216702437421717
+    },
+    {
+      "sample_id": "dm-test-6c1341bedf92a304318545fbf1aad88651de7909#5",
+      "value": 0.6052444950619472
+    },
+    {
+      "sample_id": "dm-test-6c1341bedf92a304318545fbf1aad88651de7909#6",
+      "value": 0.642364330282495
+    },
+    {
+      "sample_id": "dm-test-6c1341bedf92a304318545fbf1aad88651de7909#7",
+      "value": 0.5235463564940265
+    },
+    {
+      "sample_id": "dm-test-6c1341bedf92a304318545fbf1aad88651de7909#8",
+      "value": 0.7089269587789742
+    },
+    {
+      "sample_id": "dm-test-6c1341bedf92a304318545fbf1aad88651de7909#9",
+      "value": 0.6107014381035708
+    },
+    {
+      "sample_id": "dm-test-6c1341bedf92a304318545fbf1aad88651de7909#10",
+      "value": 0.5876400467731977
+    },
+    {
+      "sample_id": "dm-test-6c1341bedf92a304318545fbf1aad88651de7909#11",
+      "value": 0.7670190291321529
+    },
+    {
+      "sample_id": "dm-test-6c1341bedf92a304318545fbf1aad88651de7909#12",
+      "value": 0.6555439988746404
+    },
+    {
+      "sample_id": "dm-test-6c1341bedf92a304318545fbf1aad88651de7909#13",
+      "value": 0.5853451430039817
+    },
+    {
+      "sample_id": "dm-test-6c1341bedf92a304318545fbf1aad88651de7909#14",
+      "value": 0.5900075180474733
+    },
+    {
+      "sample_id": "dm-test-6c1341bedf92a304318545fbf1aad88651de7909#15",
+      "value": 0.6486326932908126
+    },
+    {
+      "sample_id": "dm-test-6f027d030f9ca86446dc893f1d10ced4c9a3561f#0",
+      "value": 0.5909584751339818
+    },
+    {
+      "sample_id": "dm-test-6f027d030f9ca86446dc893f1d10ced4c9a3561f#1",
+      "value": 0.7685873985280111
+    },
+    {
+      "sample_id": "dm-test-6f027d030f9ca86446dc893f1d10ced4c9a3561f#2",
+      "value": 0.6647368506775847
+    },
+    {
+      "sample_id": "dm-test-6f027d030f9ca86446dc893f1d10ced4c9a3561f#3",
+      "value": 0.7111755507796024
+    },
+    {
+      "sample_id": "dm-test-6f027d030f9ca86446dc893f1d10ced4c9a3561f#4",
+      "value": 0.6890284344487213
+    },
+    {
+      "sample_id": "dm-test-6f027d030f9ca86446dc893f1d10ced4c9a3561f#5",
+      "value": 0.7510812343370691
+    },
+    {
+      "sample_id": "dm-test-6f027d030f9ca86446dc893f1d10ced4c9a3561f#6",
+      "value": 0.720027364818425
+    },
+    {
+      "sample_id": "dm-test-6f027d030f9ca86446dc893f1d10ced4c9a3561f#7",
+      "value": 0.5604254923748266
+    },
+    {
+      "sample_id": "dm-test-6f027d030f9ca86446dc893f1d10ced4c9a3561f#8",
+      "value": 0.671972632401402
+    },
+    {
+      "sample_id": "dm-test-6f027d030f9ca86446dc893f1d10ced4c9a3561f#9",
+      "value": 0.6058230856789961
+    },
+    {
+      "sample_id": "dm-test-6f027d030f9ca86446dc893f1d10ced4c9a3561f#10",
+      "value": 0.6647368506775847
+    },
+    {
+      "sample_id": "dm-test-6f027d030f9ca86446dc893f1d10ced4c9a3561f#11",
+      "value": 0.7685873985280111
+    },
+    {
+      "sample_id": "dm-test-6f027d030f9ca86446dc893f1d10ced4c9a3561f#12",
+      "value": 0.7039983025939204
+    },
+    {
+      "sample_id": "dm-test-6f027d030f9ca86446dc893f1d10ced4c9a3561f#13",
+      "value": 0.7038580235291599
+    },
+    {
+      "sample_id": "dm-test-6f027d030f9ca86446dc893f1d10ced4c9a3561f#14",
+      "value": 0.6750067773006276
+    },
+    {
+      "sample_id": "dm-test-6f027d030f9ca86446dc893f1d10ced4c9a3561f#15",
+      "value": 0.5882219099413969
+    },
+    {
+      "sample_id": "dm-test-7cba80e83b222801fed8d6f96e8c0aa381c54b28#0",
+      "value": 0.5579812338996597
+    },
+    {
+      "sample_id": "dm-test-7cba80e83b222801fed8d6f96e8c0aa381c54b28#1",
+      "value": 0.619042327466271
+    },
+    {
+      "sample_id": "dm-test-7cba80e83b222801fed8d6f96e8c0aa381c54b28#2",
+      "value": 0.6443729800869619
+    },
+    {
+      "sample_id": "dm-test-7cba80e83b222801fed8d6f96e8c0aa381c54b28#3",
+      "value": 0.5864205714590452
+    },
+    {
+      "sample_id": "dm-test-7cba80e83b222801fed8d6f96e8c0aa381c54b28#4",
+      "value": 0.539335533063436
+    },
+    {
+      "sample_id": "dm-test-7cba80e83b222801fed8d6f96e8c0aa381c54b28#5",
+      "value": 0.64709065627439
+    },
+    {
+      "sample_id": "dm-test-7cba80e83b222801fed8d6f96e8c0aa381c54b28#6",
+      "value": 0.6825510362461196
+    },
+    {
+      "sample_id": "dm-test-7cba80e83b222801fed8d6f96e8c0aa381c54b28#7",
+      "value": 0.5830871954054475
+    },
+    {
+      "sample_id": "dm-test-7cba80e83b222801fed8d6f96e8c0aa381c54b28#8",
+      "value": 0.8452092892854376
+    },
+    {
+      "sample_id": "dm-test-7cba80e83b222801fed8d6f96e8c0aa381c54b28#9",
+      "value": 0.5817771602826202
+    },
+    {
+      "sample_id": "dm-test-7cba80e83b222801fed8d6f96e8c0aa381c54b28#10",
+      "value": 0.5910011871089434
+    },
+    {
+      "sample_id": "dm-test-7cba80e83b222801fed8d6f96e8c0aa381c54b28#11",
+      "value": 0.7479158266298054
+    },
+    {
+      "sample_id": "dm-test-7cba80e83b222801fed8d6f96e8c0aa381c54b28#12",
+      "value": 0.631230895861009
+    },
+    {
+      "sample_id": "dm-test-7cba80e83b222801fed8d6f96e8c0aa381c54b28#13",
+      "value": 0.5267051769957425
+    },
+    {
+      "sample_id": "dm-test-7cba80e83b222801fed8d6f96e8c0aa381c54b28#14",
+      "value": 0.596140241102077
+    },
+    {
+      "sample_id": "dm-test-7cba80e83b222801fed8d6f96e8c0aa381c54b28#15",
+      "value": 0.5882989930340299
+    },
+    {
+      "sample_id": "dm-test-801763443e6c73e3857039f2223798b2b58bef19#0",
+      "value": 0.6365921261885087
+    },
+    {
+      "sample_id": "dm-test-801763443e6c73e3857039f2223798b2b58bef19#1",
+      "value": 0.7121867589177571
+    },
+    {
+      "sample_id": "dm-test-801763443e6c73e3857039f2223798b2b58bef19#2",
+      "value": 0.7769702238294375
+    },
+    {
+      "sample_id": "dm-test-801763443e6c73e3857039f2223798b2b58bef19#3",
+      "value": 0.6616155186288332
+    },
+    {
+      "sample_id": "dm-test-801763443e6c73e3857039f2223798b2b58bef19#4",
+      "value": 0.749857517778915
+    },
+    {
+      "sample_id": "dm-test-801763443e6c73e3857039f2223798b2b58bef19#5",
+      "value": 0.7928230234463653
+    },
+    {
+      "sample_id": "dm-test-801763443e6c73e3857039f2223798b2b58bef19#6",
+      "value": 0.7862705273121554
+    },
+    {
+      "sample_id": "dm-test-801763443e6c73e3857039f2223798b2b58bef19#7",
+      "value": 0.60800077418793
+    },
+    {
+      "sample_id": "dm-test-801763443e6c73e3857039f2223798b2b58bef19#8",
+      "value": 0.8319317590952297
+    },
+    {
+      "sample_id": "dm-test-801763443e6c73e3857039f2223798b2b58bef19#9",
+      "value": 0.6646280635741483
+    },
+    {
+      "sample_id": "dm-test-801763443e6c73e3857039f2223798b2b58bef19#10",
+      "value": 0.7859785482498376
+    },
+    {
+      "sample_id": "dm-test-801763443e6c73e3857039f2223798b2b58bef19#11",
+      "value": 0.7859785482498376
+    },
+    {
+      "sample_id": "dm-test-801763443e6c73e3857039f2223798b2b58bef19#12",
+      "value": 0.715906161292052
+    },
+    {
+      "sample_id": "dm-test-801763443e6c73e3857039f2223798b2b58bef19#13",
+      "value": 0.7536458401277172
+    },
+    {
+      "sample_id": "dm-test-801763443e6c73e3857039f2223798b2b58bef19#14",
+      "value": 0.731044892354661
+    },
+    {
+      "sample_id": "dm-test-801763443e6c73e3857039f2223798b2b58bef19#15",
+      "value": 0.657040619634728
+    },
+    {
+      "sample_id": "dm-test-808a439a5d83fc47baaea934c8779a7ebc62470d#0",
+      "value": 0.6853048916230443
+    },
+    {
+      "sample_id": "dm-test-808a439a5d83fc47baaea934c8779a7ebc62470d#1",
+      "value": 0.7022692061972049
+    },
+    {
+      "sample_id": "dm-test-808a439a5d83fc47baaea934c8779a7ebc62470d#2",
+      "value": 0.6615463041086647
+    },
+    {
+      "sample_id": "dm-test-808a439a5d83fc47baaea934c8779a7ebc62470d#3",
+      "value": 0.6448346498593894
+    },
+    {
+      "sample_id": "dm-test-808a439a5d83fc47baaea934c8779a7ebc62470d#4",
+      "value": 0.6447141065330996
+    },
+    {
+      "sample_id": "dm-test-808a439a5d83fc47baaea934c8779a7ebc62470d#5",
+      "value": 0.6422094730456224
+    },
+    {
+      "sample_id": "dm-test-808a439a5d83fc47baaea934c8779a7ebc62470d#6",
+      "value": 0.7225141355315151
+    },
+    {
+      "sample_id": "dm-test-808a439a5d83fc47baaea934c8779a7ebc62470d#7",
+      "value": 0.5819072436633148
+    },
+    {
+      "sample_id": "dm-test-808a439a5d83fc47baaea934c8779a7ebc62470d#8",
+      "value": 0.6510054883463594
+    },
+    {
+      "sample_id": "dm-test-808a439a5d83fc47baaea934c8779a7ebc62470d#9",
+      "value": 0.6294993602379901
+    },
+    {
+      "sample_id": "dm-test-808a439a5d83fc47baaea934c8779a7ebc62470d#10",
+      "value": 0.721476084166988
+    },
+    {
+      "sample_id": "dm-test-808a439a5d83fc47baaea934c8779a7ebc62470d#11",
+      "value": 0.7173403579829515
+    },
+    {
+      "sample_id": "dm-test-808a439a5d83fc47baaea934c8779a7ebc62470d#12",
+      "value": 0.7894231926280089
+    },
+    {
+      "sample_id": "dm-test-808a439a5d83fc47baaea934c8779a7ebc62470d#13",
+      "value": 0.6431077318535898
+    },
+    {
+      "sample_id": "dm-test-808a439a5d83fc47baaea934c8779a7ebc62470d#14",
+      "value": 0.6233715045919991
+    },
+    {
+      "sample_id": "dm-test-808a439a5d83fc47baaea934c8779a7ebc62470d#15",
+      "value": 0.6364836393290241
+    },
+    {
+      "sample_id": "dm-test-81bd721b16cad47dfd8d24baca5b30b006291db2#0",
+      "value": 0.6271347694096899
+    },
+    {
+      "sample_id": "dm-test-81bd721b16cad47dfd8d24baca5b30b006291db2#1",
+      "value": 0.8004491050121407
+    },
+    {
+      "sample_id": "dm-test-81bd721b16cad47dfd8d24baca5b30b006291db2#2",
+      "value": 0.6904573604308182
+    },
+    {
+      "sample_id": "dm-test-81bd721b16cad47dfd8d24baca5b30b006291db2#3",
+      "value": 0.7051952177912645
+    },
+    {
+      "sample_id": "dm-test-81bd721b16cad47dfd8d24baca5b30b006291db2#4",
+      "value": 0.6989040315664403
+    },
+    {
+      "sample_id": "dm-test-81bd721b16cad47dfd8d24baca5b30b006291db2#5",
+      "value": 0.8036882024290843
+    },
+    {
+      "sample_id": "dm-test-81bd721b16cad47dfd8d24baca5b30b006291db2#6",
+      "value": 0.8154533826884166
+    },
+    {
+      "sample_id": "dm-test-81bd721b16cad47dfd8d24baca5b30b006291db2#7",
+      "value": 0.6610421159743886
+    },
+    {
+      "sample_id": "dm-test-81bd721b16cad47dfd8d24baca5b30b006291db2#8",
+      "value": 0.7578662791229955
+    },
+    {
+      "sample_id": "dm-test-81bd721b16cad47dfd8d24baca5b30b006291db2#9",
+      "value": 0.6155444215040325
+    },
+    {
+      "sample_id": "dm-test-81bd721b16cad47dfd8d24baca5b30b006291db2#10",
+      "value": 0.7378964789373894
+    },
+    {
+      "sample_id": "dm-test-81bd721b16cad47dfd8d24baca5b30b006291db2#11",
+      "value": 0.8092208526198564
+    },
+    {
+      "sample_id": "dm-test-81bd721b16cad47dfd8d24baca5b30b006291db2#12",
+      "value": 0.7131872181761825
+    },
+    {
+      "sample_id": "dm-test-81bd721b16cad47dfd8d24baca5b30b006291db2#13",
+      "value": 0.5842668512217087
+    },
+    {
+      "sample_id": "dm-test-81bd721b16cad47dfd8d24baca5b30b006291db2#14",
+      "value": 0.7274155077499339
+    },
+    {
+      "sample_id": "dm-test-81bd721b16cad47dfd8d24baca5b30b006291db2#15",
+      "value": 0.6019604367752454
+    },
+    {
+      "sample_id": "dm-test-8764fb95bfad8ee849274873a92fb8d6b400eee2#0",
+      "value": 0.5517532830386431
+    },
+    {
+      "sample_id": "dm-test-8764fb95bfad8ee849274873a92fb8d6b400eee2#1",
+      "value": 0.596586729447795
+    },
+    {
+      "sample_id": "dm-test-8764fb95bfad8ee849274873a92fb8d6b400eee2#2",
+      "value": 0.6291969006712864
+    },
+    {
+      "sample_id": "dm-test-8764fb95bfad8ee849274873a92fb8d6b400eee2#3",
+      "value": 0.618147943849151
+    },
+    {
+      "sample_id": "dm-test-8764fb95bfad8ee849274873a92fb8d6b400eee2#4",
+      "value": 0.6638104160487066
+    },
+    {
+      "sample_id": "dm-test-8764fb95bfad8ee849274873a92fb8d6b400eee2#5",
+      "value": 0.573640029194828
+    },
+    {
+      "sample_id": "dm-test-8764fb95bfad8ee849274873a92fb8d6b400eee2#6",
+      "value": 0.5927623889184516
+    },
+    {
+      "sample_id": "dm-test-8764fb95bfad8ee849274873a92fb8d6b400eee2#7",
+      "value": 0.5592495537223782
+    },
+    {
+      "sample_id": "dm-test-8764fb95bfad8ee849274873a92fb8d6b400eee2#8",
+      "value": 0.7313195298115587
+    },
+    {
+      "sample_id": "dm-test-8764fb95bfad8ee849274873a92fb8d6b400eee2#9",
+      "value": 0.6109659880879877
+    },
+    {
+      "sample_id": "dm-test-8764fb95bfad8ee849274873a92fb8d6b400eee2#10",
+      "value": 0.6174290852931182
+    },
+    {
+      "sample_id": "dm-test-8764fb95bfad8ee849274873a92fb8d6b400eee2#11",
+      "value": 0.7210032262006457
+    },
+    {
+      "sample_id": "dm-test-8764fb95bfad8ee849274873a92fb8d6b400eee2#12",
+      "value": 0.7078067276378825
+    },
+    {
+      "sample_id": "dm-test-8764fb95bfad8ee849274873a92fb8d6b400eee2#13",
+      "value": 0.6060715962948724
+    },
+    {
+      "sample_id": "dm-test-8764fb95bfad8ee849274873a92fb8d6b400eee2#14",
+      "value": 0.5493936785039789
+    },
+    {
+      "sample_id": "dm-test-8764fb95bfad8ee849274873a92fb8d6b400eee2#15",
+      "value": 0.5523046100893976
+    },
+    {
+      "sample_id": "dm-test-8847383b72167c3f3dd2161b5b091b580c8f4da7#0",
+      "value": 0.6277074562749385
+    },
+    {
+      "sample_id": "dm-test-8847383b72167c3f3dd2161b5b091b580c8f4da7#1",
+      "value": 0.8191640608551173
+    },
+    {
+      "sample_id": "dm-test-8847383b72167c3f3dd2161b5b091b580c8f4da7#2",
+      "value": 0.8483959703634336
+    },
+    {
+      "sample_id": "dm-test-8847383b72167c3f3dd2161b5b091b580c8f4da7#3",
+      "value": 0.7524298914151064
+    },
+    {
+      "sample_id": "dm-test-8847383b72167c3f3dd2161b5b091b580c8f4da7#4",
+      "value": 0.7068195854524393
+    },
+    {
+      "sample_id": "dm-test-8847383b72167c3f3dd2161b5b091b580c8f4da7#5",
+      "value": 0.8253331747152108
+    },
+    {
+      "sample_id": "dm-test-8847383b72167c3f3dd2161b5b091b580c8f4da7#6",
+      "value": 0.8022585419168576
+    },
+    {
+      "sample_id": "dm-test-8847383b72167c3f3dd2161b5b091b580c8f4da7#7",
+      "value": 0.7396493017357137
+    },
+    {
+      "sample_id": "dm-test-8847383b72167c3f3dd2161b5b091b580c8f4da7#8",
+      "value": 0.7316054651469428
+    },
+    {
+      "sample_id": "dm-test-8847383b72167c3f3dd2161b5b091b580c8f4da7#9",
+      "value": 0.7416513830940418
+    },
+    {
+      "sample_id": "dm-test-8847383b72167c3f3dd2161b5b091b580c8f4da7#10",
+      "value": 0.8483959703634336
+    },
+    {
+      "sample_id": "dm-test-8847383b72167c3f3dd2161b5b091b580c8f4da7#11",
+      "value": 0.8483959703634336
+    },
+    {
+      "sample_id": "dm-test-8847383b72167c3f3dd2161b5b091b580c8f4da7#12",
+      "value": 0.7837053090313512
+    },
+    {
+      "sample_id": "dm-test-8847383b72167c3f3dd2161b5b091b580c8f4da7#13",
+      "value": 0.7679236431952919
+    },
+    {
+      "sample_id": "dm-test-8847383b72167c3f3dd2161b5b091b580c8f4da7#14",
+      "value": 0.6781432843710385
+    },
+    {
+      "sample_id": "dm-test-8847383b72167c3f3dd2161b5b091b580c8f4da7#15",
+      "value": 0.6969664429266793
+    },
+    {
+      "sample_id": "dm-test-8b51a10370a1219137e231192e65b9cd52238ea6#0",
+      "value": 0.5586783706399943
+    },
+    {
+      "sample_id": "dm-test-8b51a10370a1219137e231192e65b9cd52238ea6#1",
+      "value": 0.5715412782003771
+    },
+    {
+      "sample_id": "dm-test-8b51a10370a1219137e231192e65b9cd52238ea6#2",
+      "value": 0.5873013515979139
+    },
+    {
+      "sample_id": "dm-test-8b51a10370a1219137e231192e65b9cd52238ea6#3",
+      "value": 0.6747088352379839
+    },
+    {
+      "sample_id": "dm-test-8b51a10370a1219137e231192e65b9cd52238ea6#4",
+      "value": 0.5715412782003771
+    },
+    {
+      "sample_id": "dm-test-8b51a10370a1219137e231192e65b9cd52238ea6#5",
+      "value": 0.5854670764464016
+    },
+    {
+      "sample_id": "dm-test-8b51a10370a1219137e231192e65b9cd52238ea6#6",
+      "value": 0.6930284284972552
+    },
+    {
+      "sample_id": "dm-test-8b51a10370a1219137e231192e65b9cd52238ea6#7",
+      "value": 0.5724184472863021
+    },
+    {
+      "sample_id": "dm-test-8b51a10370a1219137e231192e65b9cd52238ea6#8",
+      "value": 0.6152658959576659
+    },
+    {
+      "sample_id": "dm-test-8b51a10370a1219137e231192e65b9cd52238ea6#9",
+      "value": 0.5674539569061652
+    },
+    {
+      "sample_id": "dm-test-8b51a10370a1219137e231192e65b9cd52238ea6#10",
+      "value": 0.6491241929460666
+    },
+    {
+      "sample_id": "dm-test-8b51a10370a1219137e231192e65b9cd52238ea6#11",
+      "value": 0.7906724353666096
+    },
+    {
+      "sample_id": "dm-test-8b51a10370a1219137e231192e65b9cd52238ea6#12",
+      "value": 0.618442208313064
+    },
+    {
+      "sample_id": "dm-test-8b51a10370a1219137e231192e65b9cd52238ea6#13",
+      "value": 0.6136937582336984
+    },
+    {
+      "sample_id": "dm-test-8b51a10370a1219137e231192e65b9cd52238ea6#14",
+      "value": 0.6141322615527326
+    },
+    {
+      "sample_id": "dm-test-8b51a10370a1219137e231192e65b9cd52238ea6#15",
+      "value": 0.562920081273584
+    },
+    {
+      "sample_id": "dm-test-8b59fa7715418c4bcc0d50e3caeb239129de453e#0",
+      "value": 0.6264720959581962
+    },
+    {
+      "sample_id": "dm-test-8b59fa7715418c4bcc0d50e3caeb239129de453e#1",
+      "value": 0.7513323946320233
+    },
+    {
+      "sample_id": "dm-test-8b59fa7715418c4bcc0d50e3caeb239129de453e#2",
+      "value": 0.7097564796975224
+    },
+    {
+      "sample_id": "dm-test-8b59fa7715418c4bcc0d50e3caeb239129de453e#3",
+      "value": 0.5958941774059773
+    },
+    {
+      "sample_id": "dm-test-8b59fa7715418c4bcc0d50e3caeb239129de453e#4",
+      "value": 0.6487584331616167
+    },
+    {
+      "sample_id": "dm-test-8b59fa7715418c4bcc0d50e3caeb239129de453e#5",
+      "value": 0.7060465679923915
+    },
+    {
+      "sample_id": "dm-test-8b59fa7715418c4bcc0d50e3caeb239129de453e#6",
+      "value": 0.7096879361716888
+    },
+    {
+      "sample_id": "dm-test-8b59fa7715418c4bcc0d50e3caeb239129de453e#7",
+      "value": 0.6271635174622633
+    },
+    {
+      "sample_id": "dm-test-8b59fa7715418c4bcc0d50e3caeb239129de453e#8",
+      "value": 0.7738348371093293
+    },
+    {
+      "sample_id": "dm-test-8b59fa7715418c4bcc0d50e3caeb239129de453e#9",
+      "value": 0.6772432817394525
+    },
+    {
+      "sample_id": "dm-test-8b59fa7715418c4bcc0d50e3caeb239129de453e#10",
+      "value": 0.6937777196145384
+    },
+    {
+      "sample_id": "dm-test-8b59fa7715418c4bcc0d50e3caeb239129de453e#11",
+      "value": 0.740285296815064
+    },
+    {
+      "sample_id": "dm-test-8b59fa7715418c4bcc0d50e3caeb239129de453e#12",
+      "value": 0.7005254012755994
+    },
+    {
+      "sample_id": "dm-test-8b59fa7715418c4bcc0d50e3caeb239129de453e#13",
+      "value": 0.7238680587700653
+    },
+    {
+      "sample_id": "dm-test-8b59fa7715418c4bcc0d50e3caeb239129de453e#14",
+      "value": 0.649835440217859
+    },
+    {
+      "sample_id": "dm-test-8b59fa7715418c4bcc0d50e3caeb239129de453e#15",
+      "value": 0.6236762371437752
+    },
+    {
+      "sample_id": "dm-test-8bc8f134bc3ceaeec0df8f29e96e13d319717ab8#0",
+      "value": 0.6408254796821625
+    },
+    {
+      "sample_id": "dm-test-8bc8f134bc3ceaeec0df8f29e96e13d319717ab8#1",
+      "value": 0.7783688937973201
+    },
+    {
+      "sample_id": "dm-test-8bc8f134bc3ceaeec0df8f29e96e13d319717ab8#2",
+      "value": 0.7794979630144253
+    },
+    {
+      "sample_id": "dm-test-8bc8f134bc3ceaeec0df8f29e96e13d319717ab8#3",
+      "value": 0.7220821419076783
+    },
+    {
+      "sample_id": "dm-test-8bc8f134bc3ceaeec0df8f29e96e13d319717ab8#4",
+      "value": 0.7401057055404233
+    },
+    {
+      "sample_id": "dm-test-8bc8f134bc3ceaeec0df8f29e96e13d319717ab8#5",
+      "value": 0.8379792682991493
+    },
+    {
+      "sample_id": "dm-test-8bc8f134bc3ceaeec0df8f29e96e13d319717ab8#6",
+      "value": 0.777612936004951
+    },
+    {
+      "sample_id": "dm-test-8bc8f134bc3ceaeec0df8f29e96e13d319717ab8#7",
+      "value": 0.5843562408630275
+    },
+    {
+      "sample_id": "dm-test-8bc8f134bc3ceaeec0df8f29e96e13d319717ab8#8",
+      "value": 0.6861314063756707
+    },
+    {
+      "sample_id": "dm-test-8bc8f134bc3ceaeec0df8f29e96e13d319717ab8#9",
+      "value": 0.656668502031006
+    },
+    {
+      "sample_id": "dm-test-8bc8f134bc3ceaeec0df8f29e96e13d319717ab8#10",
+      "value": 0.6276015421035219
+    },
+    {
+      "sample_id": "dm-test-8bc8f134bc3ceaeec0df8f29e96e13d319717ab8#11",
+      "value": 0.7783220243397158
+    },
+    {
+      "sample_id": "dm-test-8bc8f134bc3ceaeec0df8f29e96e13d319717ab8#12",
+      "value": 0.7940600098149145
+    },
+    {
+      "sample_id": "dm-test-8bc8f134bc3ceaeec0df8f29e96e13d319717ab8#13",
+      "value": 0.7593034041706032
+    },
+    {
+      "sample_id": "dm-test-8bc8f134bc3ceaeec0df8f29e96e13d319717ab8#14",
+      "value": 0.6798742863200097
+    },
+    {
+      "sample_id": "dm-test-8bc8f134bc3ceaeec0df8f29e96e13d319717ab8#15",
+      "value": 0.6572871769221227
+    },
+    {
+      "sample_id": "dm-test-8e6c8aec6808f66ed0342e128a4e146f3ecd627d#0",
+      "value": 0.7687037255531689
+    },
+    {
+      "sample_id": "dm-test-8e6c8aec6808f66ed0342e128a4e146f3ecd627d#1",
+      "value": 0.7977639535517905
+    },
+    {
+      "sample_id": "dm-test-8e6c8aec6808f66ed0342e128a4e146f3ecd627d#2",
+      "value": 0.8126164390553209
+    },
+    {
+      "sample_id": "dm-test-8e6c8aec6808f66ed0342e128a4e146f3ecd627d#3",
+      "value": 0.7722859735792721
+    },
+    {
+      "sample_id": "dm-test-8e6c8aec6808f66ed0342e128a4e146f3ecd627d#4",
+      "value": 0.7889707983326775
+    },
+    {
+      "sample_id": "dm-test-8e6c8aec6808f66ed0342e128a4e146f3ecd627d#5",
+      "value": 0.8137022774000995
+    },
+    {
+      "sample_id": "dm-test-8e6c8aec6808f66ed0342e128a4e146f3ecd627d#6",
+      "value": 0.8353234158730489
+    },
+    {
+      "sample_id": "dm-test-8e6c8aec6808f66ed0342e128a4e146f3ecd627d#7",
+      "value": 0.7581594086290174
+    },
+    {
+      "sample_id": "dm-test-8e6c8aec6808f66ed0342e128a4e146f3ecd627d#8",
+      "value": 0.7313196475557691
+    },
+    {
+      "sample_id": "dm-test-8e6c8aec6808f66ed0342e128a4e146f3ecd627d#9",
+      "value": 0.6880091283035463
+    },
+    {
+      "sample_id": "dm-test-8e6c8aec6808f66ed0342e128a4e146f3ecd627d#10",
+      "value": 0.8126164390553209
+    },
+    {
+      "sample_id": "dm-test-8e6c8aec6808f66ed0342e128a4e146f3ecd627d#11",
+      "value": 0.8384994254798848
+    },
+    {
+      "sample_id": "dm-test-8e6c8aec6808f66ed0342e128a4e146f3ecd627d#12",
+      "value": 0.8828452252187816
+    },
+    {
+      "sample_id": "dm-test-8e6c8aec6808f66ed0342e128a4e146f3ecd627d#13",
+      "value": 0.7983328581588637
+    },
+    {
+      "sample_id": "dm-test-8e6c8aec6808f66ed0342e128a4e146f3ecd627d#14",
+      "value": 0.7795020320431688
+    },
+    {
+      "sample_id": "dm-test-8e6c8aec6808f66ed0342e128a4e146f3ecd627d#15",
+      "value": 0.7335222361022199
+    },
+    {
+      "sample_id": "dm-test-97bbda7ec22a736cd174b51513c72a6372d13d35#0",
+      "value": 0.6409270588256387
+    },
+    {
+      "sample_id": "dm-test-97bbda7ec22a736cd174b51513c72a6372d13d35#1",
+      "value": 0.6591831111992509
+    },
+    {
+      "sample_id": "dm-test-97bbda7ec22a736cd174b51513c72a6372d13d35#2",
+      "value": 0.7580480863876233
+    },
+    {
+      "sample_id": "dm-test-97bbda7ec22a736cd174b51513c72a6372d13d35#3",
+      "value": 0.6917431138967777
+    },
+    {
+      "sample_id": "dm-test-97bbda7ec22a736cd174b51513c72a6372d13d35#4",
+      "value": 0.6129232940942803
+    },
+    {
+      "sample_id": "dm-test-97bbda7ec22a736cd174b51513c72a6372d13d35#5",
+      "value": 0.7912467563157382
+    },
+    {
+      "sample_id": "dm-test-97bbda7ec22a736cd174b51513c72a6372d13d35#6",
+      "value": 0.7983799301864689
+    },
+    {
+      "sample_id": "dm-test-97bbda7ec22a736cd174b51513c72a6372d13d35#7",
+      "value": 0.7386834033033874
+    },
+    {
+      "sample_id": "dm-test-97bbda7ec22a736cd174b51513c72a6372d13d35#8",
+      "value": 0.6772246767786596
+    },
+    {
+      "sample_id": "dm-test-97bbda7ec22a736cd174b51513c72a6372d13d35#9",
+      "value": 0.6799876642056536
+    },
+    {
+      "sample_id": "dm-test-97bbda7ec22a736cd174b51513c72a6372d13d35#10",
+      "value": 0.7047561908919598
+    },
+    {
+      "sample_id": "dm-test-97bbda7ec22a736cd174b51513c72a6372d13d35#11",
+      "value": 0.7983799301864689
+    },
+    {
+      "sample_id": "dm-test-97bbda7ec22a736cd174b51513c72a6372d13d35#12",
+      "value": 0.8214217536491245
+    },
+    {
+      "sample_id": "dm-test-97bbda7ec22a736cd174b51513c72a6372d13d35#13",
+      "value": 0.6039192945599616
+    },
+    {
+      "sample_id": "dm-test-97bbda7ec22a736cd174b51513c72a6372d13d35#14",
+      "value": 0.5904082353498353
+    },
+    {
+      "sample_id": "dm-test-97bbda7ec22a736cd174b51513c72a6372d13d35#15",
+      "value": 0.7056341313744023
+    },
+    {
+      "sample_id": "dm-test-998cb27197db1fd299aff3322ac041ba4bf1148f#0",
+      "value": 0.4747582827753128
+    },
+    {
+      "sample_id": "dm-test-998cb27197db1fd299aff3322ac041ba4bf1148f#1",
+      "value": 0.5578677025461901
+    },
+    {
+      "sample_id": "dm-test-998cb27197db1fd299aff3322ac041ba4bf1148f#2",
+      "value": 0.5721715272278453
+    },
+    {
+      "sample_id": "dm-test-998cb27197db1fd299aff3322ac041ba4bf1148f#3",
+      "value": 0.5420591049439432
+    },
+    {
+      "sample_id": "dm-test-998cb27197db1fd299aff3322ac041ba4bf1148f#4",
+      "value": 0.6229780346687477
+    },
+    {
+      "sample_id": "dm-test-998cb27197db1fd299aff3322ac041ba4bf1148f#5",
+      "value": 0.5928575857951225
+    },
+    {
+      "sample_id": "dm-test-998cb27197db1fd299aff3322ac041ba4bf1148f#6",
+      "value": 0.6407326369140963
+    },
+    {
+      "sample_id": "dm-test-998cb27197db1fd299aff3322ac041ba4bf1148f#7",
+      "value": 0.5613933398316502
+    },
+    {
+      "sample_id": "dm-test-998cb27197db1fd299aff3322ac041ba4bf1148f#8",
+      "value": 0.533701678073736
+    },
+    {
+      "sample_id": "dm-test-998cb27197db1fd299aff3322ac041ba4bf1148f#9",
+      "value": 0.5306811132403418
+    },
+    {
+      "sample_id": "dm-test-998cb27197db1fd299aff3322ac041ba4bf1148f#10",
+      "value": 0.544992220393557
+    },
+    {
+      "sample_id": "dm-test-998cb27197db1fd299aff3322ac041ba4bf1148f#11",
+      "value": 0.702565676209498
+    },
+    {
+      "sample_id": "dm-test-998cb27197db1fd299aff3322ac041ba4bf1148f#12",
+      "value": 0.6038790351459176
+    },
+    {
+      "sample_id": "dm-test-998cb27197db1fd299aff3322ac041ba4bf1148f#13",
+      "value": 0.5867789493994627
+    },
+    {
+      "sample_id": "dm-test-998cb27197db1fd299aff3322ac041ba4bf1148f#14",
+      "value": 0.48232306730862184
+    },
+    {
+      "sample_id": "dm-test-998cb27197db1fd299aff3322ac041ba4bf1148f#15",
+      "value": 0.5472948165456015
+    },
+    {
+      "sample_id": "dm-test-9afda3cde191a883d8c166ceb5765eb53205d8f4#0",
+      "value": 0.5753242525206835
+    },
+    {
+      "sample_id": "dm-test-9afda3cde191a883d8c166ceb5765eb53205d8f4#1",
+      "value": 0.6105684345154954
+    },
+    {
+      "sample_id": "dm-test-9afda3cde191a883d8c166ceb5765eb53205d8f4#2",
+      "value": 0.621481270310204
+    },
+    {
+      "sample_id": "dm-test-9afda3cde191a883d8c166ceb5765eb53205d8f4#3",
+      "value": 0.5649157438048978
+    },
+    {
+      "sample_id": "dm-test-9afda3cde191a883d8c166ceb5765eb53205d8f4#4",
+      "value": 0.6681461892488766
+    },
+    {
+      "sample_id": "dm-test-9afda3cde191a883d8c166ceb5765eb53205d8f4#5",
+      "value": 0.6604297477660926
+    },
+    {
+      "sample_id": "dm-test-9afda3cde191a883d8c166ceb5765eb53205d8f4#6",
+      "value": 0.7063431666819832
+    },
+    {
+      "sample_id": "dm-test-9afda3cde191a883d8c166ceb5765eb53205d8f4#7",
+      "value": 0.5080254186831028
+    },
+    {
+      "sample_id": "dm-test-9afda3cde191a883d8c166ceb5765eb53205d8f4#8",
+      "value": 0.6821775558544605
+    },
+    {
+      "sample_id": "dm-test-9afda3cde191a883d8c166ceb5765eb53205d8f4#9",
+      "value": 0.5884174951478074
+    },
+    {
+      "sample_id": "dm-test-9afda3cde191a883d8c166ceb5765eb53205d8f4#10",
+      "value": 0.6334519547062168
+    },
+    {
+      "sample_id": "dm-test-9afda3cde191a883d8c166ceb5765eb53205d8f4#11",
+      "value": 0.7063431666819832
+    },
+    {
+      "sample_id": "dm-test-9afda3cde191a883d8c166ceb5765eb53205d8f4#12",
+      "value": 0.6815287919526373
+    },
+    {
+      "sample_id": "dm-test-9afda3cde191a883d8c166ceb5765eb53205d8f4#13",
+      "value": 0.5559814948272267
+    },
+    {
+      "sample_id": "dm-test-9afda3cde191a883d8c166ceb5765eb53205d8f4#14",
+      "value": 0.5644789850017661
+    },
+    {
+      "sample_id": "dm-test-9afda3cde191a883d8c166ceb5765eb53205d8f4#15",
+      "value": 0.5899217027453627
+    },
+    {
+      "sample_id": "dm-test-9b1af0f993d78353ebd56a1b180e882e751527b3#0",
+      "value": 0.660168900932608
+    },
+    {
+      "sample_id": "dm-test-9b1af0f993d78353ebd56a1b180e882e751527b3#1",
+      "value": 0.7843052333714156
+    },
+    {
+      "sample_id": "dm-test-9b1af0f993d78353ebd56a1b180e882e751527b3#2",
+      "value": 0.723613288427609
+    },
+    {
+      "sample_id": "dm-test-9b1af0f993d78353ebd56a1b180e882e751527b3#3",
+      "value": 0.7843052333714156
+    },
+    {
+      "sample_id": "dm-test-9b1af0f993d78353ebd56a1b180e882e751527b3#4",
+      "value": 0.7843052333714156
+    },
+    {
+      "sample_id": "dm-test-9b1af0f993d78353ebd56a1b180e882e751527b3#5",
+      "value": 0.7488755255727481
+    },
+    {
+      "sample_id": "dm-test-9b1af0f993d78353ebd56a1b180e882e751527b3#6",
+      "value": 0.8011209738589626
+    },
+    {
+      "sample_id": "dm-test-9b1af0f993d78353ebd56a1b180e882e751527b3#7",
+      "value": 0.6650339912635299
+    },
+    {
+      "sample_id": "dm-test-9b1af0f993d78353ebd56a1b180e882e751527b3#8",
+      "value": 0.8117166491425878
+    },
+    {
+      "sample_id": "dm-test-9b1af0f993d78353ebd56a1b180e882e751527b3#9",
+      "value": 0.704608292044923
+    },
+    {
+      "sample_id": "dm-test-9b1af0f993d78353ebd56a1b180e882e751527b3#10",
+      "value": 0.8248186991606911
+    },
+    {
+      "sample_id": "dm-test-9b1af0f993d78353ebd56a1b180e882e751527b3#11",
+      "value": 0.8248186991606911
+    },
+    {
+      "sample_id": "dm-test-9b1af0f993d78353ebd56a1b180e882e751527b3#12",
+      "value": 0.8517386754626401
+    },
+    {
+      "sample_id": "dm-test-9b1af0f993d78353ebd56a1b180e882e751527b3#13",
+      "value": 0.7103411220335286
+    },
+    {
+      "sample_id": "dm-test-9b1af0f993d78353ebd56a1b180e882e751527b3#14",
+      "value": 0.6871462178303739
+    },
+    {
+      "sample_id": "dm-test-9b1af0f993d78353ebd56a1b180e882e751527b3#15",
+      "value": 0.688679769886262
+    },
+    {
+      "sample_id": "dm-test-9b5a04b9879fe716a2dcd66dd331f99534603c16#0",
+      "value": 0.6501601652068054
+    },
+    {
+      "sample_id": "dm-test-9b5a04b9879fe716a2dcd66dd331f99534603c16#1",
+      "value": 0.7305528164858197
+    },
+    {
+      "sample_id": "dm-test-9b5a04b9879fe716a2dcd66dd331f99534603c16#2",
+      "value": 0.716035040328058
+    },
+    {
+      "sample_id": "dm-test-9b5a04b9879fe716a2dcd66dd331f99534603c16#3",
+      "value": 0.6656456153004943
+    },
+    {
+      "sample_id": "dm-test-9b5a04b9879fe716a2dcd66dd331f99534603c16#4",
+      "value": 0.6890098079905345
+    },
+    {
+      "sample_id": "dm-test-9b5a04b9879fe716a2dcd66dd331f99534603c16#5",
+      "value": 0.6936627114344652
+    },
+    {
+      "sample_id": "dm-test-9b5a04b9879fe716a2dcd66dd331f99534603c16#6",
+      "value": 0.7109746436702977
+    },
+    {
+      "sample_id": "dm-test-9b5a04b9879fe716a2dcd66dd331f99534603c16#7",
+      "value": 0.6096208544441418
+    },
+    {
+      "sample_id": "dm-test-9b5a04b9879fe716a2dcd66dd331f99534603c16#8",
+      "value": 0.6338502519732586
+    },
+    {
+      "sample_id": "dm-test-9b5a04b9879fe716a2dcd66dd331f99534603c16#9",
+      "value": 0.6288231169259278
+    },
+    {
+      "sample_id": "dm-test-9b5a04b9879fe716a2dcd66dd331f99534603c16#10",
+      "value": 0.7109746436702977
+    },
+    {
+      "sample_id": "dm-test-9b5a04b9879fe716a2dcd66dd331f99534603c16#11",
+      "value": 0.7109746436702977
+    },
+    {
+      "sample_id": "dm-test-9b5a04b9879fe716a2dcd66dd331f99534603c16#12",
+      "value": 0.7217393118670788
+    },
+    {
+      "sample_id": "dm-test-9b5a04b9879fe716a2dcd66dd331f99534603c16#13",
+      "value": 0.690196978132358
+    },
+    {
+      "sample_id": "dm-test-9b5a04b9879fe716a2dcd66dd331f99534603c16#14",
+      "value": 0.6373349750838136
+    },
+    {
+      "sample_id": "dm-test-9b5a04b9879fe716a2dcd66dd331f99534603c16#15",
+      "value": 0.6351750380032353
+    },
+    {
+      "sample_id": "dm-test-9beaaf73e4517d5bf1bc284f386485d571da96cf#0",
+      "value": 0.740914379192276
+    },
+    {
+      "sample_id": "dm-test-9beaaf73e4517d5bf1bc284f386485d571da96cf#1",
+      "value": 0.6952681016920197
+    },
+    {
+      "sample_id": "dm-test-9beaaf73e4517d5bf1bc284f386485d571da96cf#2",
+      "value": 0.7879861048033677
+    },
+    {
+      "sample_id": "dm-test-9beaaf73e4517d5bf1bc284f386485d571da96cf#3",
+      "value": 0.8068464552285404
+    },
+    {
+      "sample_id": "dm-test-9beaaf73e4517d5bf1bc284f386485d571da96cf#4",
+      "value": 0.8383274443585063
+    },
+    {
+      "sample_id": "dm-test-9beaaf73e4517d5bf1bc284f386485d571da96cf#5",
+      "value": 0.737947646021516
+    },
+    {
+      "sample_id": "dm-test-9beaaf73e4517d5bf1bc284f386485d571da96cf#6",
+      "value": 0.7878248722357445
+    },
+    {
+      "sample_id": "dm-test-9beaaf73e4517d5bf1bc284f386485d571da96cf#7",
+      "value": 0.8198851399098348
+    },
+    {
+      "sample_id": "dm-test-9beaaf73e4517d5bf1bc284f386485d571da96cf#8",
+      "value": 0.7467012316829749
+    },
+    {
+      "sample_id": "dm-test-9beaaf73e4517d5bf1bc284f386485d571da96cf#9",
+      "value": 0.7753255868858815
+    },
+    {
+      "sample_id": "dm-test-9beaaf73e4517d5bf1bc284f386485d571da96cf#10",
+      "value": 0.7879861048033677
+    },
+    {
+      "sample_id": "dm-test-9beaaf73e4517d5bf1bc284f386485d571da96cf#11",
+      "value": 0.7879861048033677
+    },
+    {
+      "sample_id": "dm-test-9beaaf73e4517d5bf1bc284f386485d571da96cf#12",
+      "value": 0.8376548559804179
+    },
+    {
+      "sample_id": "dm-test-9beaaf73e4517d5bf1bc284f386485d571da96cf#13",
+      "value": 0.7346462633432919
+    },
+    {
+      "sample_id": "dm-test-9beaaf73e4517d5bf1bc284f386485d571da96cf#14",
+      "value": 0.7080964938348822
+    },
+    {
+      "sample_id": "dm-test-9beaaf73e4517d5bf1bc284f386485d571da96cf#15",
+      "value": 0.762020755860188
+    },
+    {
+      "sample_id": "dm-test-9d0fcbd873927674d12aafce4ae7754fd591d4e2#0",
+      "value": 0.6523699947433349
+    },
+    {
+      "sample_id": "dm-test-9d0fcbd873927674d12aafce4ae7754fd591d4e2#1",
+      "value": 0.7256754611739243
+    },
+    {
+      "sample_id": "dm-test-9d0fcbd873927674d12aafce4ae7754fd591d4e2#2",
+      "value": 0.7227626208074215
+    },
+    {
+      "sample_id": "dm-test-9d0fcbd873927674d12aafce4ae7754fd591d4e2#3",
+      "value": 0.7281258077989858
+    },
+    {
+      "sample_id": "dm-test-9d0fcbd873927674d12aafce4ae7754fd591d4e2#4",
+      "value": 0.6334907055077375
+    },
+    {
+      "sample_id": "dm-test-9d0fcbd873927674d12aafce4ae7754fd591d4e2#5",
+      "value": 0.7606951436555351
+    },
+    {
+      "sample_id": "dm-test-9d0fcbd873927674d12aafce4ae7754fd591d4e2#6",
+      "value": 0.7417721389890262
+    },
+    {
+      "sample_id": "dm-test-9d0fcbd873927674d12aafce4ae7754fd591d4e2#7",
+      "value": 0.6524727274277786
+    },
+    {
+      "sample_id": "dm-test-9d0fcbd873927674d12aafce4ae7754fd591d4e2#8",
+      "value": 0.6472971959025547
+    },
+    {
+      "sample_id": "dm-test-9d0fcbd873927674d12aafce4ae7754fd591d4e2#9",
+      "value": 0.7143064844031239
+    },
+    {
+      "sample_id": "dm-test-9d0fcbd873927674d12aafce4ae7754fd591d4e2#10",
+      "value": 0.740265920534202
+    },
+    {
+      "sample_id": "dm-test-9d0fcbd873927674d12aafce4ae7754fd591d4e2#11",
+      "value": 0.8136431050651992
+    },
+    {
+      "sample_id": "dm-test-9d0fcbd873927674d12aafce4ae7754fd591d4e2#12",
+      "value": 0.8147566398865841
+    },
+    {
+      "sample_id": "dm-test-9d0fcbd873927674d12aafce4ae7754fd591d4e2#13",
+      "value": 0.6112540385551389
+    },
+    {
+      "sample_id": "dm-test-9d0fcbd873927674d12aafce4ae7754fd591d4e2#14",
+      "value": 0.6635370865239987
+    },
+    {
+      "sample_id": "dm-test-9d0fcbd873927674d12aafce4ae7754fd591d4e2#15",
+      "value": 0.6635118890085666
+    },
+    {
+      "sample_id": "dm-test-a3b6201aca77b5bdaa5df02d6acee2be66233237#0",
+      "value": 0.6286075799644247
+    },
+    {
+      "sample_id": "dm-test-a3b6201aca77b5bdaa5df02d6acee2be66233237#1",
+      "value": 0.731278061670006
+    },
+    {
+      "sample_id": "dm-test-a3b6201aca77b5bdaa5df02d6acee2be66233237#2",
+      "value": 0.8392156104596955
+    },
+    {
+      "sample_id": "dm-test-a3b6201aca77b5bdaa5df02d6acee2be66233237#3",
+      "value": 0.6550993070405613
+    },
+    {
+      "sample_id": "dm-test-a3b6201aca77b5bdaa5df02d6acee2be66233237#4",
+      "value": 0.719053020575496
+    },
+    {
+      "sample_id": "dm-test-a3b6201aca77b5bdaa5df02d6acee2be66233237#5",
+      "value": 0.7101978414356976
+    },
+    {
+      "sample_id": "dm-test-a3b6201aca77b5bdaa5df02d6acee2be66233237#6",
+      "value": 0.7670647889863275
+    },
+    {
+      "sample_id": "dm-test-a3b6201aca77b5bdaa5df02d6acee2be66233237#7",
+      "value": 0.6128623809735361
+    },
+    {
+      "sample_id": "dm-test-a3b6201aca77b5bdaa5df02d6acee2be66233237#8",
+      "value": 0.6101579225499459
+    },
+    {
+      "sample_id": "dm-test-a3b6201aca77b5bdaa5df02d6acee2be66233237#9",
+      "value": 0.630997698344831
+    },
+    {
+      "sample_id": "dm-test-a3b6201aca77b5bdaa5df02d6acee2be66233237#10",
+      "value": 0.8392156104596955
+    },
+    {
+      "sample_id": "dm-test-a3b6201aca77b5bdaa5df02d6acee2be66233237#11",
+      "value": 0.8392156104596955
+    },
+    {
+      "sample_id": "dm-test-a3b6201aca77b5bdaa5df02d6acee2be66233237#12",
+      "value": 0.7037391733013884
+    },
+    {
+      "sample_id": "dm-test-a3b6201aca77b5bdaa5df02d6acee2be66233237#13",
+      "value": 0.7674112428695742
+    },
+    {
+      "sample_id": "dm-test-a3b6201aca77b5bdaa5df02d6acee2be66233237#14",
+      "value": 0.6644814924441985
+    },
+    {
+      "sample_id": "dm-test-a3b6201aca77b5bdaa5df02d6acee2be66233237#15",
+      "value": 0.657246914026413
+    },
+    {
+      "sample_id": "dm-test-b1f6faac3f406edca1e0cad8cce1319c83e62605#0",
+      "value": 0.7397086883616454
+    },
+    {
+      "sample_id": "dm-test-b1f6faac3f406edca1e0cad8cce1319c83e62605#1",
+      "value": 0.7448577793289199
+    },
+    {
+      "sample_id": "dm-test-b1f6faac3f406edca1e0cad8cce1319c83e62605#2",
+      "value": 0.8336971499167231
+    },
+    {
+      "sample_id": "dm-test-b1f6faac3f406edca1e0cad8cce1319c83e62605#3",
+      "value": 0.6664118877234346
+    },
+    {
+      "sample_id": "dm-test-b1f6faac3f406edca1e0cad8cce1319c83e62605#4",
+      "value": 0.7267193459910172
+    },
+    {
+      "sample_id": "dm-test-b1f6faac3f406edca1e0cad8cce1319c83e62605#5",
+      "value": 0.7594532812210865
+    },
+    {
+      "sample_id": "dm-test-b1f6faac3f406edca1e0cad8cce1319c83e62605#6",
+      "value": 0.8849808255835993
+    },
+    {
+      "sample_id": "dm-test-b1f6faac3f406edca1e0cad8cce1319c83e62605#7",
+      "value": 0.6789468500679477
+    },
+    {
+      "sample_id": "dm-test-b1f6faac3f406edca1e0cad8cce1319c83e62605#8",
+      "value": 0.8261061005240626
+    },
+    {
+      "sample_id": "dm-test-b1f6faac3f406edca1e0cad8cce1319c83e62605#9",
+      "value": 0.7405892868684131
+    },
+    {
+      "sample_id": "dm-test-b1f6faac3f406edca1e0cad8cce1319c83e62605#10",
+      "value": 0.7720651292898913
+    },
+    {
+      "sample_id": "dm-test-b1f6faac3f406edca1e0cad8cce1319c83e62605#11",
+      "value": 0.8336971499167231
+    },
+    {
+      "sample_id": "dm-test-b1f6faac3f406edca1e0cad8cce1319c83e62605#12",
+      "value": 0.8091001585814714
+    },
+    {
+      "sample_id": "dm-test-b1f6faac3f406edca1e0cad8cce1319c83e62605#13",
+      "value": 0.6752282596168909
+    },
+    {
+      "sample_id": "dm-test-b1f6faac3f406edca1e0cad8cce1319c83e62605#14",
+      "value": 0.6757169488709137
+    },
+    {
+      "sample_id": "dm-test-b1f6faac3f406edca1e0cad8cce1319c83e62605#15",
+      "value": 0.6904321449270444
+    },
+    {
+      "sample_id": "dm-test-b255397ee863bd8faf9def57c0f76769153d905e#0",
+      "value": 0.767065016623531
+    },
+    {
+      "sample_id": "dm-test-b255397ee863bd8faf9def57c0f76769153d905e#1",
+      "value": 0.7862702160686337
+    },
+    {
+      "sample_id": "dm-test-b255397ee863bd8faf9def57c0f76769153d905e#2",
+      "value": 0.8518285838588432
+    },
+    {
+      "sample_id": "dm-test-b255397ee863bd8faf9def57c0f76769153d905e#3",
+      "value": 0.7950046757114312
+    },
+    {
+      "sample_id": "dm-test-b255397ee863bd8faf9def57c0f76769153d905e#4",
+      "value": 0.7463752065690001
+    },
+    {
+      "sample_id": "dm-test-b255397ee863bd8faf9def57c0f76769153d905e#5",
+      "value": 0.8407245072168253
+    },
+    {
+      "sample_id": "dm-test-b255397ee863bd8faf9def57c0f76769153d905e#6",
+      "value": 0.851263084867702
+    },
+    {
+      "sample_id": "dm-test-b255397ee863bd8faf9def57c0f76769153d905e#7",
+      "value": 0.7043004763998187
+    },
+    {
+      "sample_id": "dm-test-b255397ee863bd8faf9def57c0f76769153d905e#8",
+      "value": 0.6675756537879457
+    },
+    {
+      "sample_id": "dm-test-b255397ee863bd8faf9def57c0f76769153d905e#9",
+      "value": 0.7322672289589467
+    },
+    {
+      "sample_id": "dm-test-b255397ee863bd8faf9def57c0f76769153d905e#10",
+      "value": 0.8518285838588432
+    },
+    {
+      "sample_id": "dm-test-b255397ee863bd8faf9def57c0f76769153d905e#11",
+      "value": 0.8518285838588432
+    },
+    {
+      "sample_id": "dm-test-b255397ee863bd8faf9def57c0f76769153d905e#12",
+      "value": 0.7654127416547682
+    },
+    {
+      "sample_id": "dm-test-b255397ee863bd8faf9def57c0f76769153d905e#13",
+      "value": 0.7671279075177523
+    },
+    {
+      "sample_id": "dm-test-b255397ee863bd8faf9def57c0f76769153d905e#14",
+      "value": 0.7769157972221244
+    },
+    {
+      "sample_id": "dm-test-b255397ee863bd8faf9def57c0f76769153d905e#15",
+      "value": 0.7455316217281156
+    },
+    {
+      "sample_id": "dm-test-b5925c1a02fa9a8f6b1d5ad764c19a732deac0df#0",
+      "value": 0.6711039732699714
+    },
+    {
+      "sample_id": "dm-test-b5925c1a02fa9a8f6b1d5ad764c19a732deac0df#1",
+      "value": 0.6598735791125313
+    },
+    {
+      "sample_id": "dm-test-b5925c1a02fa9a8f6b1d5ad764c19a732deac0df#2",
+      "value": 0.8649828942302226
+    },
+    {
+      "sample_id": "dm-test-b5925c1a02fa9a8f6b1d5ad764c19a732deac0df#3",
+      "value": 0.8014375220043083
+    },
+    {
+      "sample_id": "dm-test-b5925c1a02fa9a8f6b1d5ad764c19a732deac0df#4",
+      "value": 0.7433666875299236
+    },
+    {
+      "sample_id": "dm-test-b5925c1a02fa9a8f6b1d5ad764c19a732deac0df#5",
+      "value": 0.8549155283841015
+    },
+    {
+      "sample_id": "dm-test-b5925c1a02fa9a8f6b1d5ad764c19a732deac0df#6",
+      "value": 0.8635094998927786
+    },
+    {
+      "sample_id": "dm-test-b5925c1a02fa9a8f6b1d5ad764c19a732deac0df#7",
+      "value": 0.8155740740400916
+    },
+    {
+      "sample_id": "dm-test-b5925c1a02fa9a8f6b1d5ad764c19a732deac0df#8",
+      "value": 0.9023059604004512
+    },
+    {
+      "sample_id": "dm-test-b5925c1a02fa9a8f6b1d5ad764c19a732deac0df#9",
+      "value": 0.6888712954213367
+    },
+    {
+      "sample_id": "dm-test-b5925c1a02fa9a8f6b1d5ad764c19a732deac0df#10",
+      "value": 0.8256678503992392
+    },
+    {
+      "sample_id": "dm-test-b5925c1a02fa9a8f6b1d5ad764c19a732deac0df#11",
+      "value": 0.897621728364323
+    },
+    {
+      "sample_id": "dm-test-b5925c1a02fa9a8f6b1d5ad764c19a732deac0df#12",
+      "value": 0.8810367663265936
+    },
+    {
+      "sample_id": "dm-test-b5925c1a02fa9a8f6b1d5ad764c19a732deac0df#13",
+      "value": 0.7246600301651188
+    },
+    {
+      "sample_id": "dm-test-b5925c1a02fa9a8f6b1d5ad764c19a732deac0df#14",
+      "value": 0.7779427284461038
+    },
+    {
+      "sample_id": "dm-test-b5925c1a02fa9a8f6b1d5ad764c19a732deac0df#15",
+      "value": 0.6651251453327882
+    },
+    {
+      "sample_id": "dm-test-b5bc2ae78441e4ac08fb01823d5fc0f1627c3166#0",
+      "value": 0.5886378982896467
+    },
+    {
+      "sample_id": "dm-test-b5bc2ae78441e4ac08fb01823d5fc0f1627c3166#1",
+      "value": 0.6322056363402968
+    },
+    {
+      "sample_id": "dm-test-b5bc2ae78441e4ac08fb01823d5fc0f1627c3166#2",
+      "value": 0.6669059826294245
+    },
+    {
+      "sample_id": "dm-test-b5bc2ae78441e4ac08fb01823d5fc0f1627c3166#3",
+      "value": 0.6074984092532932
+    },
+    {
+      "sample_id": "dm-test-b5bc2ae78441e4ac08fb01823d5fc0f1627c3166#4",
+      "value": 0.6115283863486299
+    },
+    {
+      "sample_id": "dm-test-b5bc2ae78441e4ac08fb01823d5fc0f1627c3166#5",
+      "value": 0.7963341251219074
+    },
+    {
+      "sample_id": "dm-test-b5bc2ae78441e4ac08fb01823d5fc0f1627c3166#6",
+      "value": 0.7326356899527607
+    },
+    {
+      "sample_id": "dm-test-b5bc2ae78441e4ac08fb01823d5fc0f1627c3166#7",
+      "value": 0.5742800428368183
+    },
+    {
+      "sample_id": "dm-test-b5bc2ae78441e4ac08fb01823d5fc0f1627c3166#8",
+      "value": 0.7600203229000183
+    },
+    {
+      "sample_id": "dm-test-b5bc2ae78441e4ac08fb01823d5fc0f1627c3166#9",
+      "value": 0.5843950504798648
+    },
+    {
+      "sample_id": "dm-test-b5bc2ae78441e4ac08fb01823d5fc0f1627c3166#10",
+      "value": 0.6998127792866434
+    },
+    {
+      "sample_id": "dm-test-b5bc2ae78441e4ac08fb01823d5fc0f1627c3166#11",
+      "value": 0.783800872422662
+    },
+    {
+      "sample_id": "dm-test-b5bc2ae78441e4ac08fb01823d5fc0f1627c3166#12",
+      "value": 0.6772981010494685
+    },
+    {
+      "sample_id": "dm-test-b5bc2ae78441e4ac08fb01823d5fc0f1627c3166#13",
+      "value": 0.5932785400208256
+    },
+    {
+      "sample_id": "dm-test-b5bc2ae78441e4ac08fb01823d5fc0f1627c3166#14",
+      "value": 0.6384502160576699
+    },
+    {
+      "sample_id": "dm-test-b5bc2ae78441e4ac08fb01823d5fc0f1627c3166#15",
+      "value": 0.6212723136884719
+    },
+    {
+      "sample_id": "dm-test-bd4684a0f5af5dd6ac88d2fb50f902bd7f10217b#0",
+      "value": 0.559228116167451
+    },
+    {
+      "sample_id": "dm-test-bd4684a0f5af5dd6ac88d2fb50f902bd7f10217b#1",
+      "value": 0.651608200445735
+    },
+    {
+      "sample_id": "dm-test-bd4684a0f5af5dd6ac88d2fb50f902bd7f10217b#2",
+      "value": 0.6855108823902305
+    },
+    {
+      "sample_id": "dm-test-bd4684a0f5af5dd6ac88d2fb50f902bd7f10217b#3",
+      "value": 0.49184063845884385
+    },
+    {
+      "sample_id": "dm-test-bd4684a0f5af5dd6ac88d2fb50f902bd7f10217b#4",
+      "value": 0.6868090360499354
+    },
+    {
+      "sample_id": "dm-test-bd4684a0f5af5dd6ac88d2fb50f902bd7f10217b#5",
+      "value": 0.5713500010980022
+    },
+    {
+      "sample_id": "dm-test-bd4684a0f5af5dd6ac88d2fb50f902bd7f10217b#6",
+      "value": 0.5982192188107109
+    },
+    {
+      "sample_id": "dm-test-bd4684a0f5af5dd6ac88d2fb50f902bd7f10217b#7",
+      "value": 0.5803487676642007
+    },
+    {
+      "sample_id": "dm-test-bd4684a0f5af5dd6ac88d2fb50f902bd7f10217b#8",
+      "value": 0.9098748564147515
+    },
+    {
+      "sample_id": "dm-test-bd4684a0f5af5dd6ac88d2fb50f902bd7f10217b#9",
+      "value": 0.6037785061170272
+    },
+    {
+      "sample_id": "dm-test-bd4684a0f5af5dd6ac88d2fb50f902bd7f10217b#10",
+      "value": 0.5990449638485237
+    },
+    {
+      "sample_id": "dm-test-bd4684a0f5af5dd6ac88d2fb50f902bd7f10217b#11",
+      "value": 0.6640303670377681
+    },
+    {
+      "sample_id": "dm-test-bd4684a0f5af5dd6ac88d2fb50f902bd7f10217b#12",
+      "value": 0.6940325373807326
+    },
+    {
+      "sample_id": "dm-test-bd4684a0f5af5dd6ac88d2fb50f902bd7f10217b#13",
+      "value": 0.5518462398058634
+    },
+    {
+      "sample_id": "dm-test-bd4684a0f5af5dd6ac88d2fb50f902bd7f10217b#14",
+      "value": 0.5938059219769083
+    },
+    {
+      "sample_id": "dm-test-bd4684a0f5af5dd6ac88d2fb50f902bd7f10217b#15",
+      "value": 0.6031095850685249
+    },
+    {
+      "sample_id": "dm-test-c16c9fa34ccae7e2b9e29c3988ccb74974c4b3c0#0",
+      "value": 0.6182517775205681
+    },
+    {
+      "sample_id": "dm-test-c16c9fa34ccae7e2b9e29c3988ccb74974c4b3c0#1",
+      "value": 0.6813111064409664
+    },
+    {
+      "sample_id": "dm-test-c16c9fa34ccae7e2b9e29c3988ccb74974c4b3c0#2",
+      "value": 0.8097161460718209
+    },
+    {
+      "sample_id": "dm-test-c16c9fa34ccae7e2b9e29c3988ccb74974c4b3c0#3",
+      "value": 0.7804242442994133
+    },
+    {
+      "sample_id": "dm-test-c16c9fa34ccae7e2b9e29c3988ccb74974c4b3c0#4",
+      "value": 0.7237858660355839
+    },
+    {
+      "sample_id": "dm-test-c16c9fa34ccae7e2b9e29c3988ccb74974c4b3c0#5",
+      "value": 0.7883850888453473
+    },
+    {
+      "sample_id": "dm-test-c16c9fa34ccae7e2b9e29c3988ccb74974c4b3c0#6",
+      "value": 0.8097161460718209
+    },
+    {
+      "sample_id": "dm-test-c16c9fa34ccae7e2b9e29c3988ccb74974c4b3c0#7",
+      "value": 0.6860709136708586
+    },
+    {
+      "sample_id": "dm-test-c16c9fa34ccae7e2b9e29c3988ccb74974c4b3c0#8",
+      "value": 0.7180806796985971
+    },
+    {
+      "sample_id": "dm-test-c16c9fa34ccae7e2b9e29c3988ccb74974c4b3c0#9",
+      "value": 0.7153621940950208
+    },
+    {
+      "sample_id": "dm-test-c16c9fa34ccae7e2b9e29c3988ccb74974c4b3c0#10",
+      "value": 0.6404892328590459
+    },
+    {
+      "sample_id": "dm-test-c16c9fa34ccae7e2b9e29c3988ccb74974c4b3c0#11",
+      "value": 0.8097161460718209
+    },
+    {
+      "sample_id": "dm-test-c16c9fa34ccae7e2b9e29c3988ccb74974c4b3c0#12",
+      "value": 0.7714901164308108
+    },
+    {
+      "sample_id": "dm-test-c16c9fa34ccae7e2b9e29c3988ccb74974c4b3c0#13",
+      "value": 0.7237858660355839
+    },
+    {
+      "sample_id": "dm-test-c16c9fa34ccae7e2b9e29c3988ccb74974c4b3c0#14",
+      "value": 0.6794878304034584
+    },
+    {
+      "sample_id": "dm-test-c16c9fa34ccae7e2b9e29c3988ccb74974c4b3c0#15",
+      "value": 0.6820279014013758
+    },
+    {
+      "sample_id": "dm-test-c50d33e9749e7bb484d9b69c4f5fca35a3a50cb5#0",
+      "value": 0.6374534256383034
+    },
+    {
+      "sample_id": "dm-test-c50d33e9749e7bb484d9b69c4f5fca35a3a50cb5#1",
+      "value": 0.6797351462454878
+    },
+    {
+      "sample_id": "dm-test-c50d33e9749e7bb484d9b69c4f5fca35a3a50cb5#2",
+      "value": 0.5923930372278953
+    },
+    {
+      "sample_id": "dm-test-c50d33e9749e7bb484d9b69c4f5fca35a3a50cb5#3",
+      "value": 0.6543464444632338
+    },
+    {
+      "sample_id": "dm-test-c50d33e9749e7bb484d9b69c4f5fca35a3a50cb5#4",
+      "value": 0.6911548926066019
+    },
+    {
+      "sample_id": "dm-test-c50d33e9749e7bb484d9b69c4f5fca35a3a50cb5#5",
+      "value": 0.7070970456403207
+    },
+    {
+      "sample_id": "dm-test-c50d33e9749e7bb484d9b69c4f5fca35a3a50cb5#6",
+      "value": 0.8377575447103393
+    },
+    {
+      "sample_id": "dm-test-c50d33e9749e7bb484d9b69c4f5fca35a3a50cb5#7",
+      "value": 0.576773299735207
+    },
+    {
+      "sample_id": "dm-test-c50d33e9749e7bb484d9b69c4f5fca35a3a50cb5#8",
+      "value": 0.7878147365828444
+    },
+    {
+      "sample_id": "dm-test-c50d33e9749e7bb484d9b69c4f5fca35a3a50cb5#9",
+      "value": 0.5662477070777558
+    },
+    {
+      "sample_id": "dm-test-c50d33e9749e7bb484d9b69c4f5fca35a3a50cb5#10",
+      "value": 0.7198502980148472
+    },
+    {
+      "sample_id": "dm-test-c50d33e9749e7bb484d9b69c4f5fca35a3a50cb5#11",
+      "value": 0.8434815197466432
+    },
+    {
+      "sample_id": "dm-test-c50d33e9749e7bb484d9b69c4f5fca35a3a50cb5#12",
+      "value": 0.6845316251724548
+    },
+    {
+      "sample_id": "dm-test-c50d33e9749e7bb484d9b69c4f5fca35a3a50cb5#13",
+      "value": 0.7104162506836709
+    },
+    {
+      "sample_id": "dm-test-c50d33e9749e7bb484d9b69c4f5fca35a3a50cb5#14",
+      "value": 0.681441508449332
+    },
+    {
+      "sample_id": "dm-test-c50d33e9749e7bb484d9b69c4f5fca35a3a50cb5#15",
+      "value": 0.647379273486116
+    },
+    {
+      "sample_id": "dm-test-c6667409fcdea2c89ba9f0d3a72c50e3967b4b1b#0",
+      "value": 0.6077143363913369
+    },
+    {
+      "sample_id": "dm-test-c6667409fcdea2c89ba9f0d3a72c50e3967b4b1b#1",
+      "value": 0.6695181596616395
+    },
+    {
+      "sample_id": "dm-test-c6667409fcdea2c89ba9f0d3a72c50e3967b4b1b#2",
+      "value": 0.7129729984110843
+    },
+    {
+      "sample_id": "dm-test-c6667409fcdea2c89ba9f0d3a72c50e3967b4b1b#3",
+      "value": 0.6504956043688838
+    },
+    {
+      "sample_id": "dm-test-c6667409fcdea2c89ba9f0d3a72c50e3967b4b1b#4",
+      "value": 0.6954914675284399
+    },
+    {
+      "sample_id": "dm-test-c6667409fcdea2c89ba9f0d3a72c50e3967b4b1b#5",
+      "value": 0.6834270852684318
+    },
+    {
+      "sample_id": "dm-test-c6667409fcdea2c89ba9f0d3a72c50e3967b4b1b#6",
+      "value": 0.6999777139043376
+    },
+    {
+      "sample_id": "dm-test-c6667409fcdea2c89ba9f0d3a72c50e3967b4b1b#7",
+      "value": 0.5697799516462037
+    },
+    {
+      "sample_id": "dm-test-c6667409fcdea2c89ba9f0d3a72c50e3967b4b1b#8",
+      "value": 0.6981733250562128
+    },
+    {
+      "sample_id": "dm-test-c6667409fcdea2c89ba9f0d3a72c50e3967b4b1b#9",
+      "value": 0.5900619117075817
+    },
+    {
+      "sample_id": "dm-test-c6667409fcdea2c89ba9f0d3a72c50e3967b4b1b#10",
+      "value": 0.6386233006257346
+    },
+    {
+      "sample_id": "dm-test-c6667409fcdea2c89ba9f0d3a72c50e3967b4b1b#11",
+      "value": 0.7457442826808321
+    },
+    {
+      "sample_id": "dm-test-c6667409fcdea2c89ba9f0d3a72c50e3967b4b1b#12",
+      "value": 0.7932008253143215
+    },
+    {
+      "sample_id": "dm-test-c6667409fcdea2c89ba9f0d3a72c50e3967b4b1b#13",
+      "value": 0.7048572268255809
+    },
+    {
+      "sample_id": "dm-test-c6667409fcdea2c89ba9f0d3a72c50e3967b4b1b#14",
+      "value": 0.6864079811371449
+    },
+    {
+      "sample_id": "dm-test-c6667409fcdea2c89ba9f0d3a72c50e3967b4b1b#15",
+      "value": 0.6409121604443112
+    },
+    {
+      "sample_id": "dm-test-cf4ba8f94f2dd5604eb8f8a4e655c10cf0996365#0",
+      "value": 0.7227026725281529
+    },
+    {
+      "sample_id": "dm-test-cf4ba8f94f2dd5604eb8f8a4e655c10cf0996365#1",
+      "value": 0.7402689360416342
+    },
+    {
+      "sample_id": "dm-test-cf4ba8f94f2dd5604eb8f8a4e655c10cf0996365#2",
+      "value": 0.7776514961901811
+    },
+    {
+      "sample_id": "dm-test-cf4ba8f94f2dd5604eb8f8a4e655c10cf0996365#3",
+      "value": 0.7042523456831227
+    },
+    {
+      "sample_id": "dm-test-cf4ba8f94f2dd5604eb8f8a4e655c10cf0996365#4",
+      "value": 0.8466026020763485
+    },
+    {
+      "sample_id": "dm-test-cf4ba8f94f2dd5604eb8f8a4e655c10cf0996365#5",
+      "value": 0.9200636913120055
+    },
+    {
+      "sample_id": "dm-test-cf4ba8f94f2dd5604eb8f8a4e655c10cf0996365#6",
+      "value": 0.8666585083670219
+    },
+    {
+      "sample_id": "dm-test-cf4ba8f94f2dd5604eb8f8a4e655c10cf0996365#7",
+      "value": 0.7301925819553979
+    },
+    {
+      "sample_id": "dm-test-cf4ba8f94f2dd5604eb8f8a4e655c10cf0996365#8",
+      "value": 1
+    },
+    {
+      "sample_id": "dm-test-cf4ba8f94f2dd5604eb8f8a4e655c10cf0996365#9",
+      "value": 0.8378611710829537
+    },
+    {
+      "sample_id": "dm-test-cf4ba8f94f2dd5604eb8f8a4e655c10cf0996365#10",
+      "value": 0.8002728554755932
+    },
+    {
+      "sample_id": "dm-test-cf4ba8f94f2dd5604eb8f8a4e655c10cf0996365#11",
+      "value": 0.8673252056353445
+    },
+    {
+      "sample_id": "dm-test-cf4ba8f94f2dd5604eb8f8a4e655c10cf0996365#12",
+      "value": 0.8640016967945129
+    },
+    {
+      "sample_id": "dm-test-cf4ba8f94f2dd5604eb8f8a4e655c10cf0996365#13",
+      "value": 0.8449763875651105
+    },
+    {
+      "sample_id": "dm-test-cf4ba8f94f2dd5604eb8f8a4e655c10cf0996365#14",
+      "value": 0.6675068894395579
+    },
+    {
+      "sample_id": "dm-test-cf4ba8f94f2dd5604eb8f8a4e655c10cf0996365#15",
+      "value": 0.7339807655357
+    },
+    {
+      "sample_id": "dm-test-d296270ab4a4cf20f2d9c1aae7514687806f2b35#0",
+      "value": 0.6748434544726477
+    },
+    {
+      "sample_id": "dm-test-d296270ab4a4cf20f2d9c1aae7514687806f2b35#1",
+      "value": 0.7409138829984091
+    },
+    {
+      "sample_id": "dm-test-d296270ab4a4cf20f2d9c1aae7514687806f2b35#2",
+      "value": 0.7639367514608515
+    },
+    {
+      "sample_id": "dm-test-d296270ab4a4cf20f2d9c1aae7514687806f2b35#3",
+      "value": 0.813716518723794
+    },
+    {
+      "sample_id": "dm-test-d296270ab4a4cf20f2d9c1aae7514687806f2b35#4",
+      "value": 0.7475099882246025
+    },
+    {
+      "sample_id": "dm-test-d296270ab4a4cf20f2d9c1aae7514687806f2b35#5",
+      "value": 0.8684193109272954
+    },
+    {
+      "sample_id": "dm-test-d296270ab4a4cf20f2d9c1aae7514687806f2b35#6",
+      "value": 0.7653194538074706
+    },
+    {
+      "sample_id": "dm-test-d296270ab4a4cf20f2d9c1aae7514687806f2b35#7",
+      "value": 0.6988917756249835
+    },
+    {
+      "sample_id": "dm-test-d296270ab4a4cf20f2d9c1aae7514687806f2b35#8",
+      "value": 0.716778198147459
+    },
+    {
+      "sample_id": "dm-test-d296270ab4a4cf20f2d9c1aae7514687806f2b35#9",
+      "value": 0.6936949860837519
+    },
+    {
+      "sample_id": "dm-test-d296270ab4a4cf20f2d9c1aae7514687806f2b35#10",
+      "value": 0.8688861462609467
+    },
+    {
+      "sample_id": "dm-test-d296270ab4a4cf20f2d9c1aae7514687806f2b35#11",
+      "value": 0.8688861462609467
+    },
+    {
+      "sample_id": "dm-test-d296270ab4a4cf20f2d9c1aae7514687806f2b35#12",
+      "value": 0.670654146482485
+    },
+    {
+      "sample_id": "dm-test-d296270ab4a4cf20f2d9c1aae7514687806f2b35#13",
+      "value": 0.8169440192239315
+    },
+    {
+      "sample_id": "dm-test-d296270ab4a4cf20f2d9c1aae7514687806f2b35#14",
+      "value": 0.7122358590061304
+    },
+    {
+      "sample_id": "dm-test-d296270ab4a4cf20f2d9c1aae7514687806f2b35#15",
+      "value": 0.6740719199436926
+    },
+    {
+      "sample_id": "dm-test-d3c9ce137ba24a69253508b3416630465c050ae4#0",
+      "value": 0.7088349891144746
+    },
+    {
+      "sample_id": "dm-test-d3c9ce137ba24a69253508b3416630465c050ae4#1",
+      "value": 0.7010660646891477
+    },
+    {
+      "sample_id": "dm-test-d3c9ce137ba24a69253508b3416630465c050ae4#2",
+      "value": 0.7585978264682082
+    },
+    {
+      "sample_id": "dm-test-d3c9ce137ba24a69253508b3416630465c050ae4#3",
+      "value": 0.7340146313723869
+    },
+    {
+      "sample_id": "dm-test-d3c9ce137ba24a69253508b3416630465c050ae4#4",
+      "value": 0.8105174409394295
+    },
+    {
+      "sample_id": "dm-test-d3c9ce137ba24a69253508b3416630465c050ae4#5",
+      "value": 0.7233214667494002
+    },
+    {
+      "sample_id": "dm-test-d3c9ce137ba24a69253508b3416630465c050ae4#6",
+      "value": 0.8402352311944702
+    },
+    {
+      "sample_id": "dm-test-d3c9ce137ba24a69253508b3416630465c050ae4#7",
+      "value": 0.8105174409394295
+    },
+    {
+      "sample_id": "dm-test-d3c9ce137ba24a69253508b3416630465c050ae4#8",
+      "value": 0.7197501413776817
+    },
+    {
+      "sample_id": "dm-test-d3c9ce137ba24a69253508b3416630465c050ae4#9",
+      "value": 0.7228080684575281
+    },
+    {
+      "sample_id": "dm-test-d3c9ce137ba24a69253508b3416630465c050ae4#10",
+      "value": 0.8402352311944702
+    },
+    {
+      "sample_id": "dm-test-d3c9ce137ba24a69253508b3416630465c050ae4#11",
+      "value": 0.8235050721456206
+    },
+    {
+      "sample_id": "dm-test-d3c9ce137ba24a69253508b3416630465c050ae4#12",
+      "value": 0.7269515763987382
+    },
+    {
+      "sample_id": "dm-test-d3c9ce137ba24a69253508b3416630465c050ae4#13",
+      "value": 0.7016407172926322
+    },
+    {
+      "sample_id": "dm-test-d3c9ce137ba24a69253508b3416630465c050ae4#14",
+      "value": 0.7810390699860706
+    },
+    {
+      "sample_id": "dm-test-d3c9ce137ba24a69253508b3416630465c050ae4#15",
+      "value": 0.7005091764853262
+    },
+    {
+      "sample_id": "dm-test-d680ebcdcd59fd5ee9b602a06bcd5230c212835b#0",
+      "value": 0.7633310948288535
+    },
+    {
+      "sample_id": "dm-test-d680ebcdcd59fd5ee9b602a06bcd5230c212835b#1",
+      "value": 0.7770411566268791
+    },
+    {
+      "sample_id": "dm-test-d680ebcdcd59fd5ee9b602a06bcd5230c212835b#2",
+      "value": 0.8289760893397252
+    },
+    {
+      "sample_id": "dm-test-d680ebcdcd59fd5ee9b602a06bcd5230c212835b#3",
+      "value": 0.7418307381945839
+    },
+    {
+      "sample_id": "dm-test-d680ebcdcd59fd5ee9b602a06bcd5230c212835b#4",
+      "value": 0.7211664333727051
+    },
+    {
+      "sample_id": "dm-test-d680ebcdcd59fd5ee9b602a06bcd5230c212835b#5",
+      "value": 0.7809590791400396
+    },
+    {
+      "sample_id": "dm-test-d680ebcdcd59fd5ee9b602a06bcd5230c212835b#6",
+      "value": 0.8289286913730902
+    },
+    {
+      "sample_id": "dm-test-d680ebcdcd59fd5ee9b602a06bcd5230c212835b#7",
+      "value": 0.603942862665845
+    },
+    {
+      "sample_id": "dm-test-d680ebcdcd59fd5ee9b602a06bcd5230c212835b#8",
+      "value": 0.6505846967476594
+    },
+    {
+      "sample_id": "dm-test-d680ebcdcd59fd5ee9b602a06bcd5230c212835b#9",
+      "value": 0.7068598907166321
+    },
+    {
+      "sample_id": "dm-test-d680ebcdcd59fd5ee9b602a06bcd5230c212835b#10",
+      "value": 0.8289760893397252
+    },
+    {
+      "sample_id": "dm-test-d680ebcdcd59fd5ee9b602a06bcd5230c212835b#11",
+      "value": 0.8289760893397252
+    },
+    {
+      "sample_id": "dm-test-d680ebcdcd59fd5ee9b602a06bcd5230c212835b#12",
+      "value": 0.7147810752882
+    },
+    {
+      "sample_id": "dm-test-d680ebcdcd59fd5ee9b602a06bcd5230c212835b#13",
+      "value": 0.7664334534709618
+    },
+    {
+      "sample_id": "dm-test-d680ebcdcd59fd5ee9b602a06bcd5230c212835b#14",
+      "value": 0.7112168912059872
+    },
+    {
+      "sample_id": "dm-test-d680ebcdcd59fd5ee9b602a06bcd5230c212835b#15",
+      "value": 0.7502081419690186
+    },
+    {
+      "sample_id": "dm-test-d83b82a9cd504218e604616be3f3c3928e3428b8#0",
+      "value": 0.6350704634073543
+    },
+    {
+      "sample_id": "dm-test-d83b82a9cd504218e604616be3f3c3928e3428b8#1",
+      "value": 0.734483813096937
+    },
+    {
+      "sample_id": "dm-test-d83b82a9cd504218e604616be3f3c3928e3428b8#2",
+      "value": 0.6366409005647128
+    },
+    {
+      "sample_id": "dm-test-d83b82a9cd504218e604616be3f3c3928e3428b8#3",
+      "value": 0.6981782437371346
+    },
+    {
+      "sample_id": "dm-test-d83b82a9cd504218e604616be3f3c3928e3428b8#4",
+      "value": 0.6968139605314383
+    },
+    {
+      "sample_id": "dm-test-d83b82a9cd504218e604616be3f3c3928e3428b8#5",
+      "value": 0.7097818952022603
+    },
+    {
+      "sample_id": "dm-test-d83b82a9cd504218e604616be3f3c3928e3428b8#6",
+      "value": 0.7311465070635558
+    },
+    {
+      "sample_id": "dm-test-d83b82a9cd504218e604616be3f3c3928e3428b8#7",
+      "value": 0.6533755159874514
+    },
+    {
+      "sample_id": "dm-test-d83b82a9cd504218e604616be3f3c3928e3428b8#8",
+      "value": 0.6418502105223567
+    },
+    {
+      "sample_id": "dm-test-d83b82a9cd504218e604616be3f3c3928e3428b8#9",
+      "value": 0.6378455559685596
+    },
+    {
+      "sample_id": "dm-test-d83b82a9cd504218e604616be3f3c3928e3428b8#10",
+      "value": 0.6408971501349652
+    },
+    {
+      "sample_id": "dm-test-d83b82a9cd504218e604616be3f3c3928e3428b8#11",
+      "value": 0.7749477440126915
+    },
+    {
+      "sample_id": "dm-test-d83b82a9cd504218e604616be3f3c3928e3428b8#12",
+      "value": 0.6778591022836035
+    },
+    {
+      "sample_id": "dm-test-d83b82a9cd504218e604616be3f3c3928e3428b8#13",
+      "value": 0.6653138842131233
+    },
+    {
+      "sample_id": "dm-test-d83b82a9cd504218e604616be3f3c3928e3428b8#14",
+      "value": 0.7022829607667894
+    },
+    {
+      "sample_id": "dm-test-d83b82a9cd504218e604616be3f3c3928e3428b8#15",
+      "value": 0.6383493935800707
+    },
+    {
+      "sample_id": "dm-test-d89de9c2a76f2665560becfe5d761a4fc62b9926#0",
+      "value": 0.6291210484422542
+    },
+    {
+      "sample_id": "dm-test-d89de9c2a76f2665560becfe5d761a4fc62b9926#1",
+      "value": 0.6701693861069683
+    },
+    {
+      "sample_id": "dm-test-d89de9c2a76f2665560becfe5d761a4fc62b9926#2",
+      "value": 0.702117714859679
+    },
+    {
+      "sample_id": "dm-test-d89de9c2a76f2665560becfe5d761a4fc62b9926#3",
+      "value": 0.6242707682643373
+    },
+    {
+      "sample_id": "dm-test-d89de9c2a76f2665560becfe5d761a4fc62b9926#4",
+      "value": 0.599163538013669
+    },
+    {
+      "sample_id": "dm-test-d89de9c2a76f2665560becfe5d761a4fc62b9926#5",
+      "value": 0.6331182155881069
+    },
+    {
+      "sample_id": "dm-test-d89de9c2a76f2665560becfe5d761a4fc62b9926#6",
+      "value": 0.7035210882429895
+    },
+    {
+      "sample_id": "dm-test-d89de9c2a76f2665560becfe5d761a4fc62b9926#7",
+      "value": 0.6445771065921284
+    },
+    {
+      "sample_id": "dm-test-d89de9c2a76f2665560becfe5d761a4fc62b9926#8",
+      "value": 0.5737806540981102
+    },
+    {
+      "sample_id": "dm-test-d89de9c2a76f2665560becfe5d761a4fc62b9926#9",
+      "value": 0.7315293139475254
+    },
+    {
+      "sample_id": "dm-test-d89de9c2a76f2665560becfe5d761a4fc62b9926#10",
+      "value": 0.7200160045348376
+    },
+    {
+      "sample_id": "dm-test-d89de9c2a76f2665560becfe5d761a4fc62b9926#11",
+      "value": 0.7699736834868123
+    },
+    {
+      "sample_id": "dm-test-d89de9c2a76f2665560becfe5d761a4fc62b9926#12",
+      "value": 0.6805818551405668
+    },
+    {
+      "sample_id": "dm-test-d89de9c2a76f2665560becfe5d761a4fc62b9926#13",
+      "value": 0.63705531498307
+    },
+    {
+      "sample_id": "dm-test-d89de9c2a76f2665560becfe5d761a4fc62b9926#14",
+      "value": 0.5968783947606515
+    },
+    {
+      "sample_id": "dm-test-d89de9c2a76f2665560becfe5d761a4fc62b9926#15",
+      "value": 0.653863823379717
+    },
+    {
+      "sample_id": "dm-test-dea0ed2e587495e516ac85056e21a2076a9a993c#0",
+      "value": 0.6724751097913877
+    },
+    {
+      "sample_id": "dm-test-dea0ed2e587495e516ac85056e21a2076a9a993c#1",
+      "value": 0.7440189888996324
+    },
+    {
+      "sample_id": "dm-test-dea0ed2e587495e516ac85056e21a2076a9a993c#2",
+      "value": 0.7243553285305472
+    },
+    {
+      "sample_id": "dm-test-dea0ed2e587495e516ac85056e21a2076a9a993c#3",
+      "value": 0.7297087946784843
+    },
+    {
+      "sample_id": "dm-test-dea0ed2e587495e516ac85056e21a2076a9a993c#4",
+      "value": 0.6225924318575103
+    },
+    {
+      "sample_id": "dm-test-dea0ed2e587495e516ac85056e21a2076a9a993c#5",
+      "value": 0.7365736772869729
+    },
+    {
+      "sample_id": "dm-test-dea0ed2e587495e516ac85056e21a2076a9a993c#6",
+      "value": 0.7393008750523371
+    },
+    {
+      "sample_id": "dm-test-dea0ed2e587495e516ac85056e21a2076a9a993c#7",
+      "value": 0.6999122247468316
+    },
+    {
+      "sample_id": "dm-test-dea0ed2e587495e516ac85056e21a2076a9a993c#8",
+      "value": 0.6414092878433196
+    },
+    {
+      "sample_id": "dm-test-dea0ed2e587495e516ac85056e21a2076a9a993c#9",
+      "value": 0.6968519748297366
+    },
+    {
+      "sample_id": "dm-test-dea0ed2e587495e516ac85056e21a2076a9a993c#10",
+      "value": 0.7701442171235637
+    },
+    {
+      "sample_id": "dm-test-dea0ed2e587495e516ac85056e21a2076a9a993c#11",
+      "value": 0.7701442171235637
+    },
+    {
+      "sample_id": "dm-test-dea0ed2e587495e516ac85056e21a2076a9a993c#12",
+      "value": 0.8109470930172601
+    },
+    {
+      "sample_id": "dm-test-dea0ed2e587495e516ac85056e21a2076a9a993c#13",
+      "value": 0.7365736772869729
+    },
+    {
+      "sample_id": "dm-test-dea0ed2e587495e516ac85056e21a2076a9a993c#14",
+      "value": 0.6709042525104022
+    },
+    {
+      "sample_id": "dm-test-dea0ed2e587495e516ac85056e21a2076a9a993c#15",
+      "value": 0.6822468320053685
+    },
+    {
+      "sample_id": "dm-test-e06ff0eb7c4fa4416fda84a9a239b15480c5a9d9#0",
+      "value": 0.6604679143606009
+    },
+    {
+      "sample_id": "dm-test-e06ff0eb7c4fa4416fda84a9a239b15480c5a9d9#1",
+      "value": 0.6504608168491286
+    },
+    {
+      "sample_id": "dm-test-e06ff0eb7c4fa4416fda84a9a239b15480c5a9d9#2",
+      "value": 0.7099421035240298
+    },
+    {
+      "sample_id": "dm-test-e06ff0eb7c4fa4416fda84a9a239b15480c5a9d9#3",
+      "value": 0.6938722219013058
+    },
+    {
+      "sample_id": "dm-test-e06ff0eb7c4fa4416fda84a9a239b15480c5a9d9#4",
+      "value": 0.617094435389306
+    },
+    {
+      "sample_id": "dm-test-e06ff0eb7c4fa4416fda84a9a239b15480c5a9d9#5",
+      "value": 0.8614897247667394
+    },
+    {
+      "sample_id": "dm-test-e06ff0eb7c4fa4416fda84a9a239b15480c5a9d9#6",
+      "value": 0.8001863171181713
+    },
+    {
+      "sample_id": "dm-test-e06ff0eb7c4fa4416fda84a9a239b15480c5a9d9#7",
+      "value": 0.6655426436410795
+    },
+    {
+      "sample_id": "dm-test-e06ff0eb7c4fa4416fda84a9a239b15480c5a9d9#8",
+      "value": 0.8097780345352554
+    },
+    {
+      "sample_id": "dm-test-e06ff0eb7c4fa4416fda84a9a239b15480c5a9d9#9",
+      "value": 0.7105822255040782
+    },
+    {
+      "sample_id": "dm-test-e06ff0eb7c4fa4416fda84a9a239b15480c5a9d9#10",
+      "value": 0.7020880752151476
+    },
+    {
+      "sample_id": "dm-test-e06ff0eb7c4fa4416fda84a9a239b15480c5a9d9#11",
+      "value": 0.7720933530927759
+    },
+    {
+      "sample_id": "dm-test-e06ff0eb7c4fa4416fda84a9a239b15480c5a9d9#12",
+      "value": 0.7787334256578984
+    },
+    {
+      "sample_id": "dm-test-e06ff0eb7c4fa4416fda84a9a239b15480c5a9d9#13",
+      "value": 0.6135472967679044
+    },
+    {
+      "sample_id": "dm-test-e06ff0eb7c4fa4416fda84a9a239b15480c5a9d9#14",
+      "value": 0.5999484118675891
+    },
+    {
+      "sample_id": "dm-test-e06ff0eb7c4fa4416fda84a9a239b15480c5a9d9#15",
+      "value": 0.66845117092481
+    },
+    {
+      "sample_id": "dm-test-e428e25bbf8e06643154ce31b7c6fab64c81e857#0",
+      "value": 0.7676278812106252
+    },
+    {
+      "sample_id": "dm-test-e428e25bbf8e06643154ce31b7c6fab64c81e857#1",
+      "value": 0.7574419147963811
+    },
+    {
+      "sample_id": "dm-test-e428e25bbf8e06643154ce31b7c6fab64c81e857#2",
+      "value": 0.744055849281905
+    },
+    {
+      "sample_id": "dm-test-e428e25bbf8e06643154ce31b7c6fab64c81e857#3",
+      "value": 0.7948173992514518
+    },
+    {
+      "sample_id": "dm-test-e428e25bbf8e06643154ce31b7c6fab64c81e857#4",
+      "value": 0.7471348643069583
+    },
+    {
+      "sample_id": "dm-test-e428e25bbf8e06643154ce31b7c6fab64c81e857#5",
+      "value": 0.7948173992514518
+    },
+    {
+      "sample_id": "dm-test-e428e25bbf8e06643154ce31b7c6fab64c81e857#6",
+      "value": 0.7368741239053349
+    },
+    {
+      "sample_id": "dm-test-e428e25bbf8e06643154ce31b7c6fab64c81e857#7",
+      "value": 0.7402725877644579
+    },
+    {
+      "sample_id": "dm-test-e428e25bbf8e06643154ce31b7c6fab64c81e857#8",
+      "value": 0.7429579777042729
+    },
+    {
+      "sample_id": "dm-test-e428e25bbf8e06643154ce31b7c6fab64c81e857#9",
+      "value": 0.7060482083967212
+    },
+    {
+      "sample_id": "dm-test-e428e25bbf8e06643154ce31b7c6fab64c81e857#10",
+      "value": 0.7471348643069583
+    },
+    {
+      "sample_id": "dm-test-e428e25bbf8e06643154ce31b7c6fab64c81e857#11",
+      "value": 0.8518179474059169
+    },
+    {
+      "sample_id": "dm-test-e428e25bbf8e06643154ce31b7c6fab64c81e857#12",
+      "value": 0.8026581874586217
+    },
+    {
+      "sample_id": "dm-test-e428e25bbf8e06643154ce31b7c6fab64c81e857#13",
+      "value": 0.7667762156424587
+    },
+    {
+      "sample_id": "dm-test-e428e25bbf8e06643154ce31b7c6fab64c81e857#14",
+      "value": 0.633153892896717
+    },
+    {
+      "sample_id": "dm-test-e428e25bbf8e06643154ce31b7c6fab64c81e857#15",
+      "value": 0.6854254108901874
+    },
+    {
+      "sample_id": "dm-test-e43eef75de38d246db9d80216ca9f5487215a78b#0",
+      "value": 0.7092423904560015
+    },
+    {
+      "sample_id": "dm-test-e43eef75de38d246db9d80216ca9f5487215a78b#1",
+      "value": 0.7232768382587098
+    },
+    {
+      "sample_id": "dm-test-e43eef75de38d246db9d80216ca9f5487215a78b#2",
+      "value": 0.7074310487436506
+    },
+    {
+      "sample_id": "dm-test-e43eef75de38d246db9d80216ca9f5487215a78b#3",
+      "value": 0.6638174312764993
+    },
+    {
+      "sample_id": "dm-test-e43eef75de38d246db9d80216ca9f5487215a78b#4",
+      "value": 0.6724207653958643
+    },
+    {
+      "sample_id": "dm-test-e43eef75de38d246db9d80216ca9f5487215a78b#5",
+      "value": 0.7358332798326067
+    },
+    {
+      "sample_id": "dm-test-e43eef75de38d246db9d80216ca9f5487215a78b#6",
+      "value": 0.7654666962881591
+    },
+    {
+      "sample_id": "dm-test-e43eef75de38d246db9d80216ca9f5487215a78b#7",
+      "value": 0.627190892759157
+    },
+    {
+      "sample_id": "dm-test-e43eef75de38d246db9d80216ca9f5487215a78b#8",
+      "value": 0.7686747038943981
+    },
+    {
+      "sample_id": "dm-test-e43eef75de38d246db9d80216ca9f5487215a78b#9",
+      "value": 0.6746615930252332
+    },
+    {
+      "sample_id": "dm-test-e43eef75de38d246db9d80216ca9f5487215a78b#10",
+      "value": 0.6633760049357598
+    },
+    {
+      "sample_id": "dm-test-e43eef75de38d246db9d80216ca9f5487215a78b#11",
+      "value": 0.7280021303982016
+    },
+    {
+      "sample_id": "dm-test-e43eef75de38d246db9d80216ca9f5487215a78b#12",
+      "value": 0.810283470774429
+    },
+    {
+      "sample_id": "dm-test-e43eef75de38d246db9d80216ca9f5487215a78b#13",
+      "value": 0.7444446029769994
+    },
+    {
+      "sample_id": "dm-test-e43eef75de38d246db9d80216ca9f5487215a78b#14",
+      "value": 0.625759852850421
+    },
+    {
+      "sample_id": "dm-test-e43eef75de38d246db9d80216ca9f5487215a78b#15",
+      "value": 0.6560301447681984
+    },
+    {
+      "sample_id": "dm-test-e470f0a87d7513bf880412524332047020422c3f#0",
+      "value": 0.7212950791197296
+    },
+    {
+      "sample_id": "dm-test-e470f0a87d7513bf880412524332047020422c3f#1",
+      "value": 0.8167433399530672
+    },
+    {
+      "sample_id": "dm-test-e470f0a87d7513bf880412524332047020422c3f#2",
+      "value": 0.8197219380450184
+    },
+    {
+      "sample_id": "dm-test-e470f0a87d7513bf880412524332047020422c3f#3",
+      "value": 0.7628360814262667
+    },
+    {
+      "sample_id": "dm-test-e470f0a87d7513bf880412524332047020422c3f#4",
+      "value": 0.7508634492681634
+    },
+    {
+      "sample_id": "dm-test-e470f0a87d7513bf880412524332047020422c3f#5",
+      "value": 0.8077874960062417
+    },
+    {
+      "sample_id": "dm-test-e470f0a87d7513bf880412524332047020422c3f#6",
+      "value": 0.8074424319017585
+    },
+    {
+      "sample_id": "dm-test-e470f0a87d7513bf880412524332047020422c3f#7",
+      "value": 0.7387010704068852
+    },
+    {
+      "sample_id": "dm-test-e470f0a87d7513bf880412524332047020422c3f#8",
+      "value": 0.949084108174582
+    },
+    {
+      "sample_id": "dm-test-e470f0a87d7513bf880412524332047020422c3f#9",
+      "value": 0.6643814842403369
+    },
+    {
+      "sample_id": "dm-test-e470f0a87d7513bf880412524332047020422c3f#10",
+      "value": 0.747319004326469
+    },
+    {
+      "sample_id": "dm-test-e470f0a87d7513bf880412524332047020422c3f#11",
+      "value": 0.8197219380450184
+    },
+    {
+      "sample_id": "dm-test-e470f0a87d7513bf880412524332047020422c3f#12",
+      "value": 0.8689783775348818
+    },
+    {
+      "sample_id": "dm-test-e470f0a87d7513bf880412524332047020422c3f#13",
+      "value": 0.8424094044857716
+    },
+    {
+      "sample_id": "dm-test-e470f0a87d7513bf880412524332047020422c3f#14",
+      "value": 0.6710284437962623
+    },
+    {
+      "sample_id": "dm-test-e470f0a87d7513bf880412524332047020422c3f#15",
+      "value": 0.718660104240081
+    },
+    {
+      "sample_id": "dm-test-e7d8b6617691ea00d4ddc5fe2b7cbd105ba9a57e#0",
+      "value": 0.7041931661256525
+    },
+    {
+      "sample_id": "dm-test-e7d8b6617691ea00d4ddc5fe2b7cbd105ba9a57e#1",
+      "value": 0.8630016245381883
+    },
+    {
+      "sample_id": "dm-test-e7d8b6617691ea00d4ddc5fe2b7cbd105ba9a57e#2",
+      "value": 0.7629850449608875
+    },
+    {
+      "sample_id": "dm-test-e7d8b6617691ea00d4ddc5fe2b7cbd105ba9a57e#3",
+      "value": 0.614967141789876
+    },
+    {
+      "sample_id": "dm-test-e7d8b6617691ea00d4ddc5fe2b7cbd105ba9a57e#4",
+      "value": 0.7647031894666574
+    },
+    {
+      "sample_id": "dm-test-e7d8b6617691ea00d4ddc5fe2b7cbd105ba9a57e#5",
+      "value": 0.8089528681175406
+    },
+    {
+      "sample_id": "dm-test-e7d8b6617691ea00d4ddc5fe2b7cbd105ba9a57e#6",
+      "value": 0.8633878146902382
+    },
+    {
+      "sample_id": "dm-test-e7d8b6617691ea00d4ddc5fe2b7cbd105ba9a57e#7",
+      "value": 0.6742252572887075
+    },
+    {
+      "sample_id": "dm-test-e7d8b6617691ea00d4ddc5fe2b7cbd105ba9a57e#8",
+      "value": 0.6250903529688928
+    },
+    {
+      "sample_id": "dm-test-e7d8b6617691ea00d4ddc5fe2b7cbd105ba9a57e#9",
+      "value": 0.6735832609814291
+    },
+    {
+      "sample_id": "dm-test-e7d8b6617691ea00d4ddc5fe2b7cbd105ba9a57e#10",
+      "value": 0.8621851089213909
+    },
+    {
+      "sample_id": "dm-test-e7d8b6617691ea00d4ddc5fe2b7cbd105ba9a57e#11",
+      "value": 0.8621851089213909
+    },
+    {
+      "sample_id": "dm-test-e7d8b6617691ea00d4ddc5fe2b7cbd105ba9a57e#12",
+      "value": 0.7455742342696146
+    },
+    {
+      "sample_id": "dm-test-e7d8b6617691ea00d4ddc5fe2b7cbd105ba9a57e#13",
+      "value": 0.6138341104313066
+    },
+    {
+      "sample_id": "dm-test-e7d8b6617691ea00d4ddc5fe2b7cbd105ba9a57e#14",
+      "value": 0.6591744594835905
+    },
+    {
+      "sample_id": "dm-test-e7d8b6617691ea00d4ddc5fe2b7cbd105ba9a57e#15",
+      "value": 0.666098119316752
+    },
+    {
+      "sample_id": "dm-test-e880fda4c25289f8325574246f0f8ed4ff5eb26b#0",
+      "value": 0.6620034949610012
+    },
+    {
+      "sample_id": "dm-test-e880fda4c25289f8325574246f0f8ed4ff5eb26b#1",
+      "value": 0.7285211371143547
+    },
+    {
+      "sample_id": "dm-test-e880fda4c25289f8325574246f0f8ed4ff5eb26b#2",
+      "value": 0.7372230841661255
+    },
+    {
+      "sample_id": "dm-test-e880fda4c25289f8325574246f0f8ed4ff5eb26b#3",
+      "value": 0.6715340086265595
+    },
+    {
+      "sample_id": "dm-test-e880fda4c25289f8325574246f0f8ed4ff5eb26b#4",
+      "value": 0.7643214401385093
+    },
+    {
+      "sample_id": "dm-test-e880fda4c25289f8325574246f0f8ed4ff5eb26b#5",
+      "value": 0.8135522860906593
+    },
+    {
+      "sample_id": "dm-test-e880fda4c25289f8325574246f0f8ed4ff5eb26b#6",
+      "value": 0.8837784201519584
+    },
+    {
+      "sample_id": "dm-test-e880fda4c25289f8325574246f0f8ed4ff5eb26b#7",
+      "value": 0.7473944717686276
+    },
+    {
+      "sample_id": "dm-test-e880fda4c25289f8325574246f0f8ed4ff5eb26b#8",
+      "value": 0.7189500997851299
+    },
+    {
+      "sample_id": "dm-test-e880fda4c25289f8325574246f0f8ed4ff5eb26b#9",
+      "value": 0.7379745248949506
+    },
+    {
+      "sample_id": "dm-test-e880fda4c25289f8325574246f0f8ed4ff5eb26b#10",
+      "value": 0.8681005428893042
+    },
+    {
+      "sample_id": "dm-test-e880fda4c25289f8325574246f0f8ed4ff5eb26b#11",
+      "value": 0.8681005428893042
+    },
+    {
+      "sample_id": "dm-test-e880fda4c25289f8325574246f0f8ed4ff5eb26b#12",
+      "value": 0.7683941341354031
+    },
+    {
+      "sample_id": "dm-test-e880fda4c25289f8325574246f0f8ed4ff5eb26b#13",
+      "value": 0.7409373108672396
+    },
+    {
+      "sample_id": "dm-test-e880fda4c25289f8325574246f0f8ed4ff5eb26b#14",
+      "value": 0.6730044618949168
+    },
+    {
+      "sample_id": "dm-test-e880fda4c25289f8325574246f0f8ed4ff5eb26b#15",
+      "value": 0.7270017550519724
+    },
+    {
+      "sample_id": "dm-test-eeef09d26cf30c2124c0399b08eedc6321fe5d20#0",
+      "value": 0.545221271869189
+    },
+    {
+      "sample_id": "dm-test-eeef09d26cf30c2124c0399b08eedc6321fe5d20#1",
+      "value": 0.6460631710351793
+    },
+    {
+      "sample_id": "dm-test-eeef09d26cf30c2124c0399b08eedc6321fe5d20#2",
+      "value": 0.6332502067116655
+    },
+    {
+      "sample_id": "dm-test-eeef09d26cf30c2124c0399b08eedc6321fe5d20#3",
+      "value": 0.540504726498067
+    },
+    {
+      "sample_id": "dm-test-eeef09d26cf30c2124c0399b08eedc6321fe5d20#4",
+      "value": 0.5388708122952042
+    },
+    {
+      "sample_id": "dm-test-eeef09d26cf30c2124c0399b08eedc6321fe5d20#5",
+      "value": 0.5347999723224671
+    },
+    {
+      "sample_id": "dm-test-eeef09d26cf30c2124c0399b08eedc6321fe5d20#6",
+      "value": 0.6025800189693811
+    },
+    {
+      "sample_id": "dm-test-eeef09d26cf30c2124c0399b08eedc6321fe5d20#7",
+      "value": 0.5451214472909515
+    },
+    {
+      "sample_id": "dm-test-eeef09d26cf30c2124c0399b08eedc6321fe5d20#8",
+      "value": 0.7081214496066821
+    },
+    {
+      "sample_id": "dm-test-eeef09d26cf30c2124c0399b08eedc6321fe5d20#9",
+      "value": 0.5226633612134223
+    },
+    {
+      "sample_id": "dm-test-eeef09d26cf30c2124c0399b08eedc6321fe5d20#10",
+      "value": 0.6681501866397935
+    },
+    {
+      "sample_id": "dm-test-eeef09d26cf30c2124c0399b08eedc6321fe5d20#11",
+      "value": 0.6681501866397935
+    },
+    {
+      "sample_id": "dm-test-eeef09d26cf30c2124c0399b08eedc6321fe5d20#12",
+      "value": 0.7124251997971613
+    },
+    {
+      "sample_id": "dm-test-eeef09d26cf30c2124c0399b08eedc6321fe5d20#13",
+      "value": 0.6024634580593266
+    },
+    {
+      "sample_id": "dm-test-eeef09d26cf30c2124c0399b08eedc6321fe5d20#14",
+      "value": 0.5182700793065681
+    },
+    {
+      "sample_id": "dm-test-eeef09d26cf30c2124c0399b08eedc6321fe5d20#15",
+      "value": 0.5622659366145191
+    },
+    {
+      "sample_id": "dm-test-f26d8400ae49b90d109c165d0f44b8f6ca253c08#0",
+      "value": 0.6433520935173416
+    },
+    {
+      "sample_id": "dm-test-f26d8400ae49b90d109c165d0f44b8f6ca253c08#1",
+      "value": 0.7359786010721062
+    },
+    {
+      "sample_id": "dm-test-f26d8400ae49b90d109c165d0f44b8f6ca253c08#2",
+      "value": 0.7488781480086791
+    },
+    {
+      "sample_id": "dm-test-f26d8400ae49b90d109c165d0f44b8f6ca253c08#3",
+      "value": 0.6815628805838272
+    },
+    {
+      "sample_id": "dm-test-f26d8400ae49b90d109c165d0f44b8f6ca253c08#4",
+      "value": 0.7048780242877736
+    },
+    {
+      "sample_id": "dm-test-f26d8400ae49b90d109c165d0f44b8f6ca253c08#5",
+      "value": 0.7329851281250725
+    },
+    {
+      "sample_id": "dm-test-f26d8400ae49b90d109c165d0f44b8f6ca253c08#6",
+      "value": 0.7524335553295044
+    },
+    {
+      "sample_id": "dm-test-f26d8400ae49b90d109c165d0f44b8f6ca253c08#7",
+      "value": 0.6235119015814709
+    },
+    {
+      "sample_id": "dm-test-f26d8400ae49b90d109c165d0f44b8f6ca253c08#8",
+      "value": 0.9292328761453301
+    },
+    {
+      "sample_id": "dm-test-f26d8400ae49b90d109c165d0f44b8f6ca253c08#9",
+      "value": 0.6510855477577664
+    },
+    {
+      "sample_id": "dm-test-f26d8400ae49b90d109c165d0f44b8f6ca253c08#10",
+      "value": 0.7418367474323828
+    },
+    {
+      "sample_id": "dm-test-f26d8400ae49b90d109c165d0f44b8f6ca253c08#11",
+      "value": 0.7488781480086791
+    },
+    {
+      "sample_id": "dm-test-f26d8400ae49b90d109c165d0f44b8f6ca253c08#12",
+      "value": 0.7720121847744048
+    },
+    {
+      "sample_id": "dm-test-f26d8400ae49b90d109c165d0f44b8f6ca253c08#13",
+      "value": 0.7061179385173751
+    },
+    {
+      "sample_id": "dm-test-f26d8400ae49b90d109c165d0f44b8f6ca253c08#14",
+      "value": 0.6795176789300936
+    },
+    {
+      "sample_id": "dm-test-f26d8400ae49b90d109c165d0f44b8f6ca253c08#15",
+      "value": 0.6592180572244417
+    },
+    {
+      "sample_id": "dm-test-f37fd6e9b6cc18a7132568e307ef3b130931e809#0",
+      "value": 0.7987904010283993
+    },
+    {
+      "sample_id": "dm-test-f37fd6e9b6cc18a7132568e307ef3b130931e809#1",
+      "value": 0.8359562142218433
+    },
+    {
+      "sample_id": "dm-test-f37fd6e9b6cc18a7132568e307ef3b130931e809#2",
+      "value": 0.8359562142218433
+    },
+    {
+      "sample_id": "dm-test-f37fd6e9b6cc18a7132568e307ef3b130931e809#3",
+      "value": 0.8317390102741591
+    },
+    {
+      "sample_id": "dm-test-f37fd6e9b6cc18a7132568e307ef3b130931e809#4",
+      "value": 0.787438550725219
+    },
+    {
+      "sample_id": "dm-test-f37fd6e9b6cc18a7132568e307ef3b130931e809#5",
+      "value": 0.8317390102741591
+    },
+    {
+      "sample_id": "dm-test-f37fd6e9b6cc18a7132568e307ef3b130931e809#6",
+      "value": 0.8703465733860319
+    },
+    {
+      "sample_id": "dm-test-f37fd6e9b6cc18a7132568e307ef3b130931e809#7",
+      "value": 0.7714062073767981
+    },
+    {
+      "sample_id": "dm-test-f37fd6e9b6cc18a7132568e307ef3b130931e809#8",
+      "value": 0.6711605699954163
+    },
+    {
+      "sample_id": "dm-test-f37fd6e9b6cc18a7132568e307ef3b130931e809#9",
+      "value": 0.8359562142218433
+    },
+    {
+      "sample_id": "dm-test-f37fd6e9b6cc18a7132568e307ef3b130931e809#10",
+      "value": 0.8359562142218433
+    },
+    {
+      "sample_id": "dm-test-f37fd6e9b6cc18a7132568e307ef3b130931e809#11",
+      "value": 0.8832377137647182
+    },
+    {
+      "sample_id": "dm-test-f37fd6e9b6cc18a7132568e307ef3b130931e809#12",
+      "value": 0.820961113593533
+    },
+    {
+      "sample_id": "dm-test-f37fd6e9b6cc18a7132568e307ef3b130931e809#13",
+      "value": 0.8357227492794266
+    },
+    {
+      "sample_id": "dm-test-f37fd6e9b6cc18a7132568e307ef3b130931e809#14",
+      "value": 0.8552580768152956
+    },
+    {
+      "sample_id": "dm-test-f37fd6e9b6cc18a7132568e307ef3b130931e809#15",
+      "value": 0.8021786928299008
+    },
+    {
+      "sample_id": "dm-test-f468efac7b3c54f8c42c2c81dff108c52ebe0d7d#0",
+      "value": 0.6782795322719393
+    },
+    {
+      "sample_id": "dm-test-f468efac7b3c54f8c42c2c81dff108c52ebe0d7d#1",
+      "value": 0.6239702110264166
+    },
+    {
+      "sample_id": "dm-test-f468efac7b3c54f8c42c2c81dff108c52ebe0d7d#2",
+      "value": 0.6096761528223477
+    },
+    {
+      "sample_id": "dm-test-f468efac7b3c54f8c42c2c81dff108c52ebe0d7d#3",
+      "value": 0.662057135252496
+    },
+    {
+      "sample_id": "dm-test-f468efac7b3c54f8c42c2c81dff108c52ebe0d7d#4",
+      "value": 0.6176489114976137
+    },
+    {
+      "sample_id": "dm-test-f468efac7b3c54f8c42c2c81dff108c52ebe0d7d#5",
+      "value": 0.710268409278871
+    },
+    {
+      "sample_id": "dm-test-f468efac7b3c54f8c42c2c81dff108c52ebe0d7d#6",
+      "value": 0.6834305459154151
+    },
+    {
+      "sample_id": "dm-test-f468efac7b3c54f8c42c2c81dff108c52ebe0d7d#7",
+      "value": 0.6303666623884491
+    },
+    {
+      "sample_id": "dm-test-f468efac7b3c54f8c42c2c81dff108c52ebe0d7d#8",
+      "value": 0.6013997122821257
+    },
+    {
+      "sample_id": "dm-test-f468efac7b3c54f8c42c2c81dff108c52ebe0d7d#9",
+      "value": 0.5771846819146204
+    },
+    {
+      "sample_id": "dm-test-f468efac7b3c54f8c42c2c81dff108c52ebe0d7d#10",
+      "value": 0.6096761528223477
+    },
+    {
+      "sample_id": "dm-test-f468efac7b3c54f8c42c2c81dff108c52ebe0d7d#11",
+      "value": 0.7080070639702
+    },
+    {
+      "sample_id": "dm-test-f468efac7b3c54f8c42c2c81dff108c52ebe0d7d#12",
+      "value": 0.7202156720247488
+    },
+    {
+      "sample_id": "dm-test-f468efac7b3c54f8c42c2c81dff108c52ebe0d7d#13",
+      "value": 0.6802785406230104
+    },
+    {
+      "sample_id": "dm-test-f468efac7b3c54f8c42c2c81dff108c52ebe0d7d#14",
+      "value": 0.5715246427796524
+    },
+    {
+      "sample_id": "dm-test-f468efac7b3c54f8c42c2c81dff108c52ebe0d7d#15",
+      "value": 0.5601811501817
+    },
+    {
+      "sample_id": "dm-test-f5fead94ee884800e84a212cc0edc78b11c4ba9f#0",
+      "value": 0.5588846111029482
+    },
+    {
+      "sample_id": "dm-test-f5fead94ee884800e84a212cc0edc78b11c4ba9f#1",
+      "value": 0.6636443086820704
+    },
+    {
+      "sample_id": "dm-test-f5fead94ee884800e84a212cc0edc78b11c4ba9f#2",
+      "value": 0.6039729415768557
+    },
+    {
+      "sample_id": "dm-test-f5fead94ee884800e84a212cc0edc78b11c4ba9f#3",
+      "value": 0.5876390846685762
+    },
+    {
+      "sample_id": "dm-test-f5fead94ee884800e84a212cc0edc78b11c4ba9f#4",
+      "value": 0.5911263044713242
+    },
+    {
+      "sample_id": "dm-test-f5fead94ee884800e84a212cc0edc78b11c4ba9f#5",
+      "value": 0.6810856932165992
+    },
+    {
+      "sample_id": "dm-test-f5fead94ee884800e84a212cc0edc78b11c4ba9f#6",
+      "value": 0.6847893801691592
+    },
+    {
+      "sample_id": "dm-test-f5fead94ee884800e84a212cc0edc78b11c4ba9f#7",
+      "value": 0.5718428500119555
+    },
+    {
+      "sample_id": "dm-test-f5fead94ee884800e84a212cc0edc78b11c4ba9f#8",
+      "value": 0.8666906579984778
+    },
+    {
+      "sample_id": "dm-test-f5fead94ee884800e84a212cc0edc78b11c4ba9f#9",
+      "value": 0.5830923736930649
+    },
+    {
+      "sample_id": "dm-test-f5fead94ee884800e84a212cc0edc78b11c4ba9f#10",
+      "value": 0.5908655397532644
+    },
+    {
+      "sample_id": "dm-test-f5fead94ee884800e84a212cc0edc78b11c4ba9f#11",
+      "value": 0.6847893801691592
+    },
+    {
+      "sample_id": "dm-test-f5fead94ee884800e84a212cc0edc78b11c4ba9f#12",
+      "value": 0.8204413756739379
+    },
+    {
+      "sample_id": "dm-test-f5fead94ee884800e84a212cc0edc78b11c4ba9f#13",
+      "value": 0.6810878780715776
+    },
+    {
+      "sample_id": "dm-test-f5fead94ee884800e84a212cc0edc78b11c4ba9f#14",
+      "value": 0.5023606496760163
+    },
+    {
+      "sample_id": "dm-test-f5fead94ee884800e84a212cc0edc78b11c4ba9f#15",
+      "value": 0.5783025731194633
+    },
+    {
+      "sample_id": "dm-test-fadabe346fe95d33eee71299e6596754768f5246#0",
+      "value": 0.6920519174405809
+    },
+    {
+      "sample_id": "dm-test-fadabe346fe95d33eee71299e6596754768f5246#1",
+      "value": 0.725487496682998
+    },
+    {
+      "sample_id": "dm-test-fadabe346fe95d33eee71299e6596754768f5246#2",
+      "value": 0.8619135987183277
+    },
+    {
+      "sample_id": "dm-test-fadabe346fe95d33eee71299e6596754768f5246#3",
+      "value": 0.728358961259509
+    },
+    {
+      "sample_id": "dm-test-fadabe346fe95d33eee71299e6596754768f5246#4",
+      "value": 0.7886304551902366
+    },
+    {
+      "sample_id": "dm-test-fadabe346fe95d33eee71299e6596754768f5246#5",
+      "value": 0.7732564607209378
+    },
+    {
+      "sample_id": "dm-test-fadabe346fe95d33eee71299e6596754768f5246#6",
+      "value": 0.8619135987183277
+    },
+    {
+      "sample_id": "dm-test-fadabe346fe95d33eee71299e6596754768f5246#7",
+      "value": 0.6642298767335336
+    },
+    {
+      "sample_id": "dm-test-fadabe346fe95d33eee71299e6596754768f5246#8",
+      "value": 0.7216057884838042
+    },
+    {
+      "sample_id": "dm-test-fadabe346fe95d33eee71299e6596754768f5246#9",
+      "value": 0.6945560249326796
+    },
+    {
+      "sample_id": "dm-test-fadabe346fe95d33eee71299e6596754768f5246#10",
+      "value": 0.7000661179547224
+    },
+    {
+      "sample_id": "dm-test-fadabe346fe95d33eee71299e6596754768f5246#11",
+      "value": 0.8619135987183277
+    },
+    {
+      "sample_id": "dm-test-fadabe346fe95d33eee71299e6596754768f5246#12",
+      "value": 0.7567756308243909
+    },
+    {
+      "sample_id": "dm-test-fadabe346fe95d33eee71299e6596754768f5246#13",
+      "value": 0.721027044811505
+    },
+    {
+      "sample_id": "dm-test-fadabe346fe95d33eee71299e6596754768f5246#14",
+      "value": 0.7414332894247538
+    },
+    {
+      "sample_id": "dm-test-fadabe346fe95d33eee71299e6596754768f5246#15",
+      "value": 0.6795542561253372
+    }
+  ],
+  "summary_level": {
+    "dimensions": [
+      {
+        "name": "coherence",
+        "spearman": 0.4176460168670312,
+        "pearson": 0.4337955251749102,
+        "kendall_tau": 0.30263486100590287,
+        "spearman_ci": {
+          "low": 0.34257634293022254,
+          "high": 0.48697287990655924
+        },
+        "pearson_ci": {
+          "low": 0.36222299427142124,
+          "high": 0.4992647545778482
+        },
+        "kendall_tau_ci": {
+          "low": 0.24804256012583187,
+          "high": 0.355017369409384
+        }
+      },
+      {
+        "name": "consistency",
+        "spearman": 0.2475053427098227,
+        "pearson": 0.23377648259633232,
+        "kendall_tau": 0.19566325359587702,
+        "spearman_ci": {
+          "low": 0.19018192513414567,
+          "high": 0.301800965656446
+        },
+        "pearson_ci": {
+          "low": 0.1820270269044706,
+          "high": 0.2790192254979359
+        },
+        "kendall_tau_ci": {
+          "low": 0.1512944940008789,
+          "high": 0.23851764631535094
+        }
+      },
+      {
+        "name": "fluency",
+        "spearman": 0.1388130390283237,
+        "pearson": 0.1676886276019422,
+        "kendall_tau": 0.10811260776280111,
+        "spearman_ci": {
+          "low": 0.05508189799024494,
+          "high": 0.2205156937189116
+        },
+        "pearson_ci": {
+          "low": 0.09306508838266273,
+          "high": 0.24174128993070526
+        },
+        "kendall_tau_ci": {
+          "low": 0.04422869905372252,
+          "high": 0.1730386982628924
+        }
+      },
+      {
+        "name": "relevance",
+        "spearman": 0.39003611964133633,
+        "pearson": 0.4149531111402416,
+        "kendall_tau": 0.2831488120720892,
+        "spearman_ci": {
+          "low": 0.3174072719808493,
+          "high": 0.4564311974882628
+        },
+        "pearson_ci": {
+          "low": 0.34084326950795557,
+          "high": 0.48280881220753047
+        },
+        "kendall_tau_ci": {
+          "low": 0.2283354698334018,
+          "high": 0.3338304234751769
+        }
+      }
+    ]
+  },
+  "system_level": {
+    "dimensions": [
+      {
+        "name": "coherence",
+        "spearman": 0.5264705882352941,
+        "pearson": 0.5121404426902956,
+        "kendall_tau": 0.43333333333333335,
+        "spearman_ci": {
+          "low": -0.04923094015405884,
+          "high": 0.9282511210762332
+        },
+        "pearson_ci": {
+          "low": -0.03412031164537136,
+          "high": 0.924916428550522
+        },
+        "kendall_tau_ci": {
+          "low": -0.017543859649122806,
+          "high": 0.8036148862199746
+        }
+      },
+      {
+        "name": "consistency",
+        "spearman": 0.5486749535600419,
+        "pearson": 0.28221920883776463,
+        "kendall_tau": 0.44729322046195275,
+        "spearman_ci": {
+          "low": 0.03737417476377644,
+          "high": 0.9175524084165224
+        },
+        "pearson_ci": {
+          "low": -0.16293554534069826,
+          "high": 0.7388944351278449
+        },
+        "kendall_tau_ci": {
+          "low": 0.05479330723787748,
+          "high": 0.8257316062619285
+        }
+      },
+      {
+        "name": "fluency",
+        "spearman": 0.33554092969199834,
+        "pearson": 0.29942565801976473,
+        "kendall_tau": 0.2761530448893886,
+        "spearman_ci": {
+          "low": -0.2571730990605026,
+          "high": 0.8113902177508144
+        },
+        "pearson_ci": {
+          "low": -0.19388232949466874,
+          "high": 0.6931214327670852
+        },
+        "kendall_tau_ci": {
+          "low": -0.2072072072072072,
+          "high": 0.6991150442477876
+        }
+      },
+      {
+        "name": "relevance",
+        "spearman": 0.3235294117647059,
+        "pearson": 0.3530728576618054,
+        "kendall_tau": 0.31666666666666665,
+        "spearman_ci": {
+          "low": -0.3125188253012048,
+          "high": 0.8890720064706841
+        },
+        "pearson_ci": {
+          "low": -0.21275400176990109,
+          "high": 0.9003916738224939
+        },
+        "kendall_tau_ci": {
+          "low": -0.21052631578947367,
+          "high": 0.8000450450450449
+        }
+      }
+    ]
+  }
+}

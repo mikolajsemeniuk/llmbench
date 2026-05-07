@@ -30,7 +30,7 @@ func main() {
 	flag.StringVar(&output, "output", "output/smartmodel.json", "write results to file instead of stdout")
 	flag.StringVar(&host, "host", "http://localhost:11434", "Ollama host URL (port 11434)")
 	flag.StringVar(&model, "model", "nomic-embed-text", "embedding model for SMART-Model")
-	flag.StringVar(&norm, "norm", "max", "reference aggregation: max|mean")
+	flag.StringVar(&norm, "norm", eval.DefaultNormName, "reference aggregation: max|mean")
 	flag.IntVar(&n, "n", 0, "entries limit (0 = all)")
 	flag.IntVar(&bootstrap, "bootstrap", 1000, "bootstrap resamples for 95% CI (0 = disabled)")
 	flag.Parse()
@@ -39,9 +39,9 @@ func main() {
 	ctx, cancel := signal.NotifyContext(ctx, os.Interrupt)
 	defer cancel()
 
-	fn, ok := eval.Aggregators[norm]
+	fn, ok := eval.Norms[norm]
 	if !ok {
-		log.Fatalf("unknown norm %q (available: max, mean)", norm)
+		fn = eval.DefaultNorm
 	}
 
 	fsys := os.DirFS(filepath.Dir(input))

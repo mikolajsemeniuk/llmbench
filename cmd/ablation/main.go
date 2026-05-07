@@ -56,6 +56,7 @@ func main() {
 		log.Fatalf("no ablation variants recognised in %s", inputDir)
 	}
 
+	rows = dedupRows(rows)
 	sortRows(rows)
 	if lambdaStar >= 0 {
 		setCanonical(rows, lambdaStar)
@@ -97,6 +98,20 @@ func parseRow(path string) (Row, bool) {
 	row.Coh, row.Con, row.Flu, row.Rel = extractDims(r.SummaryLevel)
 	row.LeadBiasLambda = parseField(r.Norm, "lead_lambda")
 	row.Split = parseStringField(r.Norm, "split")
+
+	// The ablation table is the canonical lead-bias λ sweep with the
+	// nomic-embed-text backbone. Embedder-ablation reports and the
+	// cross-embedder bge-m3 verification sweep also live in
+	// ablation/ but are rendered into separate tables; filter them
+	// out here. Empty embed_model is treated as canonical (legacy
+	// coarse-sweep files predate the field).
+	embedder := parseStringField(r.Norm, "embed_model")
+	if embedder != "" && embedder != "nomic-embed-text" {
+		return Row{}, false
+	}
+	if row.Split == "all" {
+		return Row{}, false
+	}
 
 	var paramStr string
 	if row.LeadBiasLambda == 0 {
@@ -165,6 +180,33 @@ func extractDims(c eval.Correlation) (coh, con, flu, rel float64) {
 		}
 	}
 	return
+}
+
+// dedupRows collapses duplicate (split, λ) rows to a single entry.
+// The coarse λ ∈ {0.25, 0.5, 1.0, 2.0} sweep and the finer-grained
+// b5k sweep around the optimum both contain a λ=0.5 run with the
+// canonical embedder; deterministic scoring means the point
+// estimates are identical, but rendering both produces a confusing
+// duplicate row. Prefer the source with the longer file name (the
+// b5k variant), which carries bootstrap CI in its underlying JSON.
+func dedupRows(rows []Row) []Row {
+	type key struct {
+		split  string
+		lambda float64
+	}
+	best := map[key]Row{}
+	for _, r := range rows {
+		k := key{r.Split, r.LeadBiasLambda}
+		prev, ok := best[k]
+		if !ok || len(r.Source) > len(prev.Source) {
+			best[k] = r
+		}
+	}
+	out := make([]Row, 0, len(best))
+	for _, r := range best {
+		out = append(out, r)
+	}
+	return out
 }
 
 // setCanonical marks the test-split row matching the dev-selected λ*.

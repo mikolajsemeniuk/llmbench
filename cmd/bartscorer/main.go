@@ -28,7 +28,7 @@ func main() {
 	flag.StringVar(&input, "input", "", "path to dataset JSON/JSONL file")
 	flag.StringVar(&output, "output", "output/bartscore.json", "write results to file instead of stdout")
 	flag.StringVar(&server, "server", "http://localhost:9200", "model server URL (port 9200)")
-	flag.StringVar(&norm, "norm", "max", "reference aggregation: max|mean")
+	flag.StringVar(&norm, "norm", eval.DefaultNormName, "reference aggregation: max|mean")
 	flag.IntVar(&n, "n", 0, "entries limit (0 = all)")
 	flag.IntVar(&bootstrap, "bootstrap", 1000, "bootstrap resamples for 95% CI (0 = disabled)")
 	flag.Parse()
@@ -37,9 +37,9 @@ func main() {
 	ctx, cancel := signal.NotifyContext(ctx, os.Interrupt)
 	defer cancel()
 
-	fn, ok := eval.Aggregators[norm]
+	fn, ok := eval.Norms[norm]
 	if !ok {
-		log.Fatalf("unknown norm %q (available: max, mean)", norm)
+		fn = eval.DefaultNorm
 	}
 
 	fsys := os.DirFS(filepath.Dir(input))

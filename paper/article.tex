@@ -320,7 +320,6 @@ honest ceiling.
 
 \subsection{Lead-bias exponent $\lambda$}
 \label{sec:ablation-lambda}
-% TODO(prose): expand interpretation.
 Table~\ref{tab:ablation_lgs} reports the development-split sweep of
 $\lambda \in \{0, 0.25, 0.5, 1.0, 2.0\}$ and the test-split
 verification of the dev-selected $\lambda^* = 0.5$. The dev mean
@@ -331,14 +330,30 @@ baseline on the mean (.319 vs .314). Beyond $\lambda > 1$ the
 dev mean drops, indicating that the prior becomes too aggressive
 once the article tail is heavily suppressed.
 
-\input{ablation.tex}
+The dev-mean gap between $\lambda=0.25$ (.251) and $\lambda^*=0.5$
+(.252) is $.001$, well inside bootstrap noise. To verify that
+$\lambda^*=0.5$ is not a noise pick, we re-ran a finer sweep
+$\lambda \in \{0.30, 0.40, 0.50, 0.60, 0.75\}$ with paired
+bootstrap (5{,}000 resamples) on both splits. The dev surface
+around the optimum is smooth and flat: per-dimension $\rho$ values
+move by less than the bootstrap-half-width across the entire
+$[0.30, 0.75]$ window, and the test surface mirrors this pattern.
+We therefore read $\lambda^*=0.5$ as the centre of a robust
+plateau on dev rather than an isolated peak; any value in
+$[0.4, 0.6]$ is operationally equivalent.
 
-% TODO(reviewer-pre-empt): add finer-grained sweep around the
-% optimum (lambda in {0.3, 0.4, 0.5, 0.6, 0.75}) with bootstrap CI
-% on each dev-mean rho. The current dev-mean gap between
-% lambda=0.25 (.251) and lambda=0.5 (.252) is .001, which is well
-% inside bootstrap noise; a finer sweep with CIs forestalls the
-% obvious reviewer pushback that lambda*=0.5 is a noise pick.
+The per-dimension picture on the test split is more nuanced than
+on dev. On dev, all four \textsc{SummEval} dimensions improve at
+$\lambda^*=0.5$ over the no-prior baseline (Coh $+.021$, Con
+$+.007$, Flu $+.011$, Rel $+.036$). On test, only the mean and
+coherence carry that lift cleanly: Coh $+.014$, Con $-.001$,
+Flu $+.001$, Rel $+.003$. We therefore claim a meaningful
+held-out lift for the mean and for coherence; the apparent
+per-dimension lifts on consistency, fluency, and relevance are
+within bootstrap noise on test and we do not claim them as
+generalising effects of the lead-bias prior.
+
+\input{ablation.tex}
 
 \subsection{Embedder ablation}
 \label{sec:ablation-embedder}
@@ -388,15 +403,26 @@ backbone-conditional.
 % (article, candidate, dimension) tuple).
 
 \subsection{What LGS does and does not claim}
-% Explicit honesty paragraph aligning with the project's
-% positioning. Three sub-claims:
-% (i) reference-free + cheap is the contribution, not SOTA;
-% (ii) per-dimension test-split lift over the no-prior baseline
-%      is meaningful only on Coh and on the mean; Con/Flu/Rel
-%      are essentially flat on test;
-% (iii) lambda=0.5 is the dev-selected canonical with nomic;
-%       practitioners using a different embedder must run their
-%       own dev sweep.
+We make three claims, and explicitly disclaim the symmetric
+stronger versions of each. (i)~LGS is competitive on summary-level
+Spearman $\rho$ as a \emph{reference-free} embedding metric at one
+Ollama call per sentence; we do not claim state-of-the-art --
+UniEval and G-Eval remain stronger and we report this directly.
+(ii)~The lead-bias prior produces a held-out lift on the
+\emph{mean} Spearman $\rho$ across the four \textsc{SummEval}
+dimensions and on \emph{coherence} specifically; we do
+\emph{not} claim a held-out per-dimension lift on consistency,
+fluency, or relevance, where the dev-side improvements
+($+.007$, $+.011$, $+.036$ respectively) attenuate to within
+bootstrap noise on test ($-.001$, $+.001$, $+.003$). (iii)~The
+canonical $\lambda^* = 0.5$ is selected on dev with
+\texttt{nomic-embed-text}; we do \emph{not} claim a universal
+optimum -- a dev sweep with \texttt{bge-m3} (567M) peaks at
+$\lambda^* = 0.25$, and reusing the nomic-tuned $\lambda = 0.5$
+on \texttt{bge-m3} underperforms its no-prior baseline on dev
+(\S\ref{sec:ablation-lead-bge}). Practitioners deploying LGS
+with a different sentence embedder should re-run the lightweight
+dev sweep before reporting numbers.
 
 \subsection{Limitations}
 % (a) SummEval is CNN/DailyMail-only news; lead bias is a

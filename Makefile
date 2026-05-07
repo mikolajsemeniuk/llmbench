@@ -127,6 +127,19 @@ benchmark-ablation-lead-finer:
 	go run ./cmd/lgs -doc-split first50 -lead-bias-lambda 0.60 -bootstrap 5000 -output ablation/lgs_lead_dev_l060_b5k.json
 	go run ./cmd/lgs -doc-split first50 -lead-bias-lambda 0.75 -bootstrap 5000 -output ablation/lgs_lead_dev_l075_b5k.json
 
+# Test-side counterpart of the finer sweep. Same five λ values as
+# benchmark-ablation-lead-finer, but on last50 (test split) with
+# bootstrap CI=5000. Used to verify that the smooth-and-flat dev
+# surface around the optimum transfers to the held-out test split.
+.PHONY: benchmark-ablation-lead-finer-test
+benchmark-ablation-lead-finer-test:
+	@mkdir -p ablation
+	go run ./cmd/lgs -doc-split last50 -lead-bias-lambda 0.30 -bootstrap 5000 -output ablation/lgs_lead_test_l030_b5k.json
+	go run ./cmd/lgs -doc-split last50 -lead-bias-lambda 0.40 -bootstrap 5000 -output ablation/lgs_lead_test_l040_b5k.json
+	go run ./cmd/lgs -doc-split last50 -lead-bias-lambda 0.50 -bootstrap 5000 -output ablation/lgs_lead_test_l050_b5k.json
+	go run ./cmd/lgs -doc-split last50 -lead-bias-lambda 0.60 -bootstrap 5000 -output ablation/lgs_lead_test_l060_b5k.json
+	go run ./cmd/lgs -doc-split last50 -lead-bias-lambda 0.75 -bootstrap 5000 -output ablation/lgs_lead_test_l075_b5k.json
+
 # Cross-embedder lead-bias verification — repeats the dev λ sweep
 # with a second embedder (bge-m3, 567M, the largest in our roster)
 # to confirm the lead-bias contribution is not specific to

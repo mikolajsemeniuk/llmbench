@@ -2,10 +2,10 @@ package eval
 
 import "slices"
 
-var Aggregators = map[string]Norm{
-	"max":  Max,
-	"mean": Mean,
-}
+const DefaultNormName = "max"
+
+var DefaultNorm = Max
+var Norms = map[string]Norm{"max": Max, "mean": Mean}
 
 type Norm func([]float64) float64
 
