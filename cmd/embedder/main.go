@@ -6,8 +6,7 @@
 // summary-level Spearman ρ across the four SummEval dimensions for
 // each tested embedder.
 //
-// Output: `paper/embedder_ablation.tex` (plus a JSON sidecar for the
-// webviewer).
+// Output: `paper/embedder_ablation.tex`.
 package main
 
 import (
@@ -27,14 +26,12 @@ import (
 var (
 	inputDir    string
 	outputTex   string
-	outputJSON  string
 	canonicalID string
 )
 
 func main() {
 	flag.StringVar(&inputDir, "input", "ablation", "directory containing lgs_embedder_*.json reports")
 	flag.StringVar(&outputTex, "output", "paper/embedder_ablation.tex", "path to write LaTeX table")
-	flag.StringVar(&outputJSON, "json", "paper/embedder_ablation.json", "path to write JSON sidecar")
 	flag.StringVar(&canonicalID, "canonical", "nomic-embed-text", "embedder model used in the headline canonical run (gets ★)")
 	flag.Parse()
 
@@ -65,28 +62,18 @@ func main() {
 	if err := writeFile(outputTex, renderLatex(rows)); err != nil {
 		log.Fatalf("write tex: %v", err)
 	}
-	if outputJSON != "" {
-		raw, err := json.MarshalIndent(rows, "", "  ")
-		if err != nil {
-			log.Fatalf("marshal json: %v", err)
-		}
-		if err := writeFile(outputJSON, string(raw)); err != nil {
-			log.Fatalf("write json: %v", err)
-		}
-	}
 	log.Printf("embedder ablation: %d rows → %s", len(rows), outputTex)
 }
 
-// Row is one line of the embedder table. Exported because the JSON
-// sidecar is read by the webviewer.
+// Row is one line of the embedder table.
 type Row struct {
-	Embedder    string  `json:"embedder"`
-	IsCanonical bool    `json:"is_canonical"`
-	Coh         float64 `json:"coh"`
-	Con         float64 `json:"con"`
-	Flu         float64 `json:"flu"`
-	Rel         float64 `json:"rel"`
-	Mean        float64 `json:"mean"`
+	Embedder    string
+	IsCanonical bool
+	Coh         float64
+	Con         float64
+	Flu         float64
+	Rel         float64
+	Mean        float64
 }
 
 func parseRow(path, canonical string) (Row, bool) {

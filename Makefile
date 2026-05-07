@@ -43,15 +43,15 @@ paper-system:
 
 .PHONY: paper-ablation
 paper-ablation:
-	go run ./cmd/ablation -input ablation -lambda-star $(LGS_LAMBDA) -output paper/ablation.tex -json paper/ablation.json
+	go run ./cmd/ablation -input ablation -lambda-star $(LGS_LAMBDA) -output paper/ablation.tex
 
 .PHONY: paper-embedder-ablation
 paper-embedder-ablation:
-	go run ./cmd/embedder -input ablation -canonical $(LGS_EMBED_MODEL) -output paper/embedder_ablation.tex -json paper/embedder_ablation.json
+	go run ./cmd/embedder -input ablation -canonical $(LGS_EMBED_MODEL) -output paper/embedder_ablation.tex
 
 .PHONY: paper-comparisons
 paper-comparisons:
-	go run ./cmd/compare -metric lgs -baselines unieval,bertscore,geval,smartmodel,chrf,embedscorer -bootstrap 5000 -output paper/comparisons.tex -json paper/comparisons.json
+	go run ./cmd/compare -metric lgs -baselines unieval,bertscore,geval,smartmodel,chrf,embedscorer -bootstrap 5000 -output paper/comparisons.tex
 
 # Canonical hyperparameters. λ is the lead-bias decay (selected on
 # the dev split — see benchmark-ablation-lead). LGS_EMBED_MODEL is
@@ -108,6 +108,24 @@ benchmark-ablation-lead:
 	go run ./cmd/lgs -doc-split last50  -lead-bias-lambda 0.5  -bootstrap 0 -output ablation/lgs_lead_test_l050.json
 	go run ./cmd/lgs -doc-split last50  -lead-bias-lambda 1.0  -bootstrap 0 -output ablation/lgs_lead_test_l100.json
 	go run ./cmd/lgs -doc-split last50  -lead-bias-lambda 2.0  -bootstrap 0 -output ablation/lgs_lead_test_l200.json
+
+# Finer lead-bias sweep around the dev optimum — preempts the
+# reviewer concern that λ*=0.5 is a noise pick. The coarse dev sweep
+# (benchmark-ablation-lead) puts λ=0.25 at .251 and λ=0.5 at .252
+# (gap of .001, no CI). This finer sweep covers
+# λ ∈ {0.3, 0.4, 0.6, 0.75} (the missing points around the optimum)
+# WITH bootstrap CI=5000 on each per-dimension ρ. λ=0.5 is also
+# re-run with bootstrap so all five points around the optimum carry
+# CIs comparable to each other. Output files use `_b5k` suffix to
+# distinguish them from the no-bootstrap coarse sweep snapshots.
+.PHONY: benchmark-ablation-lead-finer
+benchmark-ablation-lead-finer:
+	@mkdir -p ablation
+	go run ./cmd/lgs -doc-split first50 -lead-bias-lambda 0.30 -bootstrap 5000 -output ablation/lgs_lead_dev_l030_b5k.json
+	go run ./cmd/lgs -doc-split first50 -lead-bias-lambda 0.40 -bootstrap 5000 -output ablation/lgs_lead_dev_l040_b5k.json
+	go run ./cmd/lgs -doc-split first50 -lead-bias-lambda 0.50 -bootstrap 5000 -output ablation/lgs_lead_dev_l050_b5k.json
+	go run ./cmd/lgs -doc-split first50 -lead-bias-lambda 0.60 -bootstrap 5000 -output ablation/lgs_lead_dev_l060_b5k.json
+	go run ./cmd/lgs -doc-split first50 -lead-bias-lambda 0.75 -bootstrap 5000 -output ablation/lgs_lead_dev_l075_b5k.json
 
 # Cross-embedder lead-bias verification — repeats the dev λ sweep
 # with a second embedder (bge-m3, 567M, the largest in our roster)

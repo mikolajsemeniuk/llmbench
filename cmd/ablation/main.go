@@ -4,9 +4,7 @@
 // on the test split. The dev-selected canonical row is flagged with a ★.
 //
 // Output target matches the rest of the paper pipeline (default
-// `paper/ablation.tex`). Rendering also writes a JSON sidecar so the
-// webviewer's Ablation tab can render the same data without
-// re-parsing LaTeX.
+// `paper/ablation.tex`).
 package main
 
 import (
@@ -27,14 +25,12 @@ import (
 var (
 	inputDir   string
 	outputTex  string
-	outputJSON string
 	lambdaStar float64
 )
 
 func main() {
 	flag.StringVar(&inputDir, "input", "ablation", "directory containing ablation JSON reports")
 	flag.StringVar(&outputTex, "output", "paper/ablation.tex", "path to write LaTeX table")
-	flag.StringVar(&outputJSON, "json", "paper/ablation.json", "path to write JSON sidecar (for webviewer)")
 	flag.Float64Var(&lambdaStar, "lambda-star", -1.0, "canonical λ* selected on dev split (−1 disables ★)")
 	flag.Parse()
 
@@ -68,30 +64,20 @@ func main() {
 	if err := writeFile(outputTex, renderLatex(rows)); err != nil {
 		log.Fatalf("write tex: %v", err)
 	}
-	if outputJSON != "" {
-		raw, err := json.MarshalIndent(rows, "", "  ")
-		if err != nil {
-			log.Fatalf("marshal json: %v", err)
-		}
-		if err := writeFile(outputJSON, string(raw)); err != nil {
-			log.Fatalf("write json: %v", err)
-		}
-	}
 	log.Printf("ablation: %d rows → %s", len(rows), outputTex)
 }
 
-// Row is one line of the ablation table. Exported because the JSON
-// sidecar is rendered by the webviewer.
+// Row is one line of the ablation table.
 type Row struct {
-	Label          string  `json:"label"`
-	Source         string  `json:"source"`
-	LeadBiasLambda float64 `json:"lead_bias_lambda"`
-	Split          string  `json:"split"` // "first50" | "last50" | "all"
-	IsCanonical    bool    `json:"is_canonical"`
-	Coh            float64 `json:"coh"`
-	Con            float64 `json:"con"`
-	Flu            float64 `json:"flu"`
-	Rel            float64 `json:"rel"`
+	Label          string
+	Source         string
+	LeadBiasLambda float64
+	Split          string // "first50" | "last50" | "all"
+	IsCanonical    bool
+	Coh            float64
+	Con            float64
+	Flu            float64
+	Rel            float64
 }
 
 func parseRow(path string) (Row, bool) {
