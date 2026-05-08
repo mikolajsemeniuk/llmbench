@@ -4,7 +4,7 @@
 // on the test split. The dev-selected canonical row is flagged with a ★.
 //
 // Output target matches the rest of the paper pipeline (default
-// `paper/ablation.tex`).
+// `paper/ablation.gen.tex`).
 package main
 
 import (
@@ -30,7 +30,7 @@ var (
 
 func main() {
 	flag.StringVar(&inputDir, "input", "ablation", "directory containing ablation JSON reports")
-	flag.StringVar(&outputTex, "output", "paper/ablation.tex", "path to write LaTeX table")
+	flag.StringVar(&outputTex, "output", "paper/ablation.gen.tex", "path to write LaTeX table")
 	flag.Float64Var(&lambdaStar, "lambda-star", -1.0, "canonical λ* selected on dev split (−1 disables ★)")
 	flag.Parse()
 

@@ -621,9 +621,9 @@ $\rho$. Table~\ref{tab:correlations_system} reports system-level
 correlations (note that with $n=16$ systems the confidence intervals
 are wide; we treat this table as a secondary sanity check).
 
-\input{summary.tex}
-\input{comparisons.tex}
-\input{system.tex}
+\input{summary.gen.tex}
+\input{comparisons.gen.tex}
+\input{system.gen.tex}
 
 \subsection{Headline findings}
 \paragraph{Like-for-like vs whole-text cosine.}
@@ -721,7 +721,7 @@ it functionally truncates the article. The mid-range
 $\lambda \in [0.4, 0.6]$ is the operationally useful window,
 and the dev sweep is what locates it.
 
-\input{ablation.tex}
+\input{ablation.gen.tex}
 
 \begin{figure}[t]
 \centering
@@ -805,7 +805,7 @@ universal properties of LGS. The mean-Spearman ordering of
 metric families is stable across backbones; the per-dimension
 ordering is not.
 
-\input{embedder_ablation.tex}
+\input{embedders.gen.tex}
 
 \subsection{Cross-embedder lead-bias verification}
 \label{sec:ablation-lead-bge}

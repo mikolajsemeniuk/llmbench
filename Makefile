@@ -44,27 +44,27 @@ benchmark-geval:
 	go run ./cmd/geval -dimension relevance   -runs $(GEVAL_RUNS) -temperature $(GEVAL_TEMPERATURE) -base-seed $(GEVAL_BASE_SEED)
 
 .PHONY: paper
-paper: paper-summary paper-system paper-ablation paper-embedder-ablation paper-comparisons
+paper: paper-summary paper-system paper-ablation paper-embedders paper-comparisons
 
 .PHONY: paper-summary
 paper-summary:
-	go run ./cmd/paper -ci -level summary -output paper/summary.tex
+	go run ./cmd/paper -ci -level summary -output paper/summary.gen.tex
 
 .PHONY: paper-system
 paper-system:
-	go run ./cmd/paper -ci -level system  -output paper/system.tex
+	go run ./cmd/paper -ci -level system  -output paper/system.gen.tex
 
 .PHONY: paper-ablation
 paper-ablation:
-	go run ./cmd/ablation -input ablation -lambda-star $(LGS_LAMBDA) -output paper/ablation.tex
+	go run ./cmd/ablation -input ablation -lambda-star $(LGS_LAMBDA) -output paper/ablation.gen.tex
 
-.PHONY: paper-embedder-ablation
-paper-embedder-ablation:
-	go run ./cmd/embedder -input ablation -canonical $(LGS_EMBED_MODEL) -output paper/embedder_ablation.tex
+.PHONY: paper-embedders
+paper-embedders:
+	go run ./cmd/embedder -input ablation -canonical $(LGS_EMBED_MODEL) -output paper/embedders.gen.tex
 
 .PHONY: paper-comparisons
 paper-comparisons:
-	go run ./cmd/compare -metric lgs -baselines unieval,bertscore,geval,smartmodel,chrf,embedscorer -bootstrap 5000 -output paper/comparisons.tex
+	go run ./cmd/compare -metric lgs -baselines unieval,bertscore,geval,smartmodel,chrf,embedscorer -bootstrap 5000 -output paper/comparisons.gen.tex
 
 # Canonical hyperparameters. λ is the lead-bias decay (selected on
 # the dev split — see benchmark-ablation-lead). LGS_EMBED_MODEL is
@@ -76,7 +76,7 @@ LGS_EMBED_MODEL ?= nomic-embed-text
 
 # benchmark-lgs runs the canonical metric on the full SummEval set
 # with the dev-selected λ and the canonical embedder. Writes the
-# report consumed by paper/summary.tex and paper/comparisons.tex.
+# report consumed by paper/summary.gen.tex and paper/comparisons.gen.tex.
 .PHONY: benchmark-lgs
 benchmark-lgs:
 	go run ./cmd/lgs -doc-split all -lead-bias-lambda $(LGS_LAMBDA) -embed-model $(LGS_EMBED_MODEL) -output output/lgs.json
@@ -92,7 +92,7 @@ benchmark-lgs:
 benchmark-lgs-paper: benchmark-ablation benchmark-embedder-ablation benchmark-lgs paper
 
 # benchmark-ablation regenerates the per-variant snapshots in
-# ablation/ that back paper/ablation.tex. Two conceptually distinct
+# ablation/ that back paper/ablation.gen.tex. Two conceptually distinct
 # components: the recall-only baseline (λ=0) and the lead-bias sweep
 # (λ>0). Each runs on both dev and test splits.
 .PHONY: benchmark-ablation
@@ -172,7 +172,7 @@ benchmark-ablation-lead-bge:
 # the full SummEval set with four sentence-embedder backbones.
 # Establishes that LGS is a metric design (sentence-level grounding +
 # lead-bias prior), not specific to nomic-embed-text. Output is
-# rendered into paper/embedder_ablation.tex by `paper-embedder-ablation`.
+# rendered into paper/embedders.gen.tex by `paper-embedders`.
 # Requires the four embedders to be available in Ollama:
 #   ollama pull nomic-embed-text mxbai-embed-large bge-m3 all-minilm
 .PHONY: benchmark-embedder-ablation

@@ -28,8 +28,8 @@ LGS is reference-free and runs on a small Ollama embedder (`nomic-embed-text`, 1
 - Beats **BERTScore** significantly on consistency (Δρ=+.118, p<.001), ties on coh / flu / rel — while using a much smaller embedder and no human reference.
 - Beats **ChrF** significantly on coherence (Δρ=+.237, p<.001).
 - Outscores BLEU, ROUGE-L, METEOR, SMART-String, MoverScore, BARTScore on the point estimate of every SummEval dimension.
-- Loses to UniEval on every dimension (p<.001) and to G-Eval on consistency (p<.001); other G-Eval comparisons are statistical ties. This is openly reported in `paper/comparisons.tex`.
-- **Robust to embedder choice** (`paper/embedder_ablation.tex`). The canonical metric is run with four sentence-embedder backbones spanning a ~24× parameter range — `all-minilm` (23M), `nomic-embed-text` (137M, headline), `mxbai-embed-large` (335M), `bge-m3` (567M). Mean Spearman ρ stays in [.284, .312]; per-dimension profile shifts (nomic dominates coh / rel, others con / flu) but the metric design is not specific to one backbone.
+- Loses to UniEval on every dimension (p<.001) and to G-Eval on consistency (p<.001); other G-Eval comparisons are statistical ties. This is openly reported in `paper/comparisons.gen.tex`.
+- **Robust to embedder choice** (`paper/embedders.gen.tex`). The canonical metric is run with four sentence-embedder backbones spanning a ~24× parameter range — `all-minilm` (23M), `nomic-embed-text` (137M, headline), `mxbai-embed-large` (335M), `bge-m3` (567M). Mean Spearman ρ stays in [.284, .312]; per-dimension profile shifts (nomic dominates coh / rel, others con / flu) but the metric design is not specific to one backbone.
 
 The paper's contribution is "a reference-free metric you can deploy with a single Ollama model, with one tunable hyperparameter (lead-bias λ) selected via held-out methodology that prior metric papers skip" — efficiency, reference-freeness, methodological honesty, and an empirically-validated structural prior.
 
@@ -61,7 +61,7 @@ make benchmark-embedder-ablation    # 4 embedders, full set (~7 min)
 
 # 4. (Optional) Inspect the snapshots and rendered tables:
 ls ablation/                        # lgs_recall_*.json + lgs_lead_*.json + lgs_embedder_*.json
-cat paper/ablation.tex paper/embedder_ablation.tex
+cat paper/ablation.gen.tex paper/embedders.gen.tex
 ```
 
 The canonical hyperparameters are encoded as Make variables: `LGS_LAMBDA=0.5` (dev-selected) and `LGS_EMBED_MODEL=nomic-embed-text` (the headline embedder). To rerun the canonical with a different choice — for instance, λ=0.25 or a larger embedder:
@@ -142,7 +142,7 @@ Each cmd writes a JSON report to `output/<metric>.json` containing per-sample sc
 make paper
 ```
 
-Writes `paper/summary.tex` and `paper/system.tex` from the JSON reports in `output/`.
+Writes `paper/summary.gen.tex` and `paper/system.gen.tex` from the JSON reports in `output/`.
 
 ## Service endpoints
 

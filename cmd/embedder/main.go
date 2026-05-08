@@ -6,7 +6,7 @@
 // summary-level Spearman ρ across the four SummEval dimensions for
 // each tested embedder.
 //
-// Output: `paper/embedder_ablation.tex`.
+// Output: `paper/embedders.gen.tex`.
 package main
 
 import (
@@ -31,7 +31,7 @@ var (
 
 func main() {
 	flag.StringVar(&inputDir, "input", "ablation", "directory containing lgs_embedder_*.json reports")
-	flag.StringVar(&outputTex, "output", "paper/embedder_ablation.tex", "path to write LaTeX table")
+	flag.StringVar(&outputTex, "output", "paper/embedders.gen.tex", "path to write LaTeX table")
 	flag.StringVar(&canonicalID, "canonical", "nomic-embed-text", "embedder model used in the headline canonical run (gets ★)")
 	flag.Parse()
 

@@ -85,7 +85,7 @@ type comparisonCell struct {
 
 func main() {
 	flag.StringVar(&inputDir, "input", "output", "directory containing metric JSON reports")
-	flag.StringVar(&output, "output", "paper/comparisons.tex",
+	flag.StringVar(&output, "output", "paper/comparisons.gen.tex",
 		"path to write LaTeX table (- for stdout, empty to skip)")
 	flag.StringVar(&target, "metric", "",
 		"target metric name (file basename without .json, e.g. 'mymetric')")

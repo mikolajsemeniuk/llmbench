@@ -93,7 +93,7 @@ var allCoefficients = map[string]coefficient{
 
 func main() {
 	flag.StringVar(&input, "input", "output", "directory containing metric JSON reports")
-	flag.StringVar(&output, "output", "paper/correlations.tex", "path to write LaTeX table (- for stdout)")
+	flag.StringVar(&output, "output", "paper/correlations.gen.tex", "path to write LaTeX table (- for stdout)")
 	flag.StringVar(&level, "level", "summary", "correlation level: summary|system")
 	flag.BoolVar(&withCI, "ci", false, "include 95%% CI in each cell (requires bootstrap data)")
 	flag.StringVar(&coefficients, "coeffs", "spearman,kendall",
