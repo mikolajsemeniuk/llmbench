@@ -44,7 +44,7 @@ benchmark-geval:
 	go run ./cmd/geval -dimension relevance   -runs $(GEVAL_RUNS) -temperature $(GEVAL_TEMPERATURE) -base-seed $(GEVAL_BASE_SEED)
 
 .PHONY: paper
-paper: paper-summary paper-system paper-ablation paper-embedders paper-comparisons
+paper: paper-summary paper-system paper-ablation paper-embedders paper-comparisons paper-frontier
 
 .PHONY: paper-summary
 paper-summary:
@@ -65,6 +65,10 @@ paper-embedders:
 .PHONY: paper-comparisons
 paper-comparisons:
 	go run ./cmd/compare -metric lgs -baselines unieval,bertscore,geval,smartmodel,chrf,embedscorer -bootstrap 5000 -output paper/comparisons.gen.tex
+
+.PHONY: paper-frontier
+paper-frontier:
+	go run ./cmd/frontier -input output -output paper/frontier.gen.tex
 
 # Canonical hyperparameters. λ is the lead-bias decay (selected on
 # the dev split — see benchmark-ablation-lead). LGS_EMBED_MODEL is
