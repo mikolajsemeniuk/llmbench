@@ -198,24 +198,4 @@ curl -X POST http://localhost:9200/gptscore \
      -d '{"reference": "A Pod is the smallest deployable unit in Kubernetes.", "candidate": "A Pod is the smallest unit of deployment in Kubernetes."}'
 ```
 
-### Reranker (port 8010)
-
-Cross-encoder reranker for semantic relevance scoring.
-
-```sh
-curl -X POST http://localhost:8010/v1/rerank \
-     -H "Content-Type: application/json" \
-     -d '{
-       "query": "Co to jest uczenie maszynowe?",
-       "documents": [
-         "Uczenie maszynowe to dział sztucznej inteligencji.",
-         "Przepis na szarlotkę wymaga jabłek i mąki.",
-         "Algorytmy ML pozwalają systemom uczyć się na podstawie danych."
-       ],
-       "top_n": 3
-     }'
-```
-
-## License
-
 [MIT](LICENSE)
