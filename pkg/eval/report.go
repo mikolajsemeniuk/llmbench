@@ -1,3 +1,12 @@
+// Report is the on-disk JSON contract that every cmd/<metric> binary
+// writes to output/<metric>.json after a benchmark run, and that the
+// rendering binaries (cmd/paper, cmd/compare, cmd/ablation,
+// cmd/embedder, cmd/frontier) read back to produce the LaTeX tables
+// and figures consumed by paper/main.tex. The struct carries the raw
+// per-sample scores, the summary-level and system-level Correlation
+// objects (with optional bootstrap CIs), and an optional RunsAggregate
+// used only by stochastic metrics (currently just G-Eval) to record
+// across-run mean±std for every correlation coefficient.
 package eval
 
 import (

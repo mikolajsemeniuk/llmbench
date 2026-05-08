@@ -1,3 +1,11 @@
+// SummEval dataset loader. Reads a JSONL file (default: the embedded
+// SummEval release, see pkg/dataset/summeval.go) and decodes each
+// line into a Sample carrying the source article, the candidate
+// summary, the SystemID and DocumentID needed for cluster-bootstrap
+// and system-level aggregation, and the four expert human ratings
+// (coherence, consistency, fluency, relevance). The Sample struct is
+// the contract every cmd/<metric> binary consumes; nothing else in
+// pkg/eval depends on the JSON wire format directly.
 package eval
 
 import (
