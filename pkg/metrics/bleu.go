@@ -59,6 +59,7 @@ func tokenize(s string) []string {
 	for _, p := range []string{".", ",", "!", "?", ";", ":", "(", ")", "\"", "'"} {
 		s = strings.ReplaceAll(s, p, " "+p+" ")
 	}
+
 	return strings.Fields(s)
 }
 
@@ -68,5 +69,6 @@ func ngrams(tokens []string, n int) map[string]int {
 		key := strings.Join(tokens[i:i+n], " ")
 		m[key]++
 	}
+
 	return m
 }

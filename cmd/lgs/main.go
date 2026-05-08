@@ -131,7 +131,7 @@ func main() {
 			cache[s.DocumentID] = c
 		}
 
-		score, _, err := scorer.ScoreWithSourceEmbeddings(ctx, c.sents, c.embs, s.Candidate)
+		score, _, err := scorer.Score(ctx, c.sents, c.embs, s.Candidate)
 		if err != nil {
 			log.Fatalf("sample %s: %v", s.ID, err)
 		}
@@ -173,7 +173,7 @@ func main() {
 // filteredSplit splits a document into sentences and drops degenerate
 // ones, matching the filter the metric applies internally.
 func filteredSplit(text string, minLen int) []string {
-	raw := metrics.SplitSentencesForLGS(text)
+	raw := metrics.SplitSentences(text)
 	out := raw[:0]
 	for _, s := range raw {
 		if len([]rune(s)) >= minLen {

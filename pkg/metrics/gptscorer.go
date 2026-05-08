@@ -18,6 +18,7 @@ func (g *GPTScorer) Score(ctx context.Context, reference, candidate string) (flo
 		Reference: reference,
 		Candidate: candidate,
 	}
+
 	res, err := g.Server.post(ctx, "/gptscore", in)
 	if err != nil {
 		return 0, fmt.Errorf("gptscore: %w", err)

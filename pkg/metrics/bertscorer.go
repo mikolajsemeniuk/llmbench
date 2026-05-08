@@ -17,12 +17,14 @@ func NewBERTScorer(host string) *BERTScorer {
 }
 
 func (b *BERTScorer) Score(ctx context.Context, reference, candidate string) (float64, error) {
-	res, err := b.Server.post(ctx, "/bertscore", modelServerRequest{
+	in := modelServerRequest{
 		Reference: reference,
 		Candidate: candidate,
-	})
+	}
+	res, err := b.Server.post(ctx, "/bertscore", in)
 	if err != nil {
 		return 0, fmt.Errorf("bertscore: %w", err)
 	}
+
 	return res.Score, nil
 }

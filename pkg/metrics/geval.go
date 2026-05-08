@@ -79,6 +79,7 @@ func (g *GEval) Score(ctx context.Context, dimension, source, candidate string) 
 	if err != nil {
 		return 0, err
 	}
+
 	return res.NormalizedScore, nil
 }
 
@@ -91,7 +92,7 @@ func (g *GEval) ScoreDetailed(ctx context.Context, dimension, source, candidate 
 		return GEvalResult{}, fmt.Errorf("geval: unknown dimension %q", dimension)
 	}
 
-	res, err := g.Provider.Chat(ctx, ChatInput{
+	in := ChatInput{
 		Model:  g.Model,
 		Prompt: dim.build(source, candidate),
 		Stream: false,
@@ -99,19 +100,21 @@ func (g *GEval) ScoreDetailed(ctx context.Context, dimension, source, candidate 
 			Temperature: g.Temperature,
 			Seed:        g.Seed,
 		},
-	})
+	}
+	res, err := g.Provider.Chat(ctx, in)
 	if err != nil {
 		return GEvalResult{}, fmt.Errorf("geval: completion: %w", err)
 	}
 
 	raw, fallback := parseGEvalScore(res.Response, dim.MinScore, dim.MaxScore)
-
-	return GEvalResult{
+	out := GEvalResult{
 		NormalizedScore: float64(raw-dim.MinScore) / float64(dim.MaxScore-dim.MinScore),
 		RawScore:        raw,
 		UsedFallback:    fallback,
 		RawResponse:     res.Response,
-	}, nil
+	}
+
+	return out, nil
 }
 
 // parseGEvalScore extracts a score from the model response. Handles:
@@ -138,7 +141,6 @@ func parseGEvalScore(raw string, minVal, maxVal int) (int, bool) {
 			continue
 		}
 
-		// Direct parse.
 		if n, err := strconv.Atoi(field); err == nil {
 			return clamp(n, minVal, maxVal), false
 		}
@@ -166,23 +168,28 @@ func stripPromptEcho(raw string) string {
 		"- Coherence", "- Consistency", "- Fluency", "- Relevance",
 		"Coherence", "Consistency", "Fluency", "Relevance",
 	}
+
 	trimmed := strings.TrimSpace(raw)
 	lower := strings.ToLower(trimmed)
 	for _, p := range prefixes {
 		pl := strings.ToLower(p)
-		if strings.HasPrefix(lower, pl) {
-			rest := trimmed[len(p):]
-			// Skip optional "(1-3):" / "(1-5):" header.
-			rest = strings.TrimSpace(rest)
-			if strings.HasPrefix(rest, "(") {
-				if end := strings.Index(rest, ")"); end != -1 {
-					rest = rest[end+1:]
-				}
-			}
-			rest = strings.TrimLeft(rest, " :\t\n")
-			return rest
+		if !strings.HasPrefix(lower, pl) {
+			continue
 		}
+
+		rest := trimmed[len(p):]
+		// Skip optional "(1-3):" / "(1-5):" header.
+		rest = strings.TrimSpace(rest)
+		if strings.HasPrefix(rest, "(") {
+			if end := strings.Index(rest, ")"); end != -1 {
+				rest = rest[end+1:]
+			}
+		}
+
+		rest = strings.TrimLeft(rest, " :\t\n")
+		return rest
 	}
+
 	return trimmed
 }
 
@@ -190,9 +197,11 @@ func clamp(n, minVal, maxVal int) int {
 	if n < minVal {
 		return minVal
 	}
+
 	if n > maxVal {
 		return maxVal
 	}
+
 	return n
 }
 

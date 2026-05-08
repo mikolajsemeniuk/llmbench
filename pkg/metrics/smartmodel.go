@@ -18,8 +18,8 @@ func NewSMARTModelScorer(host, model string) *SMARTModelScorer {
 }
 
 func (s *SMARTModelScorer) Score(ctx context.Context, reference, candidate string) (float64, error) {
-	refSents := splitSentences(reference)
-	candSents := splitSentences(candidate)
+	refSents := SplitSentences(reference)
+	candSents := SplitSentences(candidate)
 	if len(refSents) == 0 || len(candSents) == 0 {
 		return 0, nil
 	}

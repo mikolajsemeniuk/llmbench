@@ -68,115 +68,22 @@ type LGSDiagnostics struct {
 	Score             float64
 }
 
-func (b *LGS) Score(ctx context.Context, source, candidate string) (float64, error) {
-	score, _, err := b.ScoreDetailed(ctx, source, candidate)
-	return score, err
-}
-
-// ScoreWithSourceEmbeddings reuses precomputed source embeddings (one
+// Score reuses precomputed source embeddings (one
 // per source sentence). cmd/lgs caches these per DocumentID so the 16
 // candidates summarising the same article share the embedding cost.
-func (b *LGS) ScoreWithSourceEmbeddings(ctx context.Context,
-	sourceSents []string, sourceEmbs [][]float64,
-	candidate string,
-) (float64, LGSDiagnostics, error) {
-	candSents := filterShortSentences(splitSentences(candidate), b.MinSentenceLen)
-	if len(sourceSents) == 0 || len(candSents) == 0 {
+func (b *LGS) Score(ctx context.Context, sourceSents []string, sourceEmbs [][]float64, candidate string) (float64, LGSDiagnostics, error) {
+	splitted := SplitSentences(candidate)
+	sentences := filterShortSentences(splitted, b.MinSentenceLen)
+	if len(sourceSents) == 0 || len(sentences) == 0 {
 		return 0, LGSDiagnostics{}, nil
 	}
-	candEmbs, err := b.embedAll(ctx, candSents)
+
+	embeddings, err := b.embed(ctx, sentences)
 	if err != nil {
 		return 0, LGSDiagnostics{}, fmt.Errorf("lgs: embed candidate: %w", err)
 	}
-	return b.score(sourceSents, sourceEmbs, candSents, candEmbs)
-}
 
-func (b *LGS) ScoreDetailed(ctx context.Context, source, candidate string) (float64, LGSDiagnostics, error) {
-	sourceSents := filterShortSentences(splitSentences(source), b.MinSentenceLen)
-	candSents := filterShortSentences(splitSentences(candidate), b.MinSentenceLen)
-	if len(sourceSents) == 0 || len(candSents) == 0 {
-		return 0, LGSDiagnostics{}, nil
-	}
-	sourceEmbs, err := b.embedAll(ctx, sourceSents)
-	if err != nil {
-		return 0, LGSDiagnostics{}, fmt.Errorf("lgs: embed source: %w", err)
-	}
-	candEmbs, err := b.embedAll(ctx, candSents)
-	if err != nil {
-		return 0, LGSDiagnostics{}, fmt.Errorf("lgs: embed candidate: %w", err)
-	}
-	return b.score(sourceSents, sourceEmbs, candSents, candEmbs)
-}
-
-func (b *LGS) score(
-	sourceSents []string, sourceEmbs [][]float64,
-	candSents []string, candEmbs [][]float64,
-) (float64, LGSDiagnostics, error) {
-
-	// Pre-compute source-position weights once. λ=0 degenerates to
-	// all-ones so we skip the multiplication entirely.
-	var posWeights []float64
-	if b.LeadBiasLambda > 0 {
-		n := len(sourceEmbs)
-		posWeights = make([]float64, n)
-		for i := range n {
-			posWeights[i] = math.Exp(-b.LeadBiasLambda * float64(i) / float64(n))
-		}
-	}
-
-	var recall float64
-	for _, ce := range candEmbs {
-		best := -2.0
-		for i, se := range sourceEmbs {
-			c := cosineSimilarity(ce, se)
-			if posWeights != nil {
-				c *= posWeights[i]
-			}
-			if c > best {
-				best = c
-			}
-		}
-		recall += best
-	}
-	recall /= float64(len(candEmbs))
-	if recall < 0 {
-		recall = 0
-	}
-
-	return recall, LGSDiagnostics{
-		NumSourceSents:    len(sourceSents),
-		NumCandidateSents: len(candSents),
-		Recall:            recall,
-		Score:             recall,
-	}, nil
-}
-
-// EmbedSentences exposes embedAll for cmd/lgs so per-document caching
-// of source-sentence embeddings is possible.
-func (b *LGS) EmbedSentences(ctx context.Context, sents []string) ([][]float64, error) {
-	return b.embedAll(ctx, sents)
-}
-
-// SplitSentencesForLGS exposes the package-private splitter so cmd/lgs
-// can produce the same filtered list of source sentences that the
-// metric uses internally.
-func SplitSentencesForLGS(text string) []string {
-	return splitSentences(text)
-}
-
-func (b *LGS) embedAll(ctx context.Context, sentences []string) ([][]float64, error) {
-	embeds := make([][]float64, len(sentences))
-	for i, sent := range sentences {
-		resp, err := b.Embedder.Embed(ctx, EmbedInput{Model: b.EmbedModel, Input: sent})
-		if err != nil {
-			return nil, err
-		}
-		if len(resp.Embeddings) == 0 {
-			return nil, fmt.Errorf("lgs: empty embedding for sentence %d", i)
-		}
-		embeds[i] = resp.Embeddings[0]
-	}
-	return embeds, nil
+	return b.score(sourceSents, sourceEmbs, sentences, embeddings)
 }
 
 func filterShortSentences(sents []string, minLen int) []string {
@@ -186,5 +93,84 @@ func filterShortSentences(sents []string, minLen int) []string {
 			out = append(out, s)
 		}
 	}
+
 	return out
+}
+
+func (b *LGS) embed(ctx context.Context, sentences []string) ([][]float64, error) {
+	embeds := make([][]float64, len(sentences))
+	for i, sent := range sentences {
+		res, err := b.Embedder.Embed(ctx, EmbedInput{Model: b.EmbedModel, Input: sent})
+		if err != nil {
+			return nil, err
+		}
+
+		if len(res.Embeddings) == 0 {
+			return nil, fmt.Errorf("lgs: empty embedding for sentence %d", i)
+		}
+
+		embeds[i] = res.Embeddings[0]
+	}
+
+	return embeds, nil
+}
+
+func (b *LGS) score(sourceSents []string, sourceEmbs [][]float64, candSents []string, candEmbs [][]float64) (float64, LGSDiagnostics, error) {
+	// Pre-compute source-position weights once. λ=0 degenerates to
+	// all-ones so we skip the multiplication entirely.
+	var weights []float64
+	if b.LeadBiasLambda > 0 {
+		n := len(sourceEmbs)
+		weights = make([]float64, n)
+		for i := range n {
+			weights[i] = math.Exp(-b.LeadBiasLambda * float64(i) / float64(n))
+		}
+	}
+
+	var recall float64
+	for _, ce := range candEmbs {
+		best := -2.0
+		for i, se := range sourceEmbs {
+			c := cosineSimilarity(ce, se)
+			if weights != nil {
+				c *= weights[i]
+			}
+			if c > best {
+				best = c
+			}
+		}
+		recall += best
+	}
+
+	recall /= float64(len(candEmbs))
+	if recall < 0 {
+		recall = 0
+	}
+
+	diag := LGSDiagnostics{
+		NumSourceSents:    len(sourceSents),
+		NumCandidateSents: len(candSents),
+		Recall:            recall,
+		Score:             recall,
+	}
+
+	return recall, diag, nil
+}
+
+func (b *LGS) EmbedSentences(ctx context.Context, sentences []string) ([][]float64, error) {
+	embeds := make([][]float64, len(sentences))
+	for i, sent := range sentences {
+		res, err := b.Embedder.Embed(ctx, EmbedInput{Model: b.EmbedModel, Input: sent})
+		if err != nil {
+			return nil, err
+		}
+
+		if len(res.Embeddings) == 0 {
+			return nil, fmt.Errorf("lgs: empty embedding for sentence %d", i)
+		}
+
+		embeds[i] = res.Embeddings[0]
+	}
+
+	return embeds, nil
 }

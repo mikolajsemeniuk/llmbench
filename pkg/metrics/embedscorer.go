@@ -29,6 +29,7 @@ func (e *EmbeddingScorer) Score(ctx context.Context, reference, candidate string
 	if err != nil {
 		return 0, fmt.Errorf("embedding: embed reference: %w", err)
 	}
+
 	if len(ref.Embeddings) == 0 {
 		return 0, fmt.Errorf("embedding: empty embedding for reference")
 	}
@@ -37,26 +38,31 @@ func (e *EmbeddingScorer) Score(ctx context.Context, reference, candidate string
 	if err != nil {
 		return 0, fmt.Errorf("embedding: embed candidate: %w", err)
 	}
+
 	if len(cand.Embeddings) == 0 {
 		return 0, fmt.Errorf("embedding: empty embedding for candidate")
 	}
 
-	return cosineSimilarity(ref.Embeddings[0], cand.Embeddings[0]), nil
+	out := cosineSimilarity(ref.Embeddings[0], cand.Embeddings[0])
+	return out, nil
 }
 
 func cosineSimilarity(a, b []float64) float64 {
 	if len(a) != len(b) || len(a) == 0 {
 		return 0
 	}
+
 	var dot, normA, normB float64
 	for i := range a {
 		dot += a[i] * b[i]
 		normA += a[i] * a[i]
 		normB += b[i] * b[i]
 	}
+
 	denom := math.Sqrt(normA) * math.Sqrt(normB)
 	if denom == 0 {
 		return 0
 	}
+
 	return dot / denom
 }

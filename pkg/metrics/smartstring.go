@@ -9,8 +9,8 @@ import (
 // It treats sentences as basic units and uses ROUGE-L between sentence pairs
 // as the matching function (Amplayo et al., 2022).
 func SMARTString(reference, candidate string) float64 {
-	refSents := splitSentences(reference)
-	candSents := splitSentences(candidate)
+	refSents := SplitSentences(reference)
+	candSents := SplitSentences(candidate)
 	if len(refSents) == 0 || len(candSents) == 0 {
 		return 0
 	}
@@ -44,6 +44,7 @@ func SMARTString(reference, candidate string) float64 {
 	if precision+recall == 0 {
 		return 0
 	}
+
 	return 2 * precision * recall / (precision + recall)
 }
 
@@ -63,7 +64,7 @@ var abbreviations = map[string]bool{
 // Operates on runes (not bytes) for correct UTF-8 handling. The guard avoids
 // splitting on "Mr." followed by a name, but is intentionally simple — it
 // will not handle every edge case (e.g. nested quotes, ellipses).
-func splitSentences(text string) []string {
+func SplitSentences(text string) []string {
 	runes := []rune(text)
 	var sents []string
 	var current strings.Builder
@@ -105,11 +106,13 @@ func isAbbreviationEnding(buf string) bool {
 	if trimmed == buf {
 		return false
 	}
+
 	// Take the last whitespace-separated token before the period.
 	fields := strings.Fields(trimmed)
 	if len(fields) == 0 {
 		return false
 	}
+
 	last := strings.ToLower(fields[len(fields)-1])
 	return abbreviations[last]
 }

@@ -22,12 +22,14 @@ func NewBARTScorer(host string) *BARTScorer {
 // per token. Higher (less negative) means the candidate better predicts
 // the reference. Typically in [-10, 0] range.
 func (b *BARTScorer) Score(ctx context.Context, reference, candidate string) (float64, error) {
-	res, err := b.Server.post(ctx, "/bartscore", modelServerRequest{
+	in := modelServerRequest{
 		Reference: reference,
 		Candidate: candidate,
-	})
+	}
+	res, err := b.Server.post(ctx, "/bartscore", in)
 	if err != nil {
 		return 0, fmt.Errorf("bartscore: %w", err)
 	}
+
 	return res.Score, nil
 }

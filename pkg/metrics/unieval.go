@@ -27,18 +27,21 @@ func NewUniEvalScorer(host, dimension string) *UniEvalScorer {
 	if dimension == "" {
 		dimension = "coherence"
 	}
+
 	return &UniEvalScorer{Server: NewModelServer(host), Dimension: dimension}
 }
 
 func (u *UniEvalScorer) Score(ctx context.Context, reference, source, candidate string) (float64, error) {
-	res, err := u.Server.post(ctx, "/unieval", modelServerRequest{
+	in := modelServerRequest{
 		Reference: reference,
 		Candidate: candidate,
 		Source:    source,
 		Dimension: u.Dimension,
-	})
+	}
+	res, err := u.Server.post(ctx, "/unieval", in)
 	if err != nil {
 		return 0, fmt.Errorf("unieval: %w", err)
 	}
+
 	return res.Score, nil
 }

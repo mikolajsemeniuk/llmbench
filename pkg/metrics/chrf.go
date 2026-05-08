@@ -69,5 +69,6 @@ func charNgrams(s string, n int) map[string]int {
 		key := string(runes[i : i+n])
 		m[key]++
 	}
+
 	return m
 }
