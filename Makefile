@@ -25,10 +25,23 @@ benchmark-ollama:
 	go run ./cmd/embedscorer
 	go run ./cmd/smartmodel
 	go run ./cmd/lgs
-	go run ./cmd/geval -dimension coherence
-	go run ./cmd/geval -dimension consistency
-	go run ./cmd/geval -dimension fluency
-	go run ./cmd/geval -dimension relevance
+	$(MAKE) benchmark-geval
+
+# G-Eval is stochastic at temperature>0. We average $(GEVAL_RUNS)
+# independent runs at $(GEVAL_TEMPERATURE) to bring the methodology
+# closer to the original paper (which averaged 20 GPT-4 samples) and
+# to obtain across-run mean±std for the LLM-judge variance reported
+# alongside the canonical correlation. With runs=1 the configuration
+# collapses to the legacy greedy-decoding single-run baseline.
+GEVAL_RUNS ?= 3
+GEVAL_TEMPERATURE ?= 0.7
+GEVAL_BASE_SEED ?= 42
+.PHONY: benchmark-geval
+benchmark-geval:
+	go run ./cmd/geval -dimension coherence   -runs $(GEVAL_RUNS) -temperature $(GEVAL_TEMPERATURE) -base-seed $(GEVAL_BASE_SEED)
+	go run ./cmd/geval -dimension consistency -runs $(GEVAL_RUNS) -temperature $(GEVAL_TEMPERATURE) -base-seed $(GEVAL_BASE_SEED)
+	go run ./cmd/geval -dimension fluency     -runs $(GEVAL_RUNS) -temperature $(GEVAL_TEMPERATURE) -base-seed $(GEVAL_BASE_SEED)
+	go run ./cmd/geval -dimension relevance   -runs $(GEVAL_RUNS) -temperature $(GEVAL_TEMPERATURE) -base-seed $(GEVAL_BASE_SEED)
 
 .PHONY: paper
 paper: paper-summary paper-system paper-ablation paper-embedder-ablation paper-comparisons

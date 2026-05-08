@@ -270,8 +270,10 @@ as LGS for like-for-like), BERTScore, MoverScore, BARTScore,
 GPTScore;
 source-based: G-Eval; mixed: UniEval. All baselines use simplified
 implementations relative to the original papers (uniform IDF for
-MoverScore; GPT-2 instead of GPT-3 for GPTScore; greedy
-single-sample decoding for G-Eval; single ``Yes/No'' query for
+MoverScore; GPT-2 instead of GPT-3 for GPTScore; $N{=}3$ samples
+at temperature $0.7$ with \texttt{qwen2.5:7b-instruct-q4\_K\_M}
+for G-Eval (the original paper averages 20 GPT-4 samples) with
+across-run mean$\pm$std reported; single ``Yes/No'' query for
 UniEval). These simplifications are documented per metric and do
 not change the ordering of methods qualitatively.
 
@@ -429,11 +431,14 @@ dev sweep before reporting numbers.
 %     domain-specific structural property of this corpus and
 %     LGS may transfer worse to corpora without strong lead bias
 %     (e.g., scientific abstracting, narrative summarisation).
-% (b) G-Eval is reported as a single-run baseline (greedy
-%     decoding); the original paper averages 20 samples to absorb
-%     LLM-judge variance. Paired-bootstrap p-values vs G-Eval thus
-%     conflate G-Eval's stochasticity with our own. Future work
-%     should report G-Eval mean +- std over 3-5 runs.
+% (b) G-Eval baseline. The canonical configuration is N=3
+%     independent LLM-judge runs at temperature 0.7 (vs the
+%     original paper's N=20 GPT-4 samples); per-sample canonical
+%     score is the across-run mean and the report carries
+%     across-run mean +- std for every correlation coefficient.
+%     Paired-bootstrap p-values vs G-Eval should be read alongside
+%     the reported std as a floor on what the comparison can
+%     resolve.
 % (c) The lead-bias prior is exponential; we have not tested
 %     linear, reciprocal, or hard-cutoff alternatives.
 

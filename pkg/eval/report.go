@@ -9,14 +9,39 @@ import (
 )
 
 type Report struct {
-	Metric       string      `json:"metric"`
-	Norm         string      `json:"norm"`
-	Samples      int         `json:"samples"`
-	RuntimeSec   float64     `json:"runtime_sec"`
-	Timestamp    string      `json:"timestamp"`
-	Scores       []Score     `json:"scores"`
-	SummaryLevel Correlation `json:"summary_level"`
-	SystemLevel  Correlation `json:"system_level"`
+	Metric       string         `json:"metric"`
+	Norm         string         `json:"norm"`
+	Samples      int            `json:"samples"`
+	RuntimeSec   float64        `json:"runtime_sec"`
+	Timestamp    string         `json:"timestamp"`
+	Scores       []Score        `json:"scores"`
+	SummaryLevel Correlation    `json:"summary_level"`
+	SystemLevel  Correlation    `json:"system_level"`
+	Runs         *RunsAggregate `json:"runs,omitempty"`
+}
+
+// RunsAggregate captures the across-run mean and standard deviation
+// of correlation coefficients. Used by stochastic metrics (G-Eval)
+// where the LLM-judge produces a different score on each independent
+// run; we report the mean for canonical comparison and the std as
+// a measure of LLM-judge variance.
+type RunsAggregate struct {
+	NRuns       int                 `json:"n_runs"`
+	Temperature float64             `json:"temperature"`
+	Summary     []DimensionRunStats `json:"summary_level"`
+	System      []DimensionRunStats `json:"system_level"`
+}
+
+type DimensionRunStats struct {
+	Name     string   `json:"name"`
+	Spearman RunStats `json:"spearman"`
+	Pearson  RunStats `json:"pearson"`
+	Kendall  RunStats `json:"kendall_tau"`
+}
+
+type RunStats struct {
+	Mean float64 `json:"mean"`
+	Std  float64 `json:"std"`
 }
 
 type Score struct {

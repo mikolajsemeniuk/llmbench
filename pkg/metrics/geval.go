@@ -12,10 +12,18 @@ import (
 type GEval struct {
 	Provider *Ollama
 	Model    string
+
+	// Temperature and Seed control the LLM-judge sampling. Defaults
+	// (0, 42) match the canonical greedy-decoding configuration. Set
+	// Temperature>0 and vary Seed across runs to obtain independent
+	// G-Eval samples for variance estimation (see -runs flag in
+	// cmd/geval).
+	Temperature float64
+	Seed        int64
 }
 
 func NewGEval(host, model string) *GEval {
-	return &GEval{Provider: NewOllama(host), Model: model}
+	return &GEval{Provider: NewOllama(host), Model: model, Seed: 42}
 }
 
 type GEvalDimension struct {
@@ -88,8 +96,8 @@ func (g *GEval) ScoreDetailed(ctx context.Context, dimension, source, candidate 
 		Prompt: dim.build(source, candidate),
 		Stream: false,
 		Options: ChatOptions{
-			Temperature: 0,
-			Seed:        42,
+			Temperature: g.Temperature,
+			Seed:        g.Seed,
 		},
 	})
 	if err != nil {

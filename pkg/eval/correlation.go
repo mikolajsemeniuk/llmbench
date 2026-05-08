@@ -350,6 +350,60 @@ func PairedBootstrap(samples []Sample, scoresA, scoresB, human []float64,
 	}
 }
 
+// AggregateRuns computes per-dimension mean and std of each
+// correlation coefficient across N independent Correlation values
+// (e.g., from N independent G-Eval runs at temperature>0). Std is
+// the unbiased sample standard deviation (Bessel's correction);
+// for n=1 it is set to 0.
+func AggregateRuns(corrs []Correlation) []DimensionRunStats {
+	if len(corrs) == 0 {
+		return nil
+	}
+	dimNames := []string{"coherence", "consistency", "fluency", "relevance"}
+	out := make([]DimensionRunStats, 0, len(dimNames))
+	for _, name := range dimNames {
+		var sp, pe, ke []float64
+		for _, c := range corrs {
+			for _, d := range c.Dimensions {
+				if d.Name != name {
+					continue
+				}
+				sp = append(sp, d.Spearman)
+				pe = append(pe, d.Pearson)
+				ke = append(ke, d.KendallTau)
+			}
+		}
+		out = append(out, DimensionRunStats{
+			Name:     name,
+			Spearman: meanStd(sp),
+			Pearson:  meanStd(pe),
+			Kendall:  meanStd(ke),
+		})
+	}
+	return out
+}
+
+func meanStd(xs []float64) RunStats {
+	n := len(xs)
+	if n == 0 {
+		return RunStats{}
+	}
+	var sum float64
+	for _, x := range xs {
+		sum += x
+	}
+	mean := sum / float64(n)
+	if n < 2 {
+		return RunStats{Mean: mean}
+	}
+	var ss float64
+	for _, x := range xs {
+		d := x - mean
+		ss += d * d
+	}
+	return RunStats{Mean: mean, Std: math.Sqrt(ss / float64(n-1))}
+}
+
 func percentileCI(values []float64, lo, hi float64) CI {
 	if len(values) < 2 {
 		return CI{}
