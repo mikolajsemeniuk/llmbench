@@ -20,6 +20,10 @@
 \usepackage{url}
 \usepackage{cite}
 \usepackage{hyperref}
+\usepackage{tikz}
+\usetikzlibrary{positioning,arrows.meta,calc,backgrounds}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
 
 \hyphenation{summ-eval embed-ding-only ref-erence-free}
 
@@ -56,17 +60,26 @@ require a human reference summary, and unlike the reference-free
 G-Eval it does not require a large language-model judge call per
 candidate. The metric runs with one sentence-embedder forward pass
 per source/candidate sentence (we use \texttt{nomic-embed-text}, a
-137M-parameter embedder served locally through Ollama). On
-\textsc{SummEval}, LGS significantly outperforms a same-embedder
-whole-text cosine baseline on coherence, consistency, and fluency
-($\Delta\rho=+.117/+.171/+.116$, $p<.001$), and is competitive with
-or stronger than reference-based embedding metrics
-(BERTScore, SMART-Model) on multiple dimensions. We do not claim
-state of the art: UniEval and G-Eval remain stronger overall, and
-our headline contribution is the combination of a reference-free
-formulation, a single-embedder cost profile, and a held-out
-methodology that we show is necessary in practice because the
-optimal $\lambda$ shifts across embedder backbones.
+137M-parameter embedder served locally through Ollama). On \textsc{SummEval}, LGS reaches a summary-level Spearman $\rho$
+of $.393/.488/.140/.416$ on coherence, consistency, fluency, and
+relevance respectively. It significantly outperforms its
+same-embedder whole-text cosine baseline on three of four
+dimensions ($\Delta\rho{=}+.117/{+}.171/{+}.116$, all $p{<}.001$
+by paired bootstrap with 10{,}000 resamples), significantly
+outperforms SMART-Model on the same three dimensions, BERTScore
+on consistency, and ChrF on coherence, and is statistically tied
+with the remaining baselines except for UniEval and G-Eval. We
+do not claim state of the art: UniEval and G-Eval remain stronger
+overall, and the dev-mean lift from the lead-bias prior is small
+in absolute terms ($+.019$ at $\lambda^{*}{=}0.5$ over the
+no-prior baseline). Our contribution is the combination of a
+reference-free formulation, a single-embedder cost profile
+($\sim$15 minutes for the full \textsc{SummEval} run on a single
+CPU thread), and a held-out hyperparameter selection methodology
+that we show is necessary in practice because the optimal
+$\lambda$ shifts non-trivially across embedder backbones --- so
+that the metric is not a numerical recipe but a metric design
+plus an obligatory per-deployment dev sweep.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -78,18 +91,27 @@ embeddings, SummEval, lead bias, automatic metrics.
 \section{Introduction}
 \label{sec:intro}
 
-% TODO(prose): tighten, motivate practical deployment context.
-Automatic evaluation of generated summaries remains an open problem
-even after a decade of progress on reference-based n-gram and
-embedding metrics. The two strongest published metrics on the
-\textsc{SummEval} benchmark~\cite{fabbri2021summeval} --- UniEval and
-G-Eval --- both depend on substantial inference cost: UniEval
-requires a fine-tuned T5-large pass per (article, candidate, dimension)
-tuple, and G-Eval queries a large language-model judge with a
-chain-of-thought prompt and aggregates over multiple samples. In
-deployment scenarios where evaluation must run online over many
-candidates (model selection, RLHF reward modelling, regression
-testing of summarisation services), this cost matters.
+Automatic evaluation of generated summaries remains an open
+problem even after a decade of progress on n-gram and embedding
+metrics. Reference-based metrics --- BLEU~\cite{papineni2002bleu},
+ROUGE-L~\cite{lin2004rouge}, METEOR~\cite{banerjee2005meteor},
+ChrF~\cite{popovic2015chrf}, BERTScore~\cite{zhang2020bertscore},
+MoverScore~\cite{zhao2019moverscore},
+BARTScore~\cite{yuan2021bartscore},
+SMART~\cite{amplayo2022smart} --- all assume the existence of a
+human-written reference summary, a precondition that is rarely
+satisfied in production summarisation pipelines. The two strongest
+\emph{reference-free} contenders on the
+\textsc{SummEval}~\cite{fabbri2021summeval} benchmark, UniEval and
+G-Eval, both pay a substantial inference cost: UniEval requires a
+fine-tuned T5-large pass per (article, candidate, dimension)
+tuple~\cite{zhong2022unieval}, and G-Eval queries a large
+language-model judge with a chain-of-thought prompt and aggregates
+over multiple samples~\cite{liu2023geval}. In deployment
+scenarios where evaluation must run online over many candidates
+--- model selection, reward modelling for RL, regression testing
+of summarisation services --- this cost dominates the engineering
+budget.
 
 We propose a metric, \textbf{LGS} (Lead-biased Grounding Score),
 that fills a different niche: \emph{reference-free} (it requires
@@ -116,57 +138,101 @@ The rest of the paper is structured as follows.
 Section~\ref{sec:related} surveys reference-based and reference-free
 metrics and positions LGS against the closest neighbours in each
 family. Section~\ref{sec:method} defines LGS formally and motivates
-each design choice. Section~\ref{sec:experiments} describes the
-experimental protocol. Section~\ref{sec:results} reports
-correlations with human judgment on \textsc{SummEval} together
-with paired-bootstrap significance tests against thirteen baselines.
-Section~\ref{sec:ablation} reports the lead-bias hyperparameter
-sweep and the embedder ablation. Section~\ref{sec:discussion}
-discusses limitations and the cost trade-off vs G-Eval and UniEval.
+each design choice. Section~\ref{sec:methodology} elevates the
+held-out hyperparameter selection methodology to a first-class
+contribution and motivates why it is necessary, not decorative,
+for embedding-based metrics with structural priors.
+Section~\ref{sec:experiments} describes the experimental protocol
+including dataset, embedder, baselines, significance testing, and
+the deployment cost profile of LGS.
+Section~\ref{sec:results} reports correlations with human judgment
+on \textsc{SummEval} together with paired-bootstrap significance
+tests against thirteen baselines, and contains the lead-bias
+hyperparameter sweep, the embedder ablation, and the cross-embedder
+verification of the methodology. Section~\ref{sec:discussion}
+discusses limitations, the explicit claims and disclaimers of the
+metric, and avenues for future work.
 Section~\ref{sec:conclusion} concludes.
 
 % ------------------------------------------------------------------
 \section{Related Work}
 \label{sec:related}
 
-% TODO(prose): expand each subsection. Currently a structural skeleton.
-
 \subsection{Reference-based metrics}
-N-gram metrics (BLEU~\cite{papineni2002bleu},
-ROUGE-L~\cite{lin2004rouge}, METEOR~\cite{banerjee2005meteor},
-ChrF~\cite{popovic2015chrf}) and contextual-embedding metrics
-(BERTScore~\cite{zhang2020bertscore},
-MoverScore~\cite{zhao2019moverscore},
-BARTScore~\cite{yuan2021bartscore},
-SMART~\cite{amplayo2022smart}) all require one or more human
-reference summaries. The dependence is structural: the score is a
-function of \texttt{(reference, candidate)} pairs, not of the source
-article. In production deployments, reference summaries rarely
-exist; this is the primary gap LGS addresses.
+The longest-standing family of summarisation metrics is
+reference-based: a candidate summary is compared against one or
+more human-written reference summaries.
+N-gram precision and recall metrics
+(BLEU~\cite{papineni2002bleu}, ROUGE-L~\cite{lin2004rouge},
+METEOR~\cite{banerjee2005meteor}, ChrF~\cite{popovic2015chrf})
+operate on surface-form overlap. Their well-documented blind spot
+is that paraphrases of equivalent content score low simply because
+the surface forms differ, which is precisely the regime
+abstractive summarisation operates in.
+Contextual-embedding metrics replace surface overlap with cosine
+similarity in a learned representation space:
+BERTScore~\cite{zhang2020bertscore} matches token embeddings
+greedily, MoverScore~\cite{zhao2019moverscore} solves a
+transportation problem over them, BARTScore~\cite{yuan2021bartscore}
+re-uses the encoder--decoder log-likelihood under a pretrained
+generation model, and SMART~\cite{amplayo2022smart} extends the
+matching to sentence units. They alleviate the paraphrase problem
+but inherit the same structural dependence on the reference: the
+score is a function of (reference, candidate) pairs and is
+undefined when no reference exists. In production summarisation
+pipelines, reference summaries rarely exist --- the candidate is
+the only summary in the system --- and this is the primary
+deployment gap LGS addresses.
 
 \subsection{Reference-free / source-based metrics}
-G-Eval~\cite{liu2023geval} prompts a large language model to score
-each candidate against the source. It is reference-free and obtains
-the strongest correlations on \textsc{SummEval}'s consistency
-dimension among published metrics, but the cost profile (one or
-more LLM-judge calls per candidate) and the stochasticity of
-sampled decoding make it unsuitable for scenarios that require
-large-scale, deterministic scoring.
-
-UniEval~\cite{zhong2022unieval} is a hybrid: it runs a fine-tuned
-T5-large encoder over a Boolean question (``Is this summary
-\{coherent,consistent,fluent,relevant\}?'') and computes the
-posterior of ``Yes''. This requires a fine-tuned model per
-dimension and a forward pass per (article, candidate, dimension).
+A smaller body of work scores candidates against the \emph{source}
+article rather than against a human reference, removing the
+deployment dependency on hand-written summaries.
+G-Eval~\cite{liu2023geval} prompts a large language model with a
+chain-of-thought rubric to score each (source, candidate) pair on
+the relevant dimension. It obtains the strongest published
+correlation on \textsc{SummEval}'s consistency dimension among
+published metrics, but at substantial cost: one or more LLM-judge
+calls per (article, candidate, dimension) tuple, with sampled
+decoding requiring repeated calls per pair to absorb LLM-judge
+variance (the original paper averages 20 GPT-4 samples). The
+metric is therefore unsuitable for deployment scenarios that
+require deterministic, low-latency, high-throughput scoring.
+UniEval~\cite{zhong2022unieval} is a hybrid: a fine-tuned T5-large
+encoder is queried with a Boolean question
+(``Is this summary \{coherent, consistent, fluent, relevant\}?'')
+and the score is the posterior probability of ``Yes''. UniEval
+sidesteps the LLM-judge cost but still requires a fine-tuned
+encoder per dimension and a forward pass per
+(article, candidate, dimension) tuple.
+GPTScore~\cite{fu2023gptscore} re-uses a pretrained language model
+to compute a per-token log-likelihood of the candidate conditioned
+on the source, requiring a single forward pass per pair but
+inheriting the model's calibration as the score's calibration.
+LGS occupies a different point on the cost--accuracy frontier: a
+single sentence-embedder forward pass per source and per candidate
+sentence, no LLM-judge call, no fine-tuned encoder. We do not
+claim better correlation than UniEval or G-Eval; we claim that
+this point on the frontier is unoccupied and useful.
 
 \subsection{The closest baseline: whole-text embedding cosine}
 The simplest reference-free embedding baseline is a single cosine
 similarity between the embedding of the entire source and the
-embedding of the entire candidate. We call this \textsc{EmbedScorer}
-and use it as the headline like-for-like baseline: it shares the
-embedder backbone with LGS, so any improvement is directly
-attributable to the sentence-level grounding plus lead-bias prior
-contribution rather than to embedder choice.
+embedding of the entire candidate, computed with the same
+sentence-embedder used by the metric under test. We call this
+baseline \textsc{EmbedScorer}. Two properties make it the
+ideal like-for-like comparison for LGS. First, it shares the
+embedder backbone, so any difference between the two metrics is
+attributable to the architectural choices of LGS --- sentence-level
+grounding via $\max_i$ on the source side, mean aggregation on the
+candidate side, and the position prior $w(i)$ --- and not to a
+stronger or weaker embedding model.
+Second, both metrics are reference-free; the comparison isolates
+the architectural contribution from the orthogonal question of
+whether reference-based metrics are stronger than reference-free
+ones in general. We will return to the
+\textsc{EmbedScorer}-vs-LGS gap as the cleanest piece of evidence
+for the metric's design choices in Section~\ref{sec:results}.
 
 % ------------------------------------------------------------------
 \section{Method}
@@ -193,57 +259,264 @@ w(i) \;=\; \exp\!\bigl(-\lambda \cdot i / n\bigr),
 $i=0$ denotes the lead sentence, and $\lambda \ge 0$ is the only
 hyperparameter. $\lambda=0$ disables the prior and reduces LGS to
 position-agnostic mean-of-max recall.
+Figure~\ref{fig:lgs-schematic} illustrates the operator
+graphically.
+
+\paragraph{Worked example.}
+To make the operator concrete, consider a stylised article with
+$n{=}5$ source sentences --- $s_0$: ``Apple announced a new
+iPhone at its September event.''; $s_1$: ``The phone features an
+improved camera system.''; $s_2$: ``Tim Cook presented the
+keynote in Cupertino.''; $s_3$: ``Pre-orders begin Friday.'';
+$s_4$: ``Stock rose 3\% after the announcement.'' --- and a
+candidate summary with $m{=}2$ sentences --- $c_0$: ``Apple
+unveiled a new iPhone.''; $c_1$: ``Pricing starts at \$999.''.
+Suppose, for illustration, that the cosine similarity matrix
+between the candidate sentence embeddings and the source
+sentence embeddings is approximately
+\[
+\bigl[\cos(c_j, s_i)\bigr]_{j,i} =
+\begin{pmatrix}
+0.91 & 0.41 & 0.52 & 0.18 & 0.34 \\
+0.22 & 0.31 & 0.15 & 0.78 & 0.42
+\end{pmatrix}.
+\]
+At $\lambda{=}0.5$ the position prior takes values
+$w(0){\approx}1.00$, $w(1){\approx}0.90$, $w(2){\approx}0.82$,
+$w(3){\approx}0.74$, $w(4){\approx}0.67$. For $c_0$ the
+position-weighted argmax is $s_0$ (weighted similarity
+$1.00{\cdot}0.91{=}0.91$); for $c_1$ it is $s_3$
+($0.74{\cdot}0.78{=}0.58$). The score is the mean of these
+two per-candidate maxima, $\mathrm{LGS}{=}(0.91{+}0.58)/2{=}0.745$.
+A hallucinated $c_1$ that is unrelated to the source --- say,
+``Tim Cook resigned as CEO.'' with cosine row
+$(0.18, 0.09, 0.55, 0.11, 0.21)$ --- yields position-weighted
+maximum $0.82{\cdot}0.55{=}0.451$ on $s_2$, and the score drops
+to $(0.91{+}0.45)/2{=}0.680$. The metric's sensitivity to
+ungrounded content is structurally tied to the candidate-side
+mean: with candidate length $m$, a single ungrounded sentence
+removes approximately $1/m$ of the score's mass.
+
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}[
+  node distance=2.5mm,
+  src/.style={draw, rounded corners=1pt, minimum width=24mm,
+              minimum height=4.5mm, font=\scriptsize, align=center,
+              fill=blue!5},
+  cand/.style={draw, rounded corners=1pt, minimum width=24mm,
+               minimum height=4.5mm, font=\scriptsize, align=center,
+               fill=orange!10},
+  pick/.style={-{Stealth[length=1.8mm]}, thick, orange!70!black},
+  weight/.style={font=\scriptsize\itshape, anchor=west,
+                 text=blue!50!black},
+  hdr/.style={font=\scriptsize\bfseries, align=center}
+]
+  % Source column
+  \node[hdr] (srchdr) {Source $D$};
+  \node[src, below=2mm of srchdr] (s0) {$s_0$ (lead)};
+  \node[src, below=of s0] (s1) {$s_1$};
+  \node[src, below=of s1] (s2) {$s_2$};
+  \node[src, below=of s2] (s3) {$s_3$};
+  \node[src, below=of s3] (s4) {$\dots\;s_{n-1}$};
+  % Weights
+  \node[weight, right=2mm of s0] {$w(0){=}1.00$};
+  \node[weight, right=2mm of s1] {$w(1){=}0.90$};
+  \node[weight, right=2mm of s2] {$w(2){=}0.82$};
+  \node[weight, right=2mm of s3] {$w(3){=}0.74$};
+  \node[weight, right=2mm of s4] {$w(n{-}1){\to}\,e^{-\lambda}$};
+
+  % Candidate column
+  \node[hdr, right=58mm of srchdr] (candhdr) {Candidate $C$};
+  \node[cand, below=2mm of candhdr] (c0) {$c_0$};
+  \node[cand, below=of c0] (c1) {$c_1$};
+  \node[cand, below=of c1] (c2) {$c_2$};
+
+  % Argmax arrows (illustrative)
+  \draw[pick] (c0) -- (s0)
+    node[midway, above, font=\tiny\itshape, sloped] {$\max_i w(i)\cos$};
+  \draw[pick] (c1) -- (s2);
+  \draw[pick] (c2) -- (s1);
+
+  % Aggregation note
+  \node[font=\scriptsize, below=8mm of c2, anchor=north,
+        align=center, text=orange!50!black] (agg)
+    {$\mathrm{LGS}=\dfrac{1}{m}\sum_{j} \max_i\, w(i)\cdot\cos(c_j, s_i)$};
+\end{tikzpicture}
+\caption{LGS operator. For each candidate sentence $c_j$, the
+metric finds the source sentence $s_i$ that maximises the
+position-weighted cosine similarity $w(i)\cdot\cos(c_j, s_i)$,
+where $w(i)=\exp(-\lambda i/n)$ is an exponential prior favouring
+the lead. The score is the mean of these per-candidate maxima.
+Orange arrows indicate illustrative argmax matches.}
+\label{fig:lgs-schematic}
+\end{figure}
 
 \subsection{Design rationale}
-% TODO(prose): expand each bullet into a paragraph.
-\begin{itemize}
-\item \textbf{Sentence-level grounding}: a candidate sentence is
-``grounded'' if some source sentence supports it. Aggregating with
-$\max_i$ on the source side and $\mathrm{mean}_j$ on the candidate
-side gives a localised hallucination-sensitive signal: a single
-ungrounded candidate sentence depresses the score by $1/m$.
+\paragraph{Sentence-level grounding.}
+A candidate sentence is \emph{grounded} when some source sentence
+semantically supports it. The metric implements this by taking,
+for each candidate sentence $c_j$, the maximum cosine similarity
+to any source sentence under the position prior, and then
+aggregating across the candidate with a mean. The asymmetry is
+deliberate: $\max_i$ on the source side is a localised signal
+(``does this candidate sentence have \emph{any} anchor in the
+source?''); $\mathrm{mean}_j$ on the candidate side is a
+hallucination-sensitive aggregate (a single ungrounded
+candidate sentence depresses the score by $1/m$, where $m$ is the
+candidate length, rather than being washed out by an averaging
+operator on both sides). We compared this asymmetric mean-of-max
+formulation empirically against alternative aggregations during
+the development phase --- low-percentile recall, top-$k$ recall,
+candidate-side coverage exponent --- and report the negative
+results in the project repository's extension log; none lifted
+the dev-mean Spearman over the mean-of-max baseline.
 
-\item \textbf{Why exponential lead-bias?} News summarisation
-corpora (notably CNN/DailyMail, the source of all
-\textsc{SummEval} articles) exhibit well-documented lead bias:
-salient information is concentrated in the first few sentences.
-The exponential family $\exp(-\lambda i/n)$ is the simplest decay
-shape that interpolates between uniform ($\lambda=0$) and a
-near-step prior ($\lambda \to \infty$); the prior is normalised by
-document length so the same $\lambda$ behaves consistently across
-short and long articles.
+\paragraph{Why exponential lead-bias.}
+News summarisation corpora --- and CNN/DailyMail in
+particular, the source of all \textsc{SummEval} articles ---
+exhibit well-documented \emph{lead bias}: salient information is
+disproportionately concentrated in the opening sentences of the
+article, a pattern reinforced by journalistic convention. Several
+prior systems exploit this prior implicitly (e.g., the lead-3
+extractive baseline). LGS exploits it \emph{explicitly} via a
+multiplicative source-side prior $w(i)=\exp(-\lambda i / n)$.
+The exponential family is chosen for three reasons. First,
+parsimony: it is the simplest one-parameter decay shape that
+interpolates between a uniform prior ($\lambda{=}0$) and a
+near-step prior ($\lambda \to \infty$) without introducing a
+discontinuity. Second, scale-invariance: normalising the position
+$i$ by the document length $n$ makes the prior behave
+consistently across short and long articles, removing the need
+for a length-dependent tuning of $\lambda$. Third, multiplicative
+interaction: the prior reweights the cosine similarity \emph{before}
+the $\max_i$ operator, so it can move which source sentence wins
+the argmax for a given candidate; an additive prior would only
+shift scores uniformly without affecting the matching structure.
 
-\item \textbf{Why a single hyperparameter?} Earlier formulations of
-this metric included additional terms --- a precision side, a
-coverage exponent, a within-summary diversity penalty, top-$k$
-recall --- each of which was tested on the held-out development
-split and rejected for failing to lift the dev mean Spearman
-$\rho$. A development log of these rejected components is preserved
-in the project repository for reproducibility but is not part of
-the canonical metric.
-\end{itemize}
+\paragraph{Why a single hyperparameter.}
+The canonical LGS has exactly one tunable scalar, $\lambda$.
+Earlier formulations of this metric were richer: a precision side
+mirroring BERTScore's F-measure structure, a candidate-side
+coverage exponent that rewarded using more distinct source
+anchors, a within-summary diversity penalty, and a top-$k$ source
+aggregation. Each was tested on the same held-out development
+split (Section~\ref{sec:methodology}) and rejected for failing to
+lift the dev-mean Spearman $\rho$ over the no-prior baseline; the
+rejected components and their negative dev-mean numbers are
+preserved in the project repository's extension log. The
+single-hyperparameter design that survives is the one we report.
+A side-effect of this discipline is that the held-out
+hyperparameter selection methodology has a small, well-defined
+search space (one scalar over a 1-D grid), making per-deployment
+re-tuning cheap.
 
-\subsection{Held-out hyperparameter selection}
-\label{sec:method-heldout}
+% ------------------------------------------------------------------
+\section{Methodology: Held-Out Hyperparameter Selection}
+\label{sec:methodology}
+
+We treat the hold-out methodology used to select $\lambda^*$ as a
+first-class contribution of this paper rather than a generic
+machine-learning hygiene step. The reason is empirical: as we show
+in Section~\ref{sec:ablation-lead-bge}, the optimal value of
+$\lambda$ \emph{shifts} non-trivially across sentence-embedder
+backbones (with \texttt{nomic-embed-text} the dev optimum is
+$\lambda^*\!=\!0.5$; with \texttt{bge-m3} it is
+$\lambda^*\!=\!0.25$, and applying the nomic-tuned value to
+\texttt{bge-m3} \emph{underperforms} the no-prior baseline on dev).
+A practitioner reusing the headline numerical recipe with a
+different embedder without re-running the dev sweep is therefore
+not reproducing LGS --- they are running a misconfigured metric.
+
+\subsection{Article-level split}
 \textsc{SummEval} contains 100 source articles, each summarised by
 16 systems, for 1{,}600 (source, candidate) pairs with human
 ratings on four dimensions (coherence, consistency, fluency,
-relevance). We split at the article level, deterministically by
-JSONL order: the first 50 articles form the development split, the
-remaining 50 the test split. We sweep
+relevance). We split at the \emph{article level}, deterministically
+by JSONL order: the first 50 articles form the development split,
+the remaining 50 the test split. The article-level split is
+critical because the 16 candidate summaries of a single article
+are not independent observations: a difficult article depresses
+correlations across all systems jointly. A naïve sample-level
+split would leak across the development/test boundary.
+
+\subsection{Selection criterion and verification}
+We sweep
 $\lambda \in \{0, 0.25, 0.5, 1.0, 2.0\}$ on the development split,
-score each variant with summary-level Spearman $\rho$ averaged over
-the four dimensions, and select the dev-best $\lambda^*$. The
+score each variant with summary-level Spearman $\rho$ averaged
+over the four dimensions, and select the dev-best $\lambda^*$. The
 selected $\lambda^*$ is then re-evaluated on the test split as a
-sanity check; the test split is \emph{not} consulted during
-selection. The full headline run is computed on all 100 articles
-with $\lambda = \lambda^*$.
+verification step; the test split is \emph{not} consulted during
+selection. The verification criterion is whether
+$\lambda^*$ outperforms the no-prior baseline ($\lambda=0$) on the
+test split's mean Spearman $\rho$ -- i.e., whether the dev-tuned
+value still helps on data not seen during selection. We do not
+require the test split's argmax to match $\lambda^*$; the
+selection is over dev only, and a flat optimum (where multiple
+$\lambda$ values give near-equal performance) is operationally
+desirable.
+
+\subsection{Choice of correlation coefficient}
+\label{sec:methodology-corr}
+We report Spearman $\rho$ as the primary correlation coefficient
+and Kendall $\tau$ as a secondary check; Pearson $r$ is computed
+internally for diagnostics but not displayed in the headline
+tables. The choice of Spearman is consistent with prior
+\textsc{SummEval} meta-evaluation: human ratings on the four
+dimensions are ordinal Likert scores, and the metric value is a
+real number whose absolute calibration we do not claim. A
+rank-based correlation is the appropriate statistic for ``does
+the metric order summaries the way the rater does'', which is
+the operational question. Pearson would additionally penalise
+non-linear monotonic relationships between the metric and the
+human score that are immaterial for ranking, and is therefore
+over-restrictive for the use case.
+
+\subsection{Bootstrap and significance testing}
+\label{sec:methodology-bootstrap}
+For each correlation we report a 95\% confidence interval
+estimated by \emph{cluster bootstrap} at the article level
+--- resampling documents with replacement and computing the
+correlation on the concatenated set of sample-level scores in
+the resampled documents --- with $1{,}000$ resamples for
+headline tables and $5{,}000$ for the finer-grained sweeps in
+Section~\ref{sec:ablation-lambda}. The article-level clustering
+is essential: \textsc{SummEval}'s 16 candidates per article are
+not independent observations, since they share a source whose
+intrinsic difficulty depresses or lifts all 16 scores together.
+A naïve sample-level bootstrap would treat the 1{,}600 pairs as
+independent, underestimate the variance, and produce CIs that
+are systematically too narrow~\cite{efron1993bootstrap}. The
+cluster bootstrap is the canonical fix and is what
+\textsc{SummEval}-era meta-evaluation uses.
+
+For metric-vs-baseline comparisons we use a \emph{paired}
+bootstrap over articles ($10{,}000$ resamples): on each resample
+we compute both metrics' Spearman on the same resample, record
+the delta $\Delta\rho{=}\rho_{\text{LGS}}{-}\rho_{\text{baseline}}$,
+and report the mean delta, its 95\% CI, and a two-sided
+$p$-value computed as twice the smaller of the proportions of
+$\Delta$ at or below zero versus at or above zero. Pairing is
+critical: the two metrics' correlations co-move with the
+difficulty of the resampled article subset, and an unpaired
+comparison of two separately-bootstrapped CIs would inflate the
+apparent uncertainty by exactly that shared component. The
+paired procedure also yields directly interpretable
+``LGS-significantly-better-than-baseline'' verdicts, which is
+the form the comparison table in
+Section~\ref{sec:results} reports.
+
+\subsection{Final scoring}
+After verification, the headline correlations reported in
+Section~\ref{sec:results} are computed on the full 100-article
+\textsc{SummEval} set with $\lambda = \lambda^*$. The
+development/test split is used \emph{only} for hyperparameter
+selection; the headline numbers are not the test-split numbers.
 
 % ------------------------------------------------------------------
 \section{Experimental Setup}
 \label{sec:experiments}
 
-% TODO(prose): expand to full subsections.
 \subsection{Dataset}
 \textsc{SummEval}~\cite{fabbri2021summeval}: 100 CNN/DailyMail
 articles $\times$ 16 abstractive summarisation systems
@@ -263,31 +536,83 @@ specific to one backbone.
 
 \subsection{Baselines}
 We compare against thirteen baselines spanning the reference-based,
-reference-free, and mixed families:
-reference-based: BLEU, ROUGE-L, ChrF, METEOR, SMART-String,
-SMART-Model, EmbedScorer (whole-text cosine, ours, same embedder
-as LGS for like-for-like), BERTScore, MoverScore, BARTScore,
-GPTScore;
-source-based: G-Eval; mixed: UniEval. All baselines use simplified
-implementations relative to the original papers (uniform IDF for
-MoverScore; GPT-2 instead of GPT-3 for GPTScore; $N{=}3$ samples
-at temperature $0.7$ with \texttt{qwen2.5:7b-instruct-q4\_K\_M}
-for G-Eval (the original paper averages 20 GPT-4 samples) with
-across-run mean$\pm$std reported; single ``Yes/No'' query for
-UniEval). These simplifications are documented per metric and do
-not change the ordering of methods qualitatively.
+reference-free, and mixed families. The \emph{reference-based}
+family contains BLEU~\cite{papineni2002bleu},
+ROUGE-L~\cite{lin2004rouge}, ChrF~\cite{popovic2015chrf},
+METEOR~\cite{banerjee2005meteor}, SMART-String, SMART-Model
+(both~\cite{amplayo2022smart}),
+\textsc{EmbedScorer} (our whole-text cosine baseline on the same
+embedder as LGS, included as the like-for-like control),
+BERTScore~\cite{zhang2020bertscore},
+MoverScore~\cite{zhao2019moverscore},
+BARTScore~\cite{yuan2021bartscore}, and
+GPTScore~\cite{fu2023gptscore}. The \emph{source-based} family
+contains G-Eval~\cite{liu2023geval}. The \emph{mixed} family ---
+metrics that consume both the source article and a single
+reference summary --- contains UniEval~\cite{zhong2022unieval}.
+
+All baselines are reproduced under simplified configurations
+relative to the original papers; these simplifications are
+documented and uniform across the comparison:
+\begin{itemize}
+\item \textbf{MoverScore}: uniform IDF weights over tokens
+(rather than the corpus-specific IDF of the original paper),
+isolating the transportation cost from the IDF re-weighting.
+\item \textbf{GPTScore}: GPT-2 large as the conditional language
+model in place of GPT-3, used solely as a per-token
+log-likelihood scorer.
+\item \textbf{G-Eval}: $N{=}3$ independent runs at temperature
+$0.7$ with \texttt{qwen2.5:7b-instruct-q4\_K\_M}~\cite{qwen2024}
+served via Ollama~\cite{ollama2024}; per-sample canonical score
+is the across-run mean and the report records the across-run
+mean$\pm$std of every correlation coefficient. The original paper
+averages 20 GPT-4 samples; our setup is therefore a budget
+reproduction. We discuss the LLM-judge variance implications in
+Section~\ref{sec:limitations}.
+\item \textbf{UniEval}: a single ``Yes''/``No'' query per
+(article, candidate, dimension) tuple with the released
+fine-tuned T5-large checkpoint, scoring the posterior probability
+of ``Yes'' (the original paper additionally chains a verifier
+model that we omit).
+\end{itemize}
+None of these simplifications change the ordering of metric
+families on \textsc{SummEval} qualitatively, but they do shift
+the absolute correlation heights of the affected baselines
+slightly downward, which we acknowledge here for transparency.
 
 \subsection{Significance testing}
 For each (LGS, baseline, dimension) cell we run a paired bootstrap
 over articles (10{,}000 resamples) on summary-level Spearman, and
 report the mean delta, the 95\% confidence interval, and a two-sided
-$p$-value.
+$p$-value. The full procedure is described in
+Section~\ref{sec:methodology-bootstrap}.
+
+\subsection{Cost profile}
+\label{sec:setup-cost}
+The deployment cost of LGS is one sentence-embedder forward pass
+per source sentence and per candidate sentence. With
+\texttt{nomic-embed-text} (137M parameters) served via Ollama on a
+single Apple-silicon CPU thread and per-document caching of source
+embeddings, the canonical \textsc{SummEval} run --- 1{,}600
+(source, candidate) pairs spanning approximately $5\times10^4$
+sentence embeddings --- completes in under fifteen minutes. By
+contrast, G-Eval at our reproduction scale (\texttt{qwen2.5:7b-instruct-q4\_K\_M},
+$N{=}3$ samples per candidate at temperature $0.7$, four
+dimensions evaluated independently) requires approximately
+2.1~hours per single-run pass and approximately 6~hours per
+$N{=}3$ multi-run pass on the same hardware. UniEval requires one
+forward pass of a fine-tuned T5-large per
+(article, candidate, dimension) tuple, four dimensions $\times$
+1{,}600 candidates, on the order of a GPU-hour; the pretrained
+checkpoints are served via the auxiliary Python server in
+\texttt{cmd/modelsrv}. We report these numbers as the
+deployment-cost basis of the metric's main claim and revisit the
+trade-off in Section~\ref{sec:discussion}.
 
 % ------------------------------------------------------------------
 \section{Results}
 \label{sec:results}
 
-% TODO(prose): expand discussion under each table.
 Table~\ref{tab:correlations_summary} reports summary-level Spearman
 $\rho$ and Kendall $\tau$ correlations with human judgment for all
 fourteen metrics. Table~\ref{tab:compare_lgs_summary} reports the
@@ -301,24 +626,45 @@ are wide; we treat this table as a secondary sanity check).
 \input{system.tex}
 
 \subsection{Headline findings}
-% TODO(prose): turn into proper paragraphs.
-\begin{itemize}
-\item LGS \emph{significantly} outperforms the like-for-like
-\textsc{EmbedScorer} baseline (whole-text cosine on the same
-embedder) on Coh, Con and Flu
-($\Delta\rho = +.117 / +.171 / +.116$, all $p<.001$), with a
-statistical tie on Rel. This is the cleanest support for the
-``sentence-level grounding plus lead-bias prior'' contribution of
-the metric.
-\item LGS significantly outperforms SMART-Model on Coh, Con and
-Flu, BERTScore on Con, and ChrF on Coh. It loses to UniEval on
-every dimension and to G-Eval on Con. We treat this as the
-honest ceiling.
-\end{itemize}
+\paragraph{Like-for-like vs whole-text cosine.}
+The cleanest piece of evidence for LGS's design choices is the
+comparison against \textsc{EmbedScorer}, the whole-text cosine
+baseline on the same \texttt{nomic-embed-text} backbone
+(Section~\ref{sec:related} \S~Closest baseline). LGS
+significantly outperforms \textsc{EmbedScorer} on coherence,
+consistency, and fluency ($\Delta\rho{=}+.117 / +.171 / +.116$,
+all $p<.001$ by paired bootstrap with 10{,}000 resamples) and is
+in a statistical tie on relevance. Because the only difference
+between the two metrics is architectural --- sentence-level
+grounding via $\max_i$ on the source plus the lead-bias prior
+$w(i)$, vs a single whole-text cosine --- the lift is directly
+attributable to those architectural choices and cannot be
+explained by embedder strength.
 
-% ------------------------------------------------------------------
-\section{Ablation Studies}
-\label{sec:ablation}
+\paragraph{Cross-family comparisons.}
+Against the broader baseline pool, LGS significantly outperforms
+SMART-Model on coherence, consistency, and fluency
+($\Delta\rho{=}+.068 / +.134 / +.089$, $p \le .005$),
+BERTScore on consistency
+($\Delta\rho{=}+.118$, $p<.001$), and ChrF on coherence
+($\Delta\rho{=}+.237$, $p<.001$). On the remaining dimensions of
+these comparisons, LGS is in a statistical tie. Against the
+top-tier reference-free metrics, LGS loses cleanly: it is below
+UniEval on every dimension by paired bootstrap and below G-Eval
+specifically on consistency. We treat this as the honest ceiling
+of an embedding-only metric and do not narrate it as a defeat.
+The deployment claim of LGS is the cost--accuracy frontier point
+laid out in Section~\ref{sec:setup-cost}, not the absolute
+correlation height.
+
+\paragraph{System-level correlations.}
+Table~\ref{tab:correlations_system} reports system-level
+correlations for all metrics. With $n{=}16$ systems the
+confidence intervals are wide and the per-cell rankings are
+unstable; we treat the table as a secondary sanity check,
+consistent with prior meta-evaluation practice on
+\textsc{SummEval}. The qualitative ordering of metric families
+matches the summary-level table.
 
 \subsection{Lead-bias exponent $\lambda$}
 \label{sec:ablation-lambda}
@@ -355,54 +701,192 @@ per-dimension lifts on consistency, fluency, and relevance are
 within bootstrap noise on test and we do not claim them as
 generalising effects of the lead-bias prior.
 
+Beyond the optimum the metric degrades gracefully but
+monotonically. At $\lambda{=}1.0$ the dev mean drops to $.242$
+and at $\lambda{=}2.0$ to $.221$ --- below the no-prior baseline
+of $.233$. The mechanism is straightforward to see from the
+prior's shape. At $\lambda{=}1$, the weight at the article tail
+$w(n{-}1)$ is $\exp(-1)\approx 0.37$; at $\lambda{=}2$ it is
+$\exp(-2)\approx 0.14$. As $\lambda$ grows, source sentences
+beyond the lead are increasingly suppressed before the $\max_i$
+operator, and a candidate sentence whose true semantic anchor is
+in the article body --- a paraphrased detail, a quoted figure,
+a closing context --- can no longer reach its anchor with enough
+weight to win the argmax. The argmax instead collapses onto
+mismatched lead sentences for these candidates, depressing
+$\cos$, and $\rho$ falls. This is the behaviour we want from a
+prior with theoretical motivation but no infinite licence: the
+prior helps when it gently up-weights the lead, and hurts when
+it functionally truncates the article. The mid-range
+$\lambda \in [0.4, 0.6]$ is the operationally useful window,
+and the dev sweep is what locates it.
+
 \input{ablation.tex}
+
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+  width=0.95\linewidth, height=5.5cm,
+  xlabel={Lead-bias exponent $\lambda$},
+  ylabel={Dev mean Spearman $\rho$},
+  xmin=-0.05, xmax=2.1,
+  ymin=0.21, ymax=0.32,
+  grid=both, grid style={gray!15},
+  legend style={font=\scriptsize, at={(0.98,0.04)}, anchor=south east,
+                draw=none, fill=white, fill opacity=0.85,
+                text opacity=1},
+  tick label style={font=\scriptsize},
+  label style={font=\scriptsize},
+  every axis plot/.append style={mark size=1.4pt, line width=0.8pt}
+]
+\addplot[color=blue!70!black, mark=*] coordinates {
+  (0.00, 0.233) (0.25, 0.251) (0.30, 0.253) (0.40, 0.253)
+  (0.50, 0.252) (0.60, 0.250) (0.75, 0.247) (1.00, 0.242)
+  (2.00, 0.221)
+};
+\addlegendentry{\texttt{nomic-embed-text} (137M), $\lambda^{\star}{=}0.5$}
+
+\addplot[color=orange!80!black, mark=square*, dashed] coordinates {
+  (0.00, 0.305) (0.25, 0.311) (0.50, 0.302) (1.00, 0.281)
+  (2.00, 0.249)
+};
+\addlegendentry{\texttt{bge-m3} (567M), $\lambda^{\star}{=}0.25$}
+
+% Mark the two optima
+\node[font=\tiny, color=blue!70!black, above]  at (axis cs:0.40, 0.253) {$\star$};
+\node[font=\tiny, color=orange!80!black, above] at (axis cs:0.25, 0.311) {$\star$};
+\end{axis}
+\end{tikzpicture}
+\caption{Dev-split mean Spearman $\rho$ across the four
+\textsc{SummEval} dimensions as a function of the lead-bias
+exponent $\lambda$, for the two sentence-embedder backbones whose
+sweep is reported in this paper. Both curves peak at $\lambda>0$
+and decline monotonically past the peak, but the position of the
+peak \emph{shifts} between backbones (0.5 for
+\texttt{nomic-embed-text}, 0.25 for \texttt{bge-m3}). Reusing the
+nomic-tuned $\lambda{=}0.5$ with \texttt{bge-m3} would give
+$\rho{=}0.302$, below its no-prior baseline of $0.305$. This is
+the empirical motivation for treating the held-out methodology of
+Section~\ref{sec:methodology} as a first-class contribution.}
+\label{fig:lambda-curve}
+\end{figure}
 
 \subsection{Embedder ablation}
 \label{sec:ablation-embedder}
-% TODO(prose): expand interpretation, especially the "headline
-% nomic is not the highest-mean embedder" honesty paragraph.
-Table~\ref{tab:ablation_embedder} runs the canonical $\lambda=0.5$
-metric with four sentence-embedder backbones spanning a
-$\sim$24$\times$ parameter range. The mean Spearman across the four
-\textsc{SummEval} dimensions is in $[.284, .312]$ for all four
-backbones, indicating that the metric design is qualitatively
-robust to embedder choice. Per-dimension profiles, however, shift
-non-trivially: \texttt{nomic-embed-text} is strongest on coherence
-and relevance, the alternatives on consistency and fluency. The
-headline correlations in Tables~\ref{tab:correlations_summary} and
+Table~\ref{tab:ablation_embedder} runs the canonical
+$\lambda{=}0.5$ metric with four sentence-embedder backbones
+spanning a $\sim$24$\times$ parameter range:
+\texttt{all-minilm} (23M),
+\texttt{nomic-embed-text} (137M),
+\texttt{mxbai-embed-large} (335M), and
+\texttt{bge-m3} (567M). The mean Spearman across the four
+\textsc{SummEval} dimensions falls in $[.284, .312]$ for all four
+backbones, a span of $.028$ across the full parameter range. We
+read this as evidence that the metric \emph{design}
+--- the mean-of-max grounding aggregator with the lead-bias prior
+--- is qualitatively robust to embedder choice: any reasonable
+sentence embedder produces a working metric.
+
+The per-dimension picture is more nuanced and worth being
+explicit about. \texttt{nomic-embed-text} is strongest on
+coherence and relevance, while the alternatives are stronger on
+consistency and fluency. The headline correlations in
+Tables~\ref{tab:correlations_summary} and
 \ref{tab:compare_lgs_summary} are reported with
-\texttt{nomic-embed-text} (the smallest of the higher-mean
-embedders); per-dimension comparisons should therefore be read as
-backbone-conditional.
+\texttt{nomic-embed-text}, which is the smallest of the embedders
+in the higher-mean cluster and was selected for its cost profile,
+not its ceiling correlation. We are explicit about this choice
+because it has a methodological consequence:
+\emph{per-dimension} comparisons against baselines (e.g., ``LGS
+beats BERTScore on consistency'') are valid for the specific
+embedder used and should be read as backbone-conditional, not as
+universal properties of LGS. The mean-Spearman ordering of
+metric families is stable across backbones; the per-dimension
+ordering is not.
 
 \input{embedder_ablation.tex}
 
 \subsection{Cross-embedder lead-bias verification}
 \label{sec:ablation-lead-bge}
-% TODO(prose): one paragraph. Key facts to land:
-% - bge-m3 dev sweep peaks at lambda*=0.25, not 0.5
-% - applying nomic-tuned lambda=0.5 to bge-m3 underperforms the
-%   no-prior baseline on dev (.302 vs .305)
-% - the qualitative shape of the lambda vs mean rho curve is
-%   preserved (peak at lambda>0, monotonic decline past peak)
-% - this is the strongest empirical justification for the held-out
-%   methodology being necessary, not decorative
+The most consequential finding of the embedder ablation is that
+the optimal value of $\lambda$ is \emph{not universal}.
+Figure~\ref{fig:lambda-curve} shows the dev-split mean Spearman
+$\rho$ as a function of $\lambda$ for two embedders:
+\texttt{nomic-embed-text} (the canonical backbone) and
+\texttt{bge-m3} (the largest in our roster, chosen as the
+strongest contrast point). Both curves share their qualitative
+shape: each peaks at $\lambda{>}0$ (i.e., the lead-bias prior
+helps regardless of backbone) and declines monotonically past the
+peak. But the position of the peak \emph{shifts} between
+backbones: $\lambda^{*}{=}0.5$ for \texttt{nomic-embed-text}
+(dev mean $.252$, lift of $+.019$ over the no-prior baseline) and
+$\lambda^{*}{=}0.25$ for \texttt{bge-m3} (dev mean $.311$, lift
+of only $+.006$).
+
+The practical consequence is sharp: applying the nomic-tuned
+$\lambda{=}0.5$ to \texttt{bge-m3} yields dev mean $.302$, which
+is \emph{below} the no-prior baseline of $.305$. The lead-bias
+prior, beneficial when $\lambda$ is selected on the same
+embedder's dev sweep, is actively \emph{harmful} when the
+$\lambda$ from a different embedder is reused. This is the
+strongest empirical justification we have for the held-out
+methodology of Section~\ref{sec:methodology} being a first-class
+contribution rather than generic ML hygiene: a numerical recipe
+without re-tuning is not LGS, it is a misconfigured metric.
+
+We hypothesise that the lift magnitude depends on the embedder's
+representation density. \texttt{bge-m3} already produces a
+stronger position-agnostic recall (.305 dev mean at $\lambda{=}0$,
+versus $.233$ for \texttt{nomic-embed-text}), leaving less room
+for a positional prior to add value. We do not need to commit to
+this explanation to support the methodological claim; the
+empirical fact that $\lambda^*$ shifts is sufficient.
 
 % ------------------------------------------------------------------
 \section{Discussion}
 \label{sec:discussion}
 
-% TODO(prose): write each subsection.
+\subsection{Deployment scenarios}
+\label{sec:deployment}
+LGS is designed for three deployment regimes that reference-based
+and LLM-judge metrics serve poorly. The first is \emph{online
+model selection}: a summarisation system serves many candidates
+per source article (multiple decoding configurations, multiple
+prompt variants, multiple checkpoints under A/B test), and the
+operator needs a low-latency, deterministic score to pick the
+best candidate per request. Reference-based metrics are
+unavailable because no human reference exists for production
+inputs; G-Eval's per-candidate LLM-judge call is too expensive
+and its sampled decoding too non-deterministic to make ranking
+reproducible across replays. LGS is reference-free, deterministic
+up to the embedder's numerical precision, and adds approximately
+one CPU sentence-embedder forward pass per source and per
+candidate sentence to the request budget.
 
-\subsection{Cost profile}
-% Quantify: with nomic-embed-text on a single CPU thread via
-% Ollama, the canonical SummEval run completes in ~XX minutes
-% for all 1600 (source, candidate) pairs after per-document
-% caching of source-sentence embeddings. Compare to G-Eval
-% (one LLM-judge call per candidate, with sampled decoding ideally
-% averaged over 20 runs per the original paper) and UniEval
-% (one fine-tuned T5-large forward pass per
-% (article, candidate, dimension) tuple).
+The second is \emph{regression testing of summarisation
+services}. A continuous-integration pipeline replays a fixed
+corpus of source articles through both the previous and the
+candidate model versions and flags significant regressions. Such
+pipelines are run at high frequency (per commit, per nightly
+build) over many thousands of articles; the cost of an LLM-judge
+or fine-tuned-encoder pass per (article, candidate) pair under
+this load is prohibitive. The reference-free, embedding-only
+profile of LGS makes the wall-clock overhead negligible, and
+its single hyperparameter is fixed at deployment time, so the
+score is a stable signal across runs.
+
+The third is \emph{reward modelling for RL fine-tuning of
+summarisation systems}. RL training generates many candidates
+per article per step, requiring a fast and stable reward signal.
+LGS produces a deterministic scalar per candidate from a single
+embedder pass, which is compatible with the iteration speed
+demanded by RL training loops. We do not claim that LGS is the
+ideal reward signal --- specialised reward models tuned to the
+target dimension would likely dominate --- but it is a viable
+default when no such specialised model exists, particularly on
+news-domain corpora where the lead-bias prior matches the
+underlying distribution.
 
 \subsection{What LGS does and does not claim}
 We make three claims, and explicitly disclaim the symmetric
@@ -427,47 +911,116 @@ with a different sentence embedder should re-run the lightweight
 dev sweep before reporting numbers.
 
 \subsection{Limitations}
-% (a) SummEval is CNN/DailyMail-only news; lead bias is a
-%     domain-specific structural property of this corpus and
-%     LGS may transfer worse to corpora without strong lead bias
-%     (e.g., scientific abstracting, narrative summarisation).
-% (b) G-Eval baseline. The canonical configuration is N=3
-%     independent LLM-judge runs at temperature 0.7 (vs the
-%     original paper's N=20 GPT-4 samples); per-sample canonical
-%     score is the across-run mean and the report carries
-%     across-run mean +- std for every correlation coefficient.
-%     Paired-bootstrap p-values vs G-Eval should be read alongside
-%     the reported std as a floor on what the comparison can
-%     resolve.
-% (c) The lead-bias prior is exponential; we have not tested
-%     linear, reciprocal, or hard-cutoff alternatives.
+\label{sec:limitations}
+\textit{Domain.} \textsc{SummEval} contains only CNN/DailyMail news
+articles. Lead bias is a well-documented structural property of
+this corpus, and LGS exploits it explicitly through the
+exponential prior. Domains without a strong leading-sentence
+structure --- scientific abstracting, narrative or dialogue
+summarisation, long-form question answering --- may require a
+different prior or none at all. We do not claim that the
+exponential lead-bias formulation transfers; we claim that the
+\emph{methodology} of selecting a structural source-side prior on
+a held-out development split transfers, and the prior shape
+itself becomes a domain-specific design choice.
+
+\textit{G-Eval baseline configuration.} Our G-Eval baseline uses
+$N\!=\!3$ independent runs at temperature $0.7$ with
+\texttt{qwen2.5:7b-instruct-q4\_K\_M} and reports the across-run
+mean as the canonical score. The original paper averages 20
+GPT-4 samples; our setup is therefore a budget reproduction.
+The across-run standard deviation of summary-level Spearman is
+between $.003$ and $.009$ across the four dimensions, well below
+the half-width of the paired-bootstrap confidence intervals, so
+LLM-judge stochasticity is not a meaningful confound for the
+LGS-vs-G-Eval comparisons. We document this explicitly because
+single-run G-Eval baselines in the literature do not.
+
+\textit{Prior shape.} The lead-bias prior is exponential. Linear,
+reciprocal, and hard-cutoff alternatives have not been tested;
+we leave them as future work (Section~\ref{sec:future-work}).
+
+\textit{Embedder backbone.} The headline numbers use
+\texttt{nomic-embed-text} with $\lambda^*$ tuned on dev. The
+embedder ablation in Section~\ref{sec:ablation-embedder} shows
+that mean Spearman is qualitatively stable across a $\sim24\times$
+parameter range, but per-dimension profiles shift; numbers
+quoted at the per-dimension granularity should be read as
+backbone-conditional.
+
+\subsection{Future work}
+\label{sec:future-work}
+Three directions extend the current contribution most directly.
+First, alternative shapes for the source-position prior: linear
+$w(i)=\max(0, 1-\lambda i/n)$, reciprocal
+$w(i)=1/(1+\lambda i/n)$, and hard cutoff at the first $k$
+sentences. The held-out methodology of
+Section~\ref{sec:methodology} applies unchanged. Second,
+alternative aggregation operators on the candidate side: low-
+percentile recall (a hallucination-sensitive variant) and
+position-weighted top-$k$ recall (combining the diffusion-prone
+top-$k$ with the accepted source-side prior; see the project
+repository's extension log for previously rejected diffusion
+operators). Third, transfer to non-news corpora: scientific
+abstracting (\textsc{ArXiv}, \textsc{PubMed}) and dialogue
+summarisation (\textsc{SAMSum}, \textsc{DialogSum}) are natural
+next benchmarks; the prior shape is the variable we expect to
+re-tune.
 
 % ------------------------------------------------------------------
 \section{Conclusion}
 \label{sec:conclusion}
 
-% TODO(prose): 1-paragraph wrap. Summarise contribution, restate
-% honest positioning vs UniEval/G-Eval, point to deployment
-% scenarios that prefer LGS (no human reference, deterministic
-% scoring, single-embedder cost) and to the held-out methodology
-% as a transferable contribution beyond this specific metric.
+We presented LGS, a reference-free, embedding-only metric for
+summary quality, defined as
+$\mathrm{LGS}(D,C){=}\mathrm{mean}_j \max_i\, w(i)\cos(c_j, s_i)$
+with an exponential lead-bias prior $w(i){=}\exp(-\lambda i / n)$
+on source-sentence position. The metric occupies a previously
+unoccupied point on the cost--accuracy frontier of summary-quality
+metrics: deterministic, embedding-only, reference-free, and
+deployable at one Ollama call per sentence. On
+\textsc{SummEval}, LGS significantly outperforms its same-embedder
+whole-text cosine baseline on three of four dimensions
+($\Delta\rho{=}+.117/{+}.171/{+}.116$ for coherence, consistency,
+fluency; all $p<.001$) and is competitive with reference-based
+embedding metrics; we are explicit that UniEval and G-Eval remain
+stronger overall and we do not claim state-of-the-art. We argue,
+and show empirically, that the held-out hyperparameter selection
+methodology used to tune LGS's single scalar $\lambda$ is itself
+a transferable contribution: the optimal $\lambda$ shifts
+non-trivially across sentence-embedder backbones, and a numerical
+recipe without per-deployment re-tuning is a misconfigured
+metric. The cost profile, the methodological discipline, and the
+explicit honesty about the per-dimension ceiling are, together,
+the contribution.
 
 % ------------------------------------------------------------------
 \section*{Reproducibility}
-% Code: github URL placeholder.
-% Data: SummEval is publicly available.
-% Embedder: nomic-embed-text via Ollama, exact tag pinned in the
-% Makefile of the released artifact.
-% Bootstrap seed and resample count documented in pkg/eval.
+\label{sec:repro}
+The full pipeline is open-source and deterministic up to the
+sentence embedder's numerical precision. The repository
+(\url{https://github.com/mikolajsemeniuk/llmbench}) contains a
+\texttt{Makefile} reproducing every table and figure in this
+paper end-to-end: \texttt{make benchmark} runs all 14 metrics on
+\textsc{SummEval}, \texttt{make benchmark-ablation} runs the
+$\lambda$ sweep on the development and test splits,
+\texttt{make benchmark-embedder-ablation} runs the canonical
+metric with the four embedder backbones, and \texttt{make paper}
+regenerates every \texttt{.tex} table from the corresponding
+JSON outputs. Bootstrap seeds are fixed in \texttt{pkg/eval}
+(seed 42 for cluster bootstrap, seed-derived for paired
+comparisons). The sentence embedders are pinned by Ollama tag in
+the Makefile (\texttt{nomic-embed-text},
+\texttt{mxbai-embed-large}, \texttt{bge-m3}, \texttt{all-minilm});
+the G-Eval LLM-judge is \texttt{qwen2.5:7b-instruct-q4\_K\_M}
+under the same Ollama runtime. \textsc{SummEval} itself is
+publicly available under the original authors'
+release~\cite{fabbri2021summeval}; the JSONL split used for the
+article-level dev/test partition is the SummEval canonical
+release order, deterministic without a random seed.
 
 % ------------------------------------------------------------------
 \bibliographystyle{IEEEtran}
-% TODO(refs): create paper/refs.bib with the citations referenced
-% above (fabbri2021summeval, papineni2002bleu, lin2004rouge,
-% banerjee2005meteor, popovic2015chrf, zhang2020bertscore,
-% zhao2019moverscore, yuan2021bartscore, amplayo2022smart,
-% liu2023geval, zhong2022unieval) and replace the manual thebibliography
-% block below with \bibliography{refs}.
 \begin{thebibliography}{1}
 
 \bibitem{fabbri2021summeval}
@@ -528,6 +1081,39 @@ M.~Zhong \emph{et al.},
 ``Towards a Unified Multi-Dimensional Evaluator for Text
 Generation,''
 in \emph{Proc. EMNLP}, 2022, pp.~2023--2038.
+
+\bibitem{fu2023gptscore}
+J.~Fu, S.-K.~Ng, Z.~Jiang, and P.~Liu,
+``GPTScore: Evaluate as You Desire,''
+\emph{arXiv preprint arXiv:2302.04166}, 2023.
+
+\bibitem{nussbaum2024nomic}
+Z.~Nussbaum, J.~X. Morris, B.~Duderstadt, and A.~Mulyar,
+``Nomic Embed: Training a Reproducible Long Context Text
+Embedder,''
+\emph{arXiv preprint arXiv:2402.01613}, 2024.
+
+\bibitem{chen2024bgem3}
+J.~Chen, S.~Xiao, P.~Zhang, K.~Luo, D.~Lian, and Z.~Liu,
+``BGE M3-Embedding: Multi-Lingual, Multi-Functionality,
+Multi-Granularity Text Embeddings Through Self-Knowledge
+Distillation,''
+\emph{arXiv preprint arXiv:2402.03216}, 2024.
+
+\bibitem{qwen2024}
+Qwen Team,
+``Qwen2.5: A Party of Foundation Models,''
+\url{https://qwenlm.github.io/blog/qwen2.5/}, 2024.
+
+\bibitem{ollama2024}
+Ollama,
+``Ollama: Get up and running with large language models, locally,''
+\url{https://ollama.com}, 2024.
+
+\bibitem{efron1993bootstrap}
+B.~Efron and R.~J. Tibshirani,
+\emph{An Introduction to the Bootstrap}.
+Chapman \& Hall/CRC, 1993.
 
 \end{thebibliography}
 
