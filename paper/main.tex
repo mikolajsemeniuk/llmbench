@@ -63,11 +63,11 @@ G-Eval it does not require a large language-model judge call per
 candidate. The metric runs with one sentence-embedder forward pass
 per source/candidate sentence (we use \texttt{nomic-embed-text}, a
 137M-parameter embedder served locally through Ollama). On \textsc{SummEval}, LGS reaches a summary-level Spearman $\rho$
-of $.393/.488/.140/.416$ on coherence, consistency, fluency, and
+of $.396/.227/.156/.356$ on coherence, consistency, fluency, and
 relevance respectively. It significantly outperforms its
 same-embedder whole-text cosine baseline on three of four
 dimensions ($\Delta\rho{=}+.117/{+}.171/{+}.116$, all $p{<}.001$
-by paired bootstrap with 10{,}000 resamples), significantly
+by paired bootstrap with 5{,}000 resamples), significantly
 outperforms SMART-Model on the same three dimensions, BERTScore
 on consistency, and ChrF on coherence, and is statistically tied
 with the remaining baselines except for UniEval and G-Eval. We
@@ -523,7 +523,7 @@ cluster bootstrap is the canonical fix and is what
 \textsc{SummEval}-era meta-evaluation uses.
 
 For metric-vs-baseline comparisons we use a \emph{paired}
-bootstrap over articles ($10{,}000$ resamples): on each resample
+bootstrap over articles ($5{,}000$ resamples): on each resample
 we compute both metrics' Spearman on the same resample, record
 the delta $\Delta\rho{=}\rho_{\text{LGS}}{-}\rho_{\text{baseline}}$,
 and report the mean delta, its 95\% CI, and a two-sided
@@ -632,7 +632,7 @@ readers comparing tables across papers can align expectations.
 
 \subsection{Significance testing}
 For each (LGS, baseline, dimension) cell we run a paired bootstrap
-over articles (10{,}000 resamples) on summary-level Spearman, and
+over articles (5{,}000 resamples) on summary-level Spearman, and
 report the mean delta, the 95\% confidence interval, and a two-sided
 $p$-value. The full procedure is described in
 Section~\ref{sec:methodology-bootstrap}.
@@ -659,8 +659,9 @@ per source sentence and per candidate sentence. With
 a single Apple-silicon CPU thread and per-document caching of
 source embeddings, the canonical \textsc{SummEval} run ---
 1{,}600 (source, candidate) pairs spanning approximately
-$5\times10^4$ sentence embeddings --- completes in under fifteen
-minutes. By contrast, G-Eval at our reproduction scale
+$5\times10^4$ sentence embeddings --- completes in roughly
+ninety seconds (\textasciitilde 57~ms per sample;
+Figure~\ref{fig:frontier}). By contrast, G-Eval at our reproduction scale
 (\texttt{qwen2.5:7b-instruct-q4\_K\_M}, $N{=}3$ samples per
 candidate at temperature $0.7$, four dimensions evaluated
 independently) requires approximately 2.1~hours per single-run
@@ -741,7 +742,7 @@ baseline on the same \texttt{nomic-embed-text} backbone
 (Section~\ref{sec:related} \S~Closest baseline). LGS
 significantly outperforms \textsc{EmbedScorer} on coherence,
 consistency, and fluency ($\Delta\rho{=}+.117 / +.171 / +.116$,
-all $p<.001$ by paired bootstrap with 10{,}000 resamples) and is
+all $p<.001$ by paired bootstrap with 5{,}000 resamples) and is
 in a statistical tie on relevance. Because the only difference
 between the two metrics is architectural --- sentence-level
 grounding via $\max_i$ on the source plus the lead-bias prior
