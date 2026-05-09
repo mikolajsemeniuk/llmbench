@@ -131,14 +131,18 @@ func main() {
 			cache[s.DocumentID] = c
 		}
 
-		score, _, err := scorer.Score(ctx, c.sents, c.embs, s.Candidate)
+		out, err := scorer.Score(ctx, metrics.LGSInput{
+			SourceSents: c.sents,
+			SourceEmbs:  c.embs,
+			Candidate:   s.Candidate,
+		})
 		if err != nil {
 			log.Fatalf("sample %s: %v", s.ID, err)
 		}
 
-		scores[i] = score
-		entries[i] = eval.Score{SampleID: s.ID, Value: score}
-		sumScore += score
+		scores[i] = out.Score
+		entries[i] = eval.Score{SampleID: s.ID, Value: out.Score}
+		sumScore += out.Score
 
 		bar.Add(1)
 	}
@@ -156,11 +160,11 @@ func main() {
 		RuntimeSec: elapsed.Seconds(),
 		Timestamp:  time.Now().UTC().Format(time.RFC3339),
 		Scores:     entries,
-		SummaryLevel: eval.NewCorrelationWith(samples, scores, eval.CorrelationOptions{
+		SummaryLevel: eval.NewCorrelation(samples, scores, eval.CorrelationOptions{
 			Bootstrap: bootstrap,
 			Level:     "summary",
 		}),
-		SystemLevel: eval.NewCorrelationWith(samples, scores, eval.CorrelationOptions{
+		SystemLevel: eval.NewCorrelation(samples, scores, eval.CorrelationOptions{
 			Bootstrap: bootstrap,
 			Level:     "system",
 		}),

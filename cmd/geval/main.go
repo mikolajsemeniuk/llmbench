@@ -145,11 +145,11 @@ func main() {
 		RuntimeSec: elapsed.Seconds(),
 		Timestamp:  time.Now().UTC().Format(time.RFC3339),
 		Scores:     entries,
-		SummaryLevel: eval.NewCorrelationWith(samples, scores, eval.CorrelationOptions{
+		SummaryLevel: eval.NewCorrelation(samples, scores, eval.CorrelationOptions{
 			Bootstrap: bootstrap,
 			Level:     "summary",
 		}),
-		SystemLevel: eval.NewCorrelationWith(samples, scores, eval.CorrelationOptions{
+		SystemLevel: eval.NewCorrelation(samples, scores, eval.CorrelationOptions{
 			Bootstrap: bootstrap,
 			Level:     "system",
 		}),
@@ -159,8 +159,8 @@ func main() {
 		summaryCorrs := make([]eval.Correlation, runs)
 		systemCorrs := make([]eval.Correlation, runs)
 		for k := 0; k < runs; k++ {
-			summaryCorrs[k] = eval.NewCorrelationWith(samples, perRunScores[k], eval.CorrelationOptions{Level: "summary"})
-			systemCorrs[k] = eval.NewCorrelationWith(samples, perRunScores[k], eval.CorrelationOptions{Level: "system"})
+			summaryCorrs[k] = eval.NewCorrelation(samples, perRunScores[k], eval.CorrelationOptions{Level: "summary"})
+			systemCorrs[k] = eval.NewCorrelation(samples, perRunScores[k], eval.CorrelationOptions{Level: "system"})
 		}
 		report.Runs = &eval.RunsAggregate{
 			NRuns:       runs,

@@ -48,6 +48,20 @@ type LGS struct {
 	MinSentenceLen int
 }
 
+// LGSInput is the per-call input. The caller pre-computes source
+// sentence splits and embeddings once per DocumentID and passes them
+// in for every candidate of that article.
+type LGSInput struct {
+	SourceSents []string
+	SourceEmbs  [][]float64
+	Candidate   string
+}
+
+// LGSOutput carries the per-call result.
+type LGSOutput struct {
+	Score float64
+}
+
 func NewLGS(host, embedModel string) *LGS {
 	return &LGS{
 		Embedder:       NewOllama(host),
@@ -57,70 +71,23 @@ func NewLGS(host, embedModel string) *LGS {
 	}
 }
 
-// LGSDiagnostics carries per-call internals so cmd/lgs can produce
-// run-level statistics without re-running the pipeline. Score is the
-// final scalar returned for correlation; Recall is the same value
-// (kept as an alias for callers that read the decomposition).
-type LGSDiagnostics struct {
-	NumSourceSents    int
-	NumCandidateSents int
-	Recall            float64
-	Score             float64
-}
-
-// Score reuses precomputed source embeddings (one
-// per source sentence). cmd/lgs caches these per DocumentID so the 16
-// candidates summarising the same article share the embedding cost.
-func (b *LGS) Score(ctx context.Context, sourceSents []string, sourceEmbs [][]float64, candidate string) (float64, LGSDiagnostics, error) {
-	splitted := SplitSentences(candidate)
-	sentences := filterShortSentences(splitted, b.MinSentenceLen)
-	if len(sourceSents) == 0 || len(sentences) == 0 {
-		return 0, LGSDiagnostics{}, nil
+// Score computes LGS for a single (source, candidate) pair. Source
+// embeddings are reused across the 16 candidates of an article so the
+// caller is responsible for caching them per DocumentID.
+func (b *LGS) Score(ctx context.Context, in LGSInput) (LGSOutput, error) {
+	candSents := filterShortSentences(SplitSentences(in.Candidate), b.MinSentenceLen)
+	if len(in.SourceSents) == 0 || len(candSents) == 0 {
+		return LGSOutput{}, nil
 	}
 
-	embeddings, err := b.embed(ctx, sentences)
+	candEmbs, err := b.EmbedSentences(ctx, candSents)
 	if err != nil {
-		return 0, LGSDiagnostics{}, fmt.Errorf("lgs: embed candidate: %w", err)
+		return LGSOutput{}, fmt.Errorf("lgs: embed candidate: %w", err)
 	}
 
-	return b.score(sourceSents, sourceEmbs, sentences, embeddings)
-}
-
-func filterShortSentences(sents []string, minLen int) []string {
-	out := sents[:0]
-	for _, s := range sents {
-		if len([]rune(s)) >= minLen {
-			out = append(out, s)
-		}
-	}
-
-	return out
-}
-
-func (b *LGS) embed(ctx context.Context, sentences []string) ([][]float64, error) {
-	embeds := make([][]float64, len(sentences))
-	for i, sent := range sentences {
-		res, err := b.Embedder.Embed(ctx, EmbedInput{Model: b.EmbedModel, Input: sent})
-		if err != nil {
-			return nil, err
-		}
-
-		if len(res.Embeddings) == 0 {
-			return nil, fmt.Errorf("lgs: empty embedding for sentence %d", i)
-		}
-
-		embeds[i] = res.Embeddings[0]
-	}
-
-	return embeds, nil
-}
-
-func (b *LGS) score(sourceSents []string, sourceEmbs [][]float64, candSents []string, candEmbs [][]float64) (float64, LGSDiagnostics, error) {
-	// Pre-compute source-position weights once. λ=0 degenerates to
-	// all-ones so we skip the multiplication entirely.
 	var weights []float64
 	if b.LeadBiasLambda > 0 {
-		n := len(sourceEmbs)
+		n := len(in.SourceEmbs)
 		weights = make([]float64, n)
 		for i := range n {
 			weights[i] = math.Exp(-b.LeadBiasLambda * float64(i) / float64(n))
@@ -130,7 +97,7 @@ func (b *LGS) score(sourceSents []string, sourceEmbs [][]float64, candSents []st
 	var recall float64
 	for _, ce := range candEmbs {
 		best := -2.0
-		for i, se := range sourceEmbs {
+		for i, se := range in.SourceEmbs {
 			c := cosineSimilarity(ce, se)
 			if weights != nil {
 				c *= weights[i]
@@ -141,22 +108,17 @@ func (b *LGS) score(sourceSents []string, sourceEmbs [][]float64, candSents []st
 		}
 		recall += best
 	}
-
 	recall /= float64(len(candEmbs))
 	if recall < 0 {
 		recall = 0
 	}
 
-	diag := LGSDiagnostics{
-		NumSourceSents:    len(sourceSents),
-		NumCandidateSents: len(candSents),
-		Recall:            recall,
-		Score:             recall,
-	}
-
-	return recall, diag, nil
+	return LGSOutput{Score: recall}, nil
 }
 
+// EmbedSentences embeds sentences one at a time using the configured
+// Ollama embedder. cmd/lgs uses it directly to embed source sentences
+// once per DocumentID; Score uses it internally for the candidate.
 func (b *LGS) EmbedSentences(ctx context.Context, sentences []string) ([][]float64, error) {
 	embeds := make([][]float64, len(sentences))
 	for i, sent := range sentences {
@@ -164,13 +126,20 @@ func (b *LGS) EmbedSentences(ctx context.Context, sentences []string) ([][]float
 		if err != nil {
 			return nil, err
 		}
-
 		if len(res.Embeddings) == 0 {
 			return nil, fmt.Errorf("lgs: empty embedding for sentence %d", i)
 		}
-
 		embeds[i] = res.Embeddings[0]
 	}
-
 	return embeds, nil
+}
+
+func filterShortSentences(sents []string, minLen int) []string {
+	out := sents[:0]
+	for _, s := range sents {
+		if len([]rune(s)) >= minLen {
+			out = append(out, s)
+		}
+	}
+	return out
 }

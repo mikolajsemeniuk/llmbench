@@ -41,11 +41,7 @@ type CorrelationOptions struct {
 	Seed uint64
 }
 
-func NewCorrelation(samples []Sample, scores []float64) Correlation {
-	return NewCorrelationWith(samples, scores, CorrelationOptions{})
-}
-
-func NewCorrelationWith(samples []Sample, scores []float64, opts CorrelationOptions) Correlation {
+func NewCorrelation(samples []Sample, scores []float64, opts CorrelationOptions) Correlation {
 	level := opts.Level
 	if level == "" {
 		level = "summary"
@@ -95,8 +91,8 @@ func NewCorrelationWith(samples []Sample, scores []float64, opts CorrelationOpti
 
 // aggregateBySystem groups (metric, human) score pairs by SystemID
 // and replaces each system's contribution with the per-system mean.
-// Used both by NewCorrelationWith for system-level correlation and
-// by BootstrapCI for the system-level resampling branch.
+// Used both by NewCorrelation for system-level correlation and by
+// BootstrapCI for the system-level resampling branch.
 func aggregateBySystem(samples []Sample, metric, human []float64) ([]float64, []float64) {
 	type acc struct {
 		metricSum, humanSum float64

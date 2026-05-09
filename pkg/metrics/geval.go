@@ -68,24 +68,14 @@ type GEvalResult struct {
 	RawResponse     string  // model's actual response text
 }
 
-// Score evaluates the candidate summary against the source document on the
-// given SummEval dimension. Returns a normalized score in [0, 1].
+// ScoreDetailed evaluates the candidate summary against the source document
+// on the given SummEval dimension. Returns the normalized score in [0, 1]
+// plus metadata about how it was extracted (used by cmd/geval to track the
+// fallback frequency when the LLM judge response is unparseable).
 //
 // On unparseable responses, returns the dimension midpoint as a fallback
 // rather than failing — this keeps the run going and preserves N for
-// correlation. Use ScoreDetailed if you need to track fallback frequency.
-func (g *GEval) Score(ctx context.Context, dimension, source, candidate string) (float64, error) {
-	res, err := g.ScoreDetailed(ctx, dimension, source, candidate)
-	if err != nil {
-		return 0, err
-	}
-
-	return res.NormalizedScore, nil
-}
-
-// ScoreDetailed returns the parsed score plus metadata about how it was extracted.
-// Use this when you want to track fallback frequency (e.g., warn if >5% of
-// responses required fallback).
+// correlation.
 func (g *GEval) ScoreDetailed(ctx context.Context, dimension, source, candidate string) (GEvalResult, error) {
 	dim, ok := GEvalDimensions[dimension]
 	if !ok {

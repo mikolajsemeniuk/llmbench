@@ -79,11 +79,11 @@ func main() {
 		RuntimeSec: elapsed.Seconds(),
 		Timestamp:  time.Now().UTC().Format(time.RFC3339),
 		Scores:     entries,
-		SummaryLevel: eval.NewCorrelationWith(samples, scores, eval.CorrelationOptions{
+		SummaryLevel: eval.NewCorrelation(samples, scores, eval.CorrelationOptions{
 			Bootstrap: bootstrap,
 			Level:     "summary",
 		}),
-		SystemLevel: eval.NewCorrelationWith(samples, scores, eval.CorrelationOptions{
+		SystemLevel: eval.NewCorrelation(samples, scores, eval.CorrelationOptions{
 			Bootstrap: bootstrap,
 			Level:     "system",
 		}),
