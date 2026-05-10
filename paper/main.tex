@@ -248,8 +248,8 @@ for the metric's design choices in Section~\ref{sec:results}.
 Let $D$ be a source document split into $n$ sentences
 $s_0,\dots,s_{n-1}$ and let $C$ be a candidate summary split into
 $m$ sentences $c_0,\dots,c_{m-1}$. Let $\mathrm{emb}(\cdot)$ be a
-sentence embedder (we use \texttt{nomic-embed-text} served via
-Ollama, see Section~\ref{sec:experiments}). The Lead-biased
+sentence embedder (we use \texttt{nomic-embed-text}~\cite{nussbaum2024nomic}
+served via Ollama, see Section~\ref{sec:experiments}). The Lead-biased
 Grounding Score is
 \begin{equation}
 \label{eq:lgs}
@@ -453,7 +453,7 @@ machine-learning hygiene step. The reason is empirical: as we show
 in Section~\ref{sec:ablation-lead-bge}, the optimal value of
 $\lambda$ \emph{shifts} non-trivially across sentence-embedder
 backbones (with \texttt{nomic-embed-text} the dev optimum is
-$\lambda^*\!=\!0.5$; with \texttt{bge-m3} it is
+$\lambda^*\!=\!0.5$; with \texttt{bge-m3}~\cite{chen2024bgem3} it is
 $\lambda^*\!=\!0.25$, and applying the nomic-tuned value to
 \texttt{bge-m3} \emph{underperforms} the no-prior baseline on dev).
 A practitioner reusing the headline numerical recipe with a
@@ -561,7 +561,7 @@ correlations are reported as a secondary check.
 \subsection{Embedder}
 The canonical run of LGS uses \texttt{nomic-embed-text}
 (137M parameters), served locally via Ollama. We additionally run
-the embedder ablation in Section~\ref{sec:ablation} with
+the embedder ablation in Section~\ref{sec:ablation-embedder} with
 \texttt{all-minilm} (23M), \texttt{mxbai-embed-large} (335M), and
 \texttt{bge-m3} (567M) to verify that the metric design is not
 specific to one backbone.
@@ -659,8 +659,9 @@ per source sentence and per candidate sentence. With
 a single Apple-silicon CPU thread and per-document caching of
 source embeddings, the canonical \textsc{SummEval} run ---
 1{,}600 (source, candidate) pairs spanning approximately
-$5\times10^4$ sentence embeddings --- completes in roughly
-ninety seconds (\textasciitilde 57~ms per sample;
+$6.3\times10^3$ cached sentence embeddings (1{,}273 source plus
+5{,}002 candidate) --- completes in roughly ninety seconds
+(\textasciitilde 57~ms per sample;
 Figure~\ref{fig:frontier}). By contrast, G-Eval at our reproduction scale
 (\texttt{qwen2.5:7b-instruct-q4\_K\_M}, $N{=}3$ samples per
 candidate at temperature $0.7$, four dimensions evaluated
@@ -668,9 +669,11 @@ independently) requires approximately 2.1~hours per single-run
 pass and approximately 6~hours per $N{=}3$ multi-run pass on the
 same hardware. UniEval requires one forward pass of a fine-tuned
 T5-large per (article, candidate, dimension) tuple, four
-dimensions $\times$ 1{,}600 candidates, on the order of a
-GPU-hour; the pretrained checkpoints are served via the
-auxiliary Python server in \texttt{cmd/modelsrv}.
+dimensions $\times$ 1{,}600 candidates, totalling approximately
+12 minutes wall-clock in our reproduction
+(\textasciitilde 430~ms per sample); the pretrained checkpoints
+are served via the auxiliary Python server in
+\texttt{cmd/modelsrv}.
 
 \subsection{Cost--accuracy frontier}
 \label{sec:cost-frontier}
@@ -681,16 +684,16 @@ the y-axis is the mean summary-level Spearman $\rho$ across the
 four \textsc{SummEval} dimensions. Three regions of the plane
 are immediately readable. The bottom-left band contains the
 n-gram metrics (BLEU, ROUGE-L, METEOR, ChrF, SMART-String):
-sub-millisecond cost, mean ρ in the $[.08, .19]$ range. The
+sub-millisecond cost, mean $\rho$ in the $[.08, .19]$ range. The
 middle band contains the contextual-embedding reference-based
 metrics (BERTScore, MoverScore, BARTScore, EmbedScorer,
 SMART-Model): hundreds of milliseconds to a couple of seconds
-per sample, mean ρ in $[.06, .25]$. The upper band contains the
+per sample, mean $\rho$ in $[.06, .25]$. The upper band contains the
 LLM-judge and fine-tuned-encoder metrics (G-Eval, UniEval):
-hundreds of milliseconds to ten-plus seconds per sample, mean ρ
+hundreds of milliseconds to ten-plus seconds per sample, mean $\rho$
 in $[.36, .43]$. LGS lands in a distinct location: a per-sample
 cost in the band of n-gram metrics ($\sim$57 ms, dominated by
-the sentence embedder rather than tokenisation), and a mean ρ
+the sentence embedder rather than tokenisation), and a mean $\rho$
 ($\sim$.28) in the upper part of the contextual-embedding band.
 This is the operationally distinctive position the metric was
 designed to occupy.
@@ -1111,7 +1114,7 @@ embedder from \texttt{all-minilm} (23M) to
 \texttt{nomic-embed-text} (137M) recovers most of the available
 mean-Spearman headroom; further scaling to
 \texttt{mxbai-embed-large} (335M) or \texttt{bge-m3} (567M)
-yields comparatively smaller gains in mean ρ at substantially
+yields comparatively smaller gains in mean $\rho$ at substantially
 higher per-sentence cost. \texttt{nomic-embed-text} is the
 recommended default in our reproduction.
 Finally, \emph{re-tune $\lambda$ when migrating embedders.} A
@@ -1417,7 +1420,7 @@ W.~Yuan, G.~Neubig, and P.~Liu,
 in \emph{Proc. NeurIPS}, 2021.
 
 \bibitem{amplayo2022smart}
-R.~K. Amplayo, P.~K. Liu, and M.~Lapata,
+R.~K. Amplayo, P.~J. Liu, Y.~Zhao, and S.~Narayan,
 ``SMART: Sentences as Basic Units for Text Evaluation,''
 \emph{arXiv preprint arXiv:2208.01030}, 2022.
 
