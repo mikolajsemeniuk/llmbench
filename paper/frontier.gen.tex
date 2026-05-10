@@ -16,28 +16,26 @@
 \addplot[only marks, mark=o, mark size=2pt, color=gray!70!black,
   nodes near coords, point meta=explicit symbolic,
   every node near coord/.append style={anchor=west, xshift=2pt, font=\tiny, color=black}]
-  table[x=rt, y=rho, meta=label, col sep=comma, row sep=\\] {
-  rt, rho, label \\
-  523.46, 0.166, BARTScore \\
-  567.66, 0.250, BERTScore \\
-  0.57, 0.128, BLEU \\
-  2.77, 0.184, ChrF \\
-  339.33, 0.174, EmbedScorer \\
-  13593.99, 0.359, G-Eval \\
-  90.53, 0.264, GPTScore \\
-  0.98, 0.162, METEOR \\
-  1276.58, 0.060, MoverScore \\
-  0.12, 0.153, ROUGE-L \\
-  890.02, 0.202, SMART-Model \\
-  0.52, 0.084, SMART-String \\
-  430.31, 0.470, UniEval \\
+  coordinates {
+  (523.46, 0.166) [BARTScore]
+  (567.66, 0.250) [BERTScore]
+  (0.57, 0.128) [BLEU]
+  (2.77, 0.184) [ChrF]
+  (339.33, 0.174) [EmbedScorer]
+  (13593.99, 0.359) [G-Eval]
+  (90.53, 0.264) [GPTScore]
+  (0.98, 0.162) [METEOR]
+  (1276.58, 0.060) [MoverScore]
+  (0.12, 0.153) [ROUGE-L]
+  (890.02, 0.202) [SMART-Model]
+  (0.52, 0.084) [SMART-String]
+  (430.31, 0.470) [UniEval]
   };
 \addplot[only marks, mark=star, mark size=4pt, color=orange!80!black,
   nodes near coords, point meta=explicit symbolic,
   every node near coord/.append style={anchor=west, xshift=3pt, font=\tiny\bfseries, color=orange!50!black}]
-  table[x=rt, y=rho, meta=label, col sep=comma, row sep=\\] {
-  rt, rho, label \\
-  57.01, 0.284, LGS \\
+  coordinates {
+  (57.01, 0.284) [LGS]
   };
 \end{axis}
 \end{tikzpicture}

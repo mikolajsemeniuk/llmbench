@@ -202,17 +202,17 @@ func renderLatex(points []Point) string {
 	fmt.Fprintln(&b, `  every node near coord/.append style={font=\tiny}`)
 	fmt.Fprintln(&b, `]`)
 
-	// Baseline points
+	// Baseline points (coordinate-bracket syntax avoids inline-table
+	// header parsing issues across pgfplots versions).
 	fmt.Fprintln(&b, `\addplot[only marks, mark=o, mark size=2pt, color=gray!70!black,`)
 	fmt.Fprintln(&b, `  nodes near coords, point meta=explicit symbolic,`)
 	fmt.Fprintln(&b, `  every node near coord/.append style={anchor=west, xshift=2pt, font=\tiny, color=black}]`)
-	fmt.Fprintln(&b, `  table[x=rt, y=rho, meta=label, col sep=comma, row sep=\\] {`)
-	fmt.Fprintln(&b, `  rt, rho, label \\`)
+	fmt.Fprintln(&b, `  coordinates {`)
 	for _, p := range points {
 		if p.IsOurs {
 			continue
 		}
-		fmt.Fprintf(&b, "  %.2f, %.3f, %s \\\\\n", clampLog(p.RuntimeMs), p.RhoMean, p.Label)
+		fmt.Fprintf(&b, "  (%.2f, %.3f) [%s]\n", clampLog(p.RuntimeMs), p.RhoMean, p.Label)
 	}
 	fmt.Fprintln(&b, `  };`)
 
@@ -224,9 +224,8 @@ func renderLatex(points []Point) string {
 		fmt.Fprintf(&b, "\\addplot[only marks, mark=star, mark size=4pt, color=orange!80!black,\n")
 		fmt.Fprintf(&b, "  nodes near coords, point meta=explicit symbolic,\n")
 		fmt.Fprintf(&b, "  every node near coord/.append style={anchor=west, xshift=3pt, font=\\tiny\\bfseries, color=orange!50!black}]\n")
-		fmt.Fprintf(&b, "  table[x=rt, y=rho, meta=label, col sep=comma, row sep=\\\\] {\n")
-		fmt.Fprintf(&b, "  rt, rho, label \\\\\n")
-		fmt.Fprintf(&b, "  %.2f, %.3f, %s \\\\\n", clampLog(p.RuntimeMs), p.RhoMean, p.Label)
+		fmt.Fprintf(&b, "  coordinates {\n")
+		fmt.Fprintf(&b, "  (%.2f, %.3f) [%s]\n", clampLog(p.RuntimeMs), p.RhoMean, p.Label)
 		fmt.Fprintf(&b, "  };\n")
 	}
 
