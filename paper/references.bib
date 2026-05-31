@@ -1,0 +1,473 @@
+%% References for LGS: Lead-biased Grounding Score
+%% All entries verified against the publishing venue or arXiv landing
+%% page; URLs/DOIs point to the canonical publisher page.
+
+% --- SummEval and the core metric families ---------------------------
+
+@article{fabbri2021summeval,
+  author  = {Fabbri, Alexander R. and Kry{\'s}ci{\'n}ski, Wojciech and McCann, Bryan and
+             Xiong, Caiming and Socher, Richard and Radev, Dragomir},
+  title   = {{SummEval}: Re-evaluating Summarization Evaluation},
+  journal = {Transactions of the Association for Computational Linguistics},
+  volume  = {9},
+  pages   = {391--409},
+  year    = {2021},
+  doi     = {10.1162/tacl_a_00373},
+  url     = {https://aclanthology.org/2021.tacl-1.24/}
+}
+
+@inproceedings{papineni2002bleu,
+  author    = {Papineni, Kishore and Roukos, Salim and Ward, Todd and Zhu, Wei-Jing},
+  title     = {{BLEU}: a Method for Automatic Evaluation of Machine Translation},
+  booktitle = {Proceedings of the 40th Annual Meeting of the Association for
+               Computational Linguistics (ACL)},
+  year      = {2002},
+  pages     = {311--318},
+  doi       = {10.3115/1073083.1073135},
+  url       = {https://aclanthology.org/P02-1040/}
+}
+
+@inproceedings{lin2004rouge,
+  author    = {Lin, Chin-Yew},
+  title     = {{ROUGE}: A Package for Automatic Evaluation of Summaries},
+  booktitle = {Text Summarization Branches Out},
+  year      = {2004},
+  pages     = {74--81},
+  address   = {Barcelona, Spain},
+  publisher = {Association for Computational Linguistics},
+  url       = {https://aclanthology.org/W04-1013/}
+}
+
+@inproceedings{banerjee2005meteor,
+  author    = {Banerjee, Satanjeev and Lavie, Alon},
+  title     = {{METEOR}: An Automatic Metric for {MT} Evaluation with Improved
+               Correlation with Human Judgments},
+  booktitle = {Proceedings of the ACL Workshop on Intrinsic and Extrinsic
+               Evaluation Measures for Machine Translation and/or Summarization},
+  year      = {2005},
+  pages     = {65--72},
+  address   = {Ann Arbor, Michigan},
+  publisher = {Association for Computational Linguistics},
+  url       = {https://aclanthology.org/W05-0909/}
+}
+
+@inproceedings{popovic2015chrf,
+  author    = {Popovi{\'c}, Maja},
+  title     = {{chrF}: character n-gram {F}-score for automatic {MT} evaluation},
+  booktitle = {Proceedings of the Tenth Workshop on Statistical Machine
+               Translation (WMT)},
+  year      = {2015},
+  pages     = {392--395},
+  doi       = {10.18653/v1/W15-3049},
+  url       = {https://aclanthology.org/W15-3049/}
+}
+
+@inproceedings{zhang2020bertscore,
+  author    = {Zhang, Tianyi and Kishore, Varsha and Wu, Felix and Weinberger,
+               Kilian Q. and Artzi, Yoav},
+  title     = {{BERTScore}: Evaluating Text Generation with {BERT}},
+  booktitle = {International Conference on Learning Representations (ICLR)},
+  year      = {2020},
+  url       = {https://openreview.net/forum?id=SkeHuCVFDr}
+}
+
+@inproceedings{zhao2019moverscore,
+  author    = {Zhao, Wei and Peyrard, Maxime and Liu, Fei and Gao, Yang and
+               Meyer, Christian M. and Eger, Steffen},
+  title     = {{MoverScore}: Text Generation Evaluating with Contextualized
+               Embeddings and {Earth Mover Distance}},
+  booktitle = {Proceedings of the 2019 Conference on Empirical Methods in
+               Natural Language Processing and the 9th International Joint
+               Conference on Natural Language Processing (EMNLP-IJCNLP)},
+  year      = {2019},
+  pages     = {563--578},
+  doi       = {10.18653/v1/D19-1053},
+  url       = {https://aclanthology.org/D19-1053/}
+}
+
+@inproceedings{yuan2021bartscore,
+  author    = {Yuan, Weizhe and Neubig, Graham and Liu, Pengfei},
+  title     = {{BARTScore}: Evaluating Generated Text as Text Generation},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
+  volume    = {34},
+  year      = {2021},
+  pages     = {27263--27277},
+  url       = {https://arxiv.org/abs/2106.11520}
+}
+
+@article{amplayo2022smart,
+  author  = {Amplayo, Reinald Kim and Liu, Peter J. and Zhao, Yao and Narayan, Shashi},
+  title   = {{SMART}: Sentences as Basic Units for Text Evaluation},
+  journal = {arXiv preprint arXiv:2208.01030},
+  year    = {2022},
+  doi     = {10.48550/arXiv.2208.01030},
+  url     = {https://arxiv.org/abs/2208.01030}
+}
+
+@inproceedings{liu2023geval,
+  author    = {Liu, Yang and Iter, Dan and Xu, Yichong and Wang, Shuohang and
+               Xu, Ruochen and Zhu, Chenguang},
+  title     = {{G-Eval}: {NLG} Evaluation using {GPT-4} with Better Human
+               Alignment},
+  booktitle = {Proceedings of the 2023 Conference on Empirical Methods in
+               Natural Language Processing (EMNLP)},
+  year      = {2023},
+  pages     = {2511--2522},
+  doi       = {10.18653/v1/2023.emnlp-main.153},
+  url       = {https://aclanthology.org/2023.emnlp-main.153/}
+}
+
+@inproceedings{zhong2022unieval,
+  author    = {Zhong, Ming and Liu, Yang and Yin, Da and Mao, Yuning and
+               Jiao, Yizhu and Liu, Pengfei and Zhu, Chenguang and
+               Ji, Heng and Han, Jiawei},
+  title     = {Towards a Unified Multi-Dimensional Evaluator for Text Generation},
+  booktitle = {Proceedings of the 2022 Conference on Empirical Methods in
+               Natural Language Processing (EMNLP)},
+  year      = {2022},
+  pages     = {2023--2038},
+  doi       = {10.18653/v1/2022.emnlp-main.131},
+  url       = {https://aclanthology.org/2022.emnlp-main.131/}
+}
+
+@article{fu2023gptscore,
+  author  = {Fu, Jinlan and Ng, See-Kiong and Jiang, Zhengbao and Liu, Pengfei},
+  title   = {{GPTScore}: Evaluate as You Desire},
+  journal = {arXiv preprint arXiv:2302.04166},
+  year    = {2023},
+  doi     = {10.48550/arXiv.2302.04166},
+  url     = {https://arxiv.org/abs/2302.04166}
+}
+
+% --- Sentence embedders ----------------------------------------------
+
+@article{nussbaum2024nomic,
+  author  = {Nussbaum, Zach and Morris, John X. and Duderstadt, Brandon and
+             Mulyar, Andriy},
+  title   = {Nomic Embed: Training a Reproducible Long Context Text Embedder},
+  journal = {arXiv preprint arXiv:2402.01613},
+  year    = {2024},
+  doi     = {10.48550/arXiv.2402.01613},
+  url     = {https://arxiv.org/abs/2402.01613}
+}
+
+@inproceedings{chen2024bgem3,
+  author    = {Chen, Jianlv and Xiao, Shitao and Zhang, Peitian and Luo, Kun and
+               Lian, Defu and Liu, Zheng},
+  title     = {{M3-Embedding}: Multi-Linguality, Multi-Functionality,
+               Multi-Granularity Text Embeddings Through Self-Knowledge
+               Distillation},
+  booktitle = {Findings of the Association for Computational Linguistics: ACL 2024},
+  year      = {2024},
+  pages     = {2318--2335},
+  doi       = {10.18653/v1/2024.findings-acl.137},
+  url       = {https://aclanthology.org/2024.findings-acl.137/}
+}
+
+@inproceedings{reimers2019sbert,
+  author    = {Reimers, Nils and Gurevych, Iryna},
+  title     = {{Sentence-BERT}: Sentence Embeddings using {Siamese BERT-Networks}},
+  booktitle = {Proceedings of the 2019 Conference on Empirical Methods in
+               Natural Language Processing and the 9th International Joint
+               Conference on Natural Language Processing (EMNLP-IJCNLP)},
+  year      = {2019},
+  pages     = {3982--3992},
+  doi       = {10.18653/v1/D19-1410},
+  url       = {https://aclanthology.org/D19-1410/}
+}
+
+@inproceedings{wang2020minilm,
+  author    = {Wang, Wenhui and Wei, Furu and Dong, Li and Bao, Hangbo and
+               Yang, Nan and Zhou, Ming},
+  title     = {{MiniLM}: Deep Self-Attention Distillation for Task-Agnostic
+               Compression of Pre-Trained Transformers},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
+  volume    = {33},
+  year      = {2020},
+  pages     = {5776--5788},
+  url       = {https://arxiv.org/abs/2002.10957}
+}
+
+% --- Tooling and judge models ----------------------------------------
+
+@misc{qwen2024,
+  author       = {{Qwen Team}},
+  title        = {{Qwen2.5}: A Party of Foundation Models},
+  howpublished = {\url{https://qwenlm.github.io/blog/qwen2.5/}},
+  year         = {2024},
+  note         = {Blog post, accessed 2026-05-31}
+}
+
+@misc{ollama2024,
+  author       = {{Ollama}},
+  title        = {{Ollama}: Get up and running with large language models, locally},
+  howpublished = {\url{https://ollama.com}},
+  year         = {2024},
+  note         = {Software project page, accessed 2026-05-31}
+}
+
+@inproceedings{wolf2020transformers,
+  author    = {Wolf, Thomas and Debut, Lysandre and Sanh, Victor and
+               Chaumond, Julien and Delangue, Clement and Moi, Anthony and
+               Cistac, Pierric and Rault, Tim and Louf, R{\'e}mi and
+               Funtowicz, Morgan and Davison, Joe and Shleifer, Sam and
+               von Platen, Patrick and Ma, Clara and Jernite, Yacine and
+               Plu, Julien and Xu, Canwen and Le Scao, Teven and
+               Gugger, Sylvain and Drame, Mariama and Lhoest, Quentin and
+               Rush, Alexander M.},
+  title     = {{HuggingFace}'s {Transformers}: State-of-the-art Natural
+               Language Processing},
+  booktitle = {Proceedings of the 2020 Conference on Empirical Methods in
+               Natural Language Processing: System Demonstrations},
+  year      = {2020},
+  pages     = {38--45},
+  doi       = {10.18653/v1/2020.emnlp-demos.6},
+  url       = {https://aclanthology.org/2020.emnlp-demos.6/}
+}
+
+% --- Transformer and pretrained model backbones ----------------------
+
+@inproceedings{vaswani2017attention,
+  author    = {Vaswani, Ashish and Shazeer, Noam and Parmar, Niki and
+               Uszkoreit, Jakob and Jones, Llion and Gomez, Aidan N. and
+               Kaiser, {\L}ukasz and Polosukhin, Illia},
+  title     = {Attention Is All You Need},
+  booktitle = {Advances in Neural Information Processing Systems (NIPS)},
+  volume    = {30},
+  year      = {2017},
+  pages     = {5998--6008},
+  url       = {https://arxiv.org/abs/1706.03762}
+}
+
+@inproceedings{devlin2019bert,
+  author    = {Devlin, Jacob and Chang, Ming-Wei and Lee, Kenton and
+               Toutanova, Kristina},
+  title     = {{BERT}: Pre-training of Deep Bidirectional Transformers for
+               Language Understanding},
+  booktitle = {Proceedings of the 2019 Conference of the North American
+               Chapter of the Association for Computational Linguistics:
+               Human Language Technologies (NAACL-HLT)},
+  year      = {2019},
+  pages     = {4171--4186},
+  doi       = {10.18653/v1/N19-1423},
+  url       = {https://aclanthology.org/N19-1423/}
+}
+
+@article{raffel2020t5,
+  author  = {Raffel, Colin and Shazeer, Noam and Roberts, Adam and Lee, Katherine
+             and Narang, Sharan and Matena, Michael and Zhou, Yanqi and Li, Wei
+             and Liu, Peter J.},
+  title   = {Exploring the Limits of Transfer Learning with a Unified
+             Text-to-Text Transformer},
+  journal = {Journal of Machine Learning Research},
+  volume  = {21},
+  number  = {140},
+  pages   = {1--67},
+  year    = {2020},
+  url     = {https://jmlr.org/papers/v21/20-074.html}
+}
+
+@inproceedings{lewis2020bart,
+  author    = {Lewis, Mike and Liu, Yinhan and Goyal, Naman and Ghazvininejad,
+               Marjan and Mohamed, Abdelrahman and Levy, Omer and Stoyanov, Veselin
+               and Zettlemoyer, Luke},
+  title     = {{BART}: Denoising Sequence-to-Sequence Pre-training for Natural
+               Language Generation, Translation, and Comprehension},
+  booktitle = {Proceedings of the 58th Annual Meeting of the Association for
+               Computational Linguistics (ACL)},
+  year      = {2020},
+  pages     = {7871--7880},
+  doi       = {10.18653/v1/2020.acl-main.703},
+  url       = {https://aclanthology.org/2020.acl-main.703/}
+}
+
+@inproceedings{brown2020gpt3,
+  author    = {Brown, Tom B. and Mann, Benjamin and Ryder, Nick and
+               Subbiah, Melanie and Kaplan, Jared and Dhariwal, Prafulla and
+               Neelakantan, Arvind and Shyam, Pranav and Sastry, Girish and
+               Askell, Amanda and Agarwal, Sandhini and Herbert-Voss, Ariel and
+               Krueger, Gretchen and Henighan, Tom and Child, Rewon and
+               Ramesh, Aditya and Ziegler, Daniel M. and Wu, Jeffrey and
+               Winter, Clemens and Hesse, Christopher and Chen, Mark and
+               Sigler, Eric and Litwin, Mateusz and Gray, Scott and Chess, Benjamin
+               and Clark, Jack and Berner, Christopher and McCandlish, Sam and
+               Radford, Alec and Sutskever, Ilya and Amodei, Dario},
+  title     = {Language Models are Few-Shot Learners},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
+  volume    = {33},
+  year      = {2020},
+  pages     = {1877--1901},
+  url       = {https://arxiv.org/abs/2005.14165}
+}
+
+@inproceedings{wei2022cot,
+  author    = {Wei, Jason and Wang, Xuezhi and Schuurmans, Dale and Bosma, Maarten
+               and Ichter, Brian and Xia, Fei and Chi, Ed H. and Le, Quoc V. and
+               Zhou, Denny},
+  title     = {Chain-of-Thought Prompting Elicits Reasoning in Large Language Models},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
+  volume    = {35},
+  year      = {2022},
+  pages     = {24824--24837},
+  url       = {https://arxiv.org/abs/2201.11903}
+}
+
+% --- Summarization datasets and lead-bias evidence -------------------
+
+@inproceedings{hermann2015cnndm,
+  author    = {Hermann, Karl Moritz and Ko{\v{c}}isk{\'y}, Tom{\'a}{\v{s}} and
+               Grefenstette, Edward and Espeholt, Lasse and Kay, Will and
+               Suleyman, Mustafa and Blunsom, Phil},
+  title     = {Teaching Machines to Read and Comprehend},
+  booktitle = {Advances in Neural Information Processing Systems (NIPS)},
+  volume    = {28},
+  year      = {2015},
+  pages     = {1693--1701},
+  url       = {https://arxiv.org/abs/1506.03340}
+}
+
+@inproceedings{see2017pointer,
+  author    = {See, Abigail and Liu, Peter J. and Manning, Christopher D.},
+  title     = {Get To The Point: Summarization with Pointer-Generator Networks},
+  booktitle = {Proceedings of the 55th Annual Meeting of the Association for
+               Computational Linguistics (ACL)},
+  year      = {2017},
+  pages     = {1073--1083},
+  doi       = {10.18653/v1/P17-1099},
+  url       = {https://aclanthology.org/P17-1099/}
+}
+
+@inproceedings{kedzie2018content,
+  author    = {Kedzie, Chris and McKeown, Kathleen and Daum{\'e} III, Hal},
+  title     = {Content Selection in Deep Learning Models of Summarization},
+  booktitle = {Proceedings of the 2018 Conference on Empirical Methods in
+               Natural Language Processing (EMNLP)},
+  year      = {2018},
+  pages     = {1818--1828},
+  doi       = {10.18653/v1/D18-1208},
+  url       = {https://aclanthology.org/D18-1208/}
+}
+
+@inproceedings{grusky2018newsroom,
+  author    = {Grusky, Max and Naaman, Mor and Artzi, Yoav},
+  title     = {{Newsroom}: A Dataset of 1.3 Million Summaries with Diverse
+               Extractive Strategies},
+  booktitle = {Proceedings of the 2018 Conference of the North American Chapter
+               of the Association for Computational Linguistics: Human Language
+               Technologies (NAACL-HLT)},
+  year      = {2018},
+  pages     = {708--719},
+  doi       = {10.18653/v1/N18-1065},
+  url       = {https://aclanthology.org/N18-1065/}
+}
+
+@inproceedings{cohan2018arxiv,
+  author    = {Cohan, Arman and Dernoncourt, Franck and Kim, Doo Soon and
+               Bui, Trung and Kim, Seokhwan and Chang, Walter and Goharian, Nazli},
+  title     = {A Discourse-Aware Attention Model for Abstractive Summarization
+               of Long Documents},
+  booktitle = {Proceedings of the 2018 Conference of the North American Chapter
+               of the Association for Computational Linguistics: Human Language
+               Technologies (NAACL-HLT)},
+  year      = {2018},
+  pages     = {615--621},
+  doi       = {10.18653/v1/N18-2097},
+  url       = {https://aclanthology.org/N18-2097/}
+}
+
+@inproceedings{gliwa2019samsum,
+  author    = {Gliwa, Bogdan and Mochol, Iwona and Biesek, Maciej and Wawer, Aleksander},
+  title     = {{SAMSum} Corpus: A Human-annotated Dialogue Dataset for
+               Abstractive Summarization},
+  booktitle = {Proceedings of the 2nd Workshop on New Frontiers in Summarization},
+  year      = {2019},
+  pages     = {70--79},
+  doi       = {10.18653/v1/D19-5409},
+  url       = {https://aclanthology.org/D19-5409/}
+}
+
+@inproceedings{liu2019bertsum,
+  author    = {Liu, Yang and Lapata, Mirella},
+  title     = {Text Summarization with Pretrained Encoders},
+  booktitle = {Proceedings of the 2019 Conference on Empirical Methods in
+               Natural Language Processing and the 9th International Joint
+               Conference on Natural Language Processing (EMNLP-IJCNLP)},
+  year      = {2019},
+  pages     = {3730--3740},
+  doi       = {10.18653/v1/D19-1387},
+  url       = {https://aclanthology.org/D19-1387/}
+}
+
+@inproceedings{zhang2020pegasus,
+  author    = {Zhang, Jingqing and Zhao, Yao and Saleh, Mohammad and Liu, Peter J.},
+  title     = {{PEGASUS}: Pre-training with Extracted Gap-sentences for
+               Abstractive Summarization},
+  booktitle = {Proceedings of the 37th International Conference on Machine
+               Learning (ICML)},
+  year      = {2020},
+  pages     = {11328--11339},
+  url       = {https://proceedings.mlr.press/v119/zhang20ae.html}
+}
+
+% --- Faithfulness and learned evaluation metrics ---------------------
+
+@article{laban2022summac,
+  author  = {Laban, Philippe and Schnabel, Tobias and Bennett, Paul N. and
+             Hearst, Marti A.},
+  title   = {{SummaC}: Re-Visiting {NLI}-based Models for Inconsistency
+             Detection in Summarization},
+  journal = {Transactions of the Association for Computational Linguistics},
+  volume  = {10},
+  pages   = {163--177},
+  year    = {2022},
+  doi     = {10.1162/tacl_a_00453},
+  url     = {https://aclanthology.org/2022.tacl-1.10/}
+}
+
+@inproceedings{kryscinski2020factcc,
+  author    = {Kry{\'s}ci{\'n}ski, Wojciech and McCann, Bryan and Xiong, Caiming
+               and Socher, Richard},
+  title     = {Evaluating the Factual Consistency of Abstractive Text
+               Summarization},
+  booktitle = {Proceedings of the 2020 Conference on Empirical Methods in
+               Natural Language Processing (EMNLP)},
+  year      = {2020},
+  pages     = {9332--9346},
+  doi       = {10.18653/v1/2020.emnlp-main.750},
+  url       = {https://aclanthology.org/2020.emnlp-main.750/}
+}
+
+@inproceedings{sellam2020bleurt,
+  author    = {Sellam, Thibault and Das, Dipanjan and Parikh, Ankur P.},
+  title     = {{BLEURT}: Learning Robust Metrics for Text Generation},
+  booktitle = {Proceedings of the 58th Annual Meeting of the Association for
+               Computational Linguistics (ACL)},
+  year      = {2020},
+  pages     = {7881--7892},
+  doi       = {10.18653/v1/2020.acl-main.704},
+  url       = {https://aclanthology.org/2020.acl-main.704/}
+}
+
+@inproceedings{rei2020comet,
+  author    = {Rei, Ricardo and Stewart, Craig and Farinha, Ana C. and Lavie, Alon},
+  title     = {{COMET}: A Neural Framework for {MT} Evaluation},
+  booktitle = {Proceedings of the 2020 Conference on Empirical Methods in
+               Natural Language Processing (EMNLP)},
+  year      = {2020},
+  pages     = {2685--2702},
+  doi       = {10.18653/v1/2020.emnlp-main.213},
+  url       = {https://aclanthology.org/2020.emnlp-main.213/}
+}
+
+% --- Statistical foundations ----------------------------------------
+
+@book{efron1993bootstrap,
+  author    = {Efron, Bradley and Tibshirani, Robert J.},
+  title     = {An Introduction to the Bootstrap},
+  series    = {Monographs on Statistics and Applied Probability},
+  volume    = {57},
+  publisher = {Chapman \& Hall/CRC},
+  address   = {New York},
+  year      = {1993},
+  isbn      = {9780412042317}
+}
