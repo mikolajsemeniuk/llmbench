@@ -1,58 +1,87 @@
 %% LGS: Lead-biased Grounding Score --- a reference-free, embedding-only
 %% summary-quality metric.
 %%
-%% Uses the Elsevier elsarticle class (matches the reference template in
-%% archive/). Bibliography style is elsarticle-num.bst (numerical
-%% citations, consistent with the in-text \cite usage). The journal name
-%% on the title page is a placeholder; update \journal{} before submission.
+%% Formatted for the Journal of Artificial Intelligence Research (JAIR),
+%% which from Volume 83 (2025) uses an acmart-based class shipped in the
+%% JAIR Author Kit (https://www.jair.org/index.php/jair/formatting).
+%% jair.cls, acmart.cls and the acmauthoryear biblatex files are vendored
+%% alongside this file, so the build is self-contained.
+%%
+%% Build with biber (NOT bibtex):
+%%   pdflatex main -> biber main -> pdflatex main -> pdflatex main
+%% For the camera-ready version, change the options to \documentclass{jair}.
 
-\documentclass[preprint,12pt]{elsarticle}
+\documentclass[manuscript, screen, review]{jair}
+
+%% --- JAIR / ACM metadata (placeholders --- update before submission) ---
+\setcopyright{cc}
+\acmDOI{10.1613/jair.1.xxxxx}
+\JAIRAE{To be assigned}      %% JAIR Associate Editor (assigned by the editor)
+\JAIRTrack{}                 %% only if submitting to a special track
+\acmVolume{1}
+\acmArticle{1}
+\acmMonth{6}
+\acmYear{2026}
+
+%% --- Bibliography: BibLaTeX + biber with the ACM author-year style ---
+\RequirePackage[
+  datamodel=acmdatamodel,
+  style=acmauthoryear,
+  backend=biber,
+  giveninits=true,
+  uniquename=init
+]{biblatex}
+\renewcommand*{\bibopenbracket}{(}
+\renewcommand*{\bibclosebracket}{)}
+\addbibresource{references.bib}
 
 %% The amssymb package provides various useful mathematical symbols
 \usepackage{amssymb}
 %% The amsmath package provides various useful equation environments.
 \usepackage{amsmath}
 
-%% Layout and graphics
-\usepackage[T1]{fontenc}
-\usepackage[utf8]{inputenc}
-\usepackage{graphicx}
-\usepackage{booktabs}
-\usepackage{multirow}
-\usepackage{url}
-\usepackage{hyperref}
+%% Figures (TikZ / pgfplots). graphicx, booktabs, hyperref, url and the
+%% T1/utf8 font setup are already loaded and managed by acmart; do not
+%% reload them (acmart requires the Libertine typeface family).
 \usepackage{tikz}
 \usetikzlibrary{positioning,arrows.meta,calc,backgrounds}
 \usepackage{pgfplots}
 \pgfplotsset{compat=1.18}
-\usepackage{placeins}
-\usepackage{float}
 
 \hyphenation{summ-eval embed-ding-only ref-erence-free}
 
-%% Target Elsevier journal (placeholder --- update before submission).
-\journal{Information Processing \& Management}
-
 \begin{document}
 
-\begin{frontmatter}
+%% The bracketed short title appears in the running page headers.
+\title[LGS: A Reference-Free Embedding-Only Summary Metric]{LGS: A
+Reference-Free, Embedding-Only Metric for Summary Quality with a
+Lead-Biased Grounding Prior}
 
-\title{LGS: A Reference-Free, Embedding-Only Metric for Summary
-Quality with a Lead-Biased Grounding Prior}
+%% Each author is declared separately (ACM metadata requirement).
+%% ORCIDs are highly recommended --- uncomment and fill \orcid{...} below.
+\author{Mikolaj Semeniuk}
+% \orcid{0000-0000-0000-0000}
+\email{m.semeniuk@icloud.com}
+\affiliation{%
+  \department{Faculty of Mathematics and Information Science}
+  \institution{Warsaw University of Technology}
+  \city{Warsaw}
+  \country{Poland}
+}
 
-\author[wut]{Mikolaj Semeniuk}
-\ead{m.semeniuk@icloud.com}
+\author{Agnieszka Jastrzebska}
+\authornote{Corresponding author.}
+% \orcid{0000-0000-0000-0000}
+\email{A.Jastrzebska@mini.pw.edu.pl}
+\affiliation{%
+  \department{Faculty of Mathematics and Information Science}
+  \institution{Warsaw University of Technology}
+  \city{Warsaw}
+  \country{Poland}
+}
 
-\author[wut]{Agnieszka Jastrzebska\corref{cor1}}
-\ead{A.Jastrzebska@mini.pw.edu.pl}
-\cortext[cor1]{Corresponding author.}
-
-\affiliation[wut]{organization={Faculty of Mathematics and Information
-                  Science, Warsaw University of Technology},
-                  addressline={Koszykowa 75},
-                  city={Warsaw},
-                  postcode={00-662},
-                  country={Poland}}
+%% Shortened author list for the running page headers.
+\renewcommand{\shortauthors}{Semeniuk \& Jastrzebska}
 
 \begin{abstract}
 We propose \textbf{LGS} (Lead-biased Grounding Score), a~new
@@ -73,13 +102,13 @@ with the remaining baselines except for UniEval and G-Eval. LGS achieves statist
 CPU thread).
 \end{abstract}
 
-\begin{keyword}
-Summarization evaluation \sep reference-free evaluation \sep
-sentence embeddings \sep SummEval \sep lead bias \sep
-automatic metrics
-\end{keyword}
+%% JAIR note: do NOT include ACM CCS Concepts or author keywords.
 
-\end{frontmatter}
+%% Submission / acceptance dates are filled in by JAIR during production.
+% \received{...}
+% \received[accepted]{...}
+
+\maketitle
 
 % ------------------------------------------------------------------
 \section{Introduction}
@@ -317,6 +346,12 @@ where $w(i)=\exp(-\lambda i/n)$ is an exponential prior favouring
 the lead. The score is the mean of these per-candidate maxima.
 Orange arrows indicate illustrative argmax matches.}
 \label{fig:lgs-schematic}
+\Description{Diagram of the LGS operator. A left column lists source
+sentences, each annotated with an exponentially decaying position weight
+w(i) that is largest for the lead sentence. A right column lists candidate
+sentences. Arrows connect each candidate sentence to the single source
+sentence that maximises the position-weighted cosine similarity. The score
+is the mean over candidate sentences of these per-candidate maxima.}
 \end{figure*}
 
 
@@ -882,6 +917,11 @@ $\rho{=}0.302$, below its no-prior baseline of $0.305$. This is
 the empirical motivation for treating the held-out methodology of
 Section~\ref{sec:methodology} as a first-class contribution.}
 \label{fig:lambda-curve}
+\Description{Line plot of development-split mean Spearman correlation
+against the lead-bias exponent lambda for two sentence-embedder backbones.
+Both curves rise from lambda equals zero to a peak at a positive lambda and
+then decline monotonically, but the peak location differs: lambda equals
+0.5 for nomic-embed-text and lambda equals 0.25 for bge-m3.}
 \end{figure}
 
 Figure~\ref{fig:lambda-perdim} decomposes the train-set-mean curve in
@@ -946,6 +986,11 @@ The canonical $\lambda^{*}{=}0.5$ is the optimum on the
 mean-of-four criterion (Section~\ref{sec:methodology}), not on
 any single dimension.}
 \label{fig:lambda-perdim}
+\Description{Line plot decomposing the development-split Spearman
+correlation against the lead-bias exponent lambda into the four SummEval
+dimensions for nomic-embed-text. Coherence and relevance improve with
+larger lambda, while consistency and fluency peak at the smallest non-zero
+lambda and decline as lambda grows.}
 \end{figure}
 
 \subsection{Embedder ablation}
@@ -1264,7 +1309,7 @@ and reproducible end-to-end via the \texttt{Makefile} in the
 released repository.
 
 % ------------------------------------------------------------------
-\section*{Reproducibility}
+\section{Reproducibility}
 \label{sec:repro}
 The full pipeline is open-source and deterministic up to the
 sentence embedder's numerical precision. The repository
@@ -1287,6 +1332,10 @@ publicly available under the original authors'
 release~\cite{fabbri2021summeval}; the JSONL split used for the
 article-level dev/test partition is the SummEval canonical
 release order, deterministic without a random seed.
+
+% ------------------------------------------------------------------
+%% References --- BibLaTeX (acmauthoryear style), processed by biber.
+\printbibliography
 
 % ------------------------------------------------------------------
 \appendix
@@ -1372,7 +1421,151 @@ Section~\ref{sec:future-work}.
 
 %\clearpage
 % ------------------------------------------------------------------
-\bibliographystyle{elsarticle-num}
-\bibliography{references}
+\section{Reproducibility Checklist for JAIR}
+%% This checklist is MANDATORY for JAIR submissions (its omission is a
+%% desk-reject trigger). The answers below are pre-filled from the
+%% manuscript; please verify each one before submission. Select exactly
+%% one option per item (the selected option is set in bold).
+
+Select the answers that apply to your research --- one per item.
+
+\subsection*{All articles:}
+\begin{enumerate}
+    \item All claims investigated in this work are clearly stated.
+    [\textbf{yes}/partially/no]
+    \item Clear explanations are given how the work reported substantiates
+    the claims.
+    [\textbf{yes}/partially/no]
+    \item Limitations or technical assumptions are stated clearly and
+    explicitly.
+    [\textbf{yes}/partially/no]
+    \item Conceptual outlines and/or pseudo-code descriptions of the AI
+    methods introduced in this work are provided, and important
+    implementation details are discussed.
+    [\textbf{yes}/partially/no/NA]
+    \item Motivation is provided for all design choices, including
+    algorithms, implementation choices, parameters, data sets and
+    experimental protocols beyond metrics.
+    [\textbf{yes}/partially/no]
+\end{enumerate}
+
+\subsection*{Articles containing theoretical contributions:}
+Does this paper make theoretical contributions?
+[yes/\textbf{no}]
+
+\subsection*{Articles reporting on computational experiments:}
+Does this paper include computational experiments? [\textbf{yes}/no]
+
+If yes, please complete the list below.
+\begin{enumerate}
+    \item All source code required for conducting experiments is included
+    in an online appendix or will be made publicly available upon
+    publication of the paper. The online appendix follows best practices
+    for source code readability and documentation as well as for long-term
+    accessibility.
+    [\textbf{yes}/partially/no]
+    \item The source code comes with a license that allows free usage for
+    reproducibility purposes.
+    [\textbf{yes}/partially/no]
+    \item The source code comes with a license that allows free usage for
+    research purposes in general.
+    [\textbf{yes}/partially/no]
+    \item Raw, unaggregated data from all experiments is included in an
+    online appendix or will be made publicly available upon publication of
+    the paper. The online appendix follows best practices for long-term
+    accessibility.
+    [\textbf{yes}/partially/no]
+    \item The unaggregated data comes with a license that allows free usage
+    for reproducibility purposes.
+    [\textbf{yes}/partially/no]
+    \item The unaggregated data comes with a license that allows free usage
+    for research purposes in general.
+    [\textbf{yes}/partially/no]
+    \item If an algorithm depends on randomness, then the method used for
+    generating random numbers and for setting seeds is described in a way
+    sufficient to allow replication of results.
+    [\textbf{yes}/partially/no/NA]
+    \item The execution environment for experiments, the computing
+    infrastructure (hardware and software) used for running them, is
+    described, including GPU/CPU makes and models; amount of memory (cache
+    and RAM); make and version of operating system; names and versions of
+    relevant software libraries and frameworks.
+    [yes/\textbf{partially}/no]
+    \item The evaluation metrics used in experiments are clearly explained
+    and their choice is explicitly motivated.
+    [\textbf{yes}/partially/no]
+    \item The number of algorithm runs used to compute each result is
+    reported.
+    [\textbf{yes}/no]
+    \item Reported results have not been ``cherry-picked'' by silently
+    ignoring unsuccessful or unsatisfactory experiments.
+    [\textbf{yes}/partially/no]
+    \item Analysis of results goes beyond single-dimensional summaries of
+    performance (e.g., average, median) to include measures of variation,
+    confidence, or other distributional information.
+    [\textbf{yes}/no]
+    \item All (hyper-) parameter settings for the algorithms/methods used in
+    experiments have been reported, along with the rationale or method for
+    determining them.
+    [\textbf{yes}/partially/no/NA]
+    \item The number and range of (hyper-) parameter settings explored prior
+    to conducting final experiments have been indicated, along with the
+    effort spent on (hyper-) parameter optimisation.
+    [\textbf{yes}/partially/no/NA]
+    \item Appropriately chosen statistical hypothesis tests are used to
+    establish statistical significance in the presence of noise effects.
+    [\textbf{yes}/partially/no/NA]
+\end{enumerate}
+
+\subsection*{Articles using data sets:}
+Does this work rely on one or more data sets (possibly obtained from a
+benchmark generator or similar software artifact)?
+[\textbf{yes}/no]
+
+If yes, please complete the list below.
+\begin{enumerate}
+    \item All newly introduced data sets are included in an online appendix
+    or will be made publicly available upon publication of the paper. The
+    online appendix follows best practices for long-term accessibility with
+    a license that allows free usage for research purposes.
+    [yes/partially/no/\textbf{NA}]
+    \item The newly introduced data set comes with a license that allows
+    free usage for reproducibility purposes.
+    [yes/partially/no/\textbf{NA}]
+    \item The newly introduced data set comes with a license that allows
+    free usage for research purposes in general.
+    [yes/partially/no/\textbf{NA}]
+    \item All data sets drawn from the literature or other public sources
+    (potentially including authors' own previously published work) are
+    accompanied by appropriate citations.
+    [\textbf{yes}/no/NA]
+    \item All data sets drawn from the existing literature (potentially
+    including authors' own previously published work) are publicly
+    available.
+    [\textbf{yes}/partially/no/NA]
+    \item All new data sets and data sets that are not publicly available
+    are described in detail, including relevant statistics, the data
+    collection process and annotation process if relevant.
+    [yes/partially/no/\textbf{NA}]
+    \item All methods used for preprocessing, augmenting, batching or
+    splitting data sets (e.g., in the context of hold-out or
+    cross-validation) are described in detail.
+    [\textbf{yes}/partially/no/NA]
+\end{enumerate}
+
+\subsection*{Explanations on any of the answers above (optional):}
+The metric, its single hyperparameter $\lambda$, and the motivation for
+every design choice are given in
+Sections~\ref{sec:method}--\ref{sec:methodology}. The full pipeline is
+open-source under the MIT license at
+\url{https://github.com/mikolajsemeniuk/llmbench}, with a \texttt{Makefile}
+that regenerates every table and figure end-to-end and with fixed bootstrap
+seeds (Section~\ref{sec:repro}). All experiments use the publicly available
+\textsc{SummEval} data set~\cite{fabbri2021summeval}; no new data set is
+introduced (hence the NA answers in the data-set section). The execution
+environment is described in Section~\ref{sec:cost} (single Apple-silicon CPU
+thread; Ollama-served embedders and LLM judge pinned by tag); precise RAM
+and operating-system versions may be added to reach a full ``yes'' on the
+execution-environment item.
 
 \end{document}
