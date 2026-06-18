@@ -35,9 +35,11 @@
 \renewcommand*{\bibclosebracket}{)}
 \addbibresource{references.bib}
 
-%% The amssymb package provides various useful mathematical symbols
-\usepackage{amssymb}
-%% The amsmath package provides various useful equation environments.
+%% NOTE: do NOT load amssymb here. acmart's Libertine/newtxmath fonts
+%% already define the AMS symbols (including \Bbbk); loading amssymb on
+%% top raises "LaTeX Error: Command \Bbbk already defined". This paper
+%% uses no amssymb-only symbol, so amsmath alone is sufficient.
+%% The amsmath package provides the equation/pmatrix environments.
 \usepackage{amsmath}
 
 %% Figures (TikZ / pgfplots). graphicx, booktabs, hyperref, url and the

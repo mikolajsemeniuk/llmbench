@@ -70,6 +70,26 @@ paper-comparisons:
 paper-frontier:
 	go run ./cmd/frontier -input output -output paper/frontier.gen.tex
 
+# ----------------------------------------------------------------------
+# paper-pdf typesets paper/main.tex into paper/main.pdf inside a TeX Live
+# container, so no system TeX installation is required. The paper uses the
+# JAIR acmart-based class with a biblatex/biber bibliography; latexmk runs
+# the full pdflatex -> biber -> pdflatex -> pdflatex sequence. Note that
+# `make paper` above regenerates the *.gen.tex table fragments, whereas
+# this target only typesets the existing .tex. Override on the command
+# line if needed, e.g. `make paper-pdf PODMAN=docker` or TEXLIVE_IMAGE=...
+PODMAN ?= podman
+TEXLIVE_IMAGE ?= docker.io/texlive/texlive:latest
+
+.PHONY: paper-pdf
+paper-pdf:
+	$(PODMAN) run --rm -v "$(CURDIR)/paper:/work" -w /work $(TEXLIVE_IMAGE) latexmk -pdf -interaction=nonstopmode -halt-on-error main.tex
+
+# Remove LaTeX intermediate files (keeps paper/main.pdf).
+.PHONY: paper-pdf-clean
+paper-pdf-clean:
+	$(PODMAN) run --rm -v "$(CURDIR)/paper:/work" -w /work $(TEXLIVE_IMAGE) latexmk -c main.tex
+
 # Canonical hyperparameters. λ is the lead-bias decay (selected on
 # the dev split — see benchmark-ablation-lead). LGS_EMBED_MODEL is
 # the canonical sentence-embedder used for the headline run; the
