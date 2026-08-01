@@ -1,0 +1,42 @@
+%% Highlights for submission to Knowledge-Based Systems (Elsevier).
+%%
+%% Elsevier requires Highlights as a SEPARATE editable file, not as part
+%% of the manuscript body: 3-5 bullet points, each at most 85 characters
+%% INCLUDING spaces. The counts below are verified.
+%%
+%% This file compiles standalone (pdflatex highlights.tex) and can also
+%% be copied as plain text into the submission system.
+
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{enumitem}
+\pagestyle{empty}
+
+\begin{document}
+
+\begin{center}
+{\large\bfseries Highlights}\\[2mm]
+{\itshape Lead-biased Grounding Score: injecting discourse-structural
+knowledge into reference-free, cost-constrained assessment of summary
+quality}\\[1mm]
+{\small Mikolaj Semeniuk, Agnieszka Jastrzebska}
+\end{center}
+
+\vspace{4mm}
+
+\begin{itemize}[leftmargin=*, itemsep=2mm]
+  % 72 characters
+  \item LGS scores summary quality with no human reference and no LLM judge call
+  % 82 characters
+  \item Discourse-position knowledge enters as a one-parameter prior over source sentences
+  % 75 characters
+  \item Only 5 of 14 metrics are Pareto-optimal in cost-quality; LGS is one of them
+  % 67 characters
+  \item LGS beats BERTScore in mean correlation at one tenth of the runtime
+  % 77 characters
+  \item The knowledge prior must be recalibrated for each sentence-embedding backbone
+\end{itemize}
+
+\end{document}

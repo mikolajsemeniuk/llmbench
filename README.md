@@ -35,7 +35,7 @@ The paper's contribution is "a reference-free metric you can deploy with a singl
 
 ## Reproducing the paper
 
-Every number in `paper/{summary,system,ablation,comparisons}.tex` regenerates from Make targets. Steps below assume Ollama on `localhost:11434` with `nomic-embed-text` pulled and the model server (`cmd/modelsrv`) running on port 9200 for the reference-based baselines.
+Every number in `paper/*.gen.tex` regenerates from Make targets. Steps below assume Ollama on `localhost:11434` with `nomic-embed-text` pulled and the model server (`cmd/modelsrv`) running on port 9200 for the reference-based baselines.
 
 ```sh
 # 1. Regenerate every baseline's per-sample scores in output/.
@@ -142,7 +142,16 @@ Each cmd writes a JSON report to `output/<metric>.json` containing per-sample sc
 make paper
 ```
 
-Writes `paper/summary.gen.tex` and `paper/system.gen.tex` from the JSON reports in `output/`.
+Writes the correlation tables from the JSON reports in `output/`. Each correlation table carries a bootstrap CI in every cell, so Spearman and Kendall are emitted as **separate** tables — side by side they are about twice as wide as the `elsarticle` text block:
+
+| File | Contents | LaTeX label |
+|------|----------|-------------|
+| `paper/summary.gen.tex`         | summary-level Spearman ρ | `tab:correlations_summary` |
+| `paper/summary_kendall.gen.tex` | summary-level Kendall τ  | `tab:correlations_summary_kendall` |
+| `paper/system.gen.tex`          | system-level Spearman ρ  | `tab:correlations_system` |
+| `paper/system_kendall.gen.tex`  | system-level Kendall τ   | `tab:correlations_system_kendall` |
+
+`cmd/paper` takes `-coeffs` (`spearman`, `kendall`, `pearson`; comma-separated) and `-label` to override the default label.
 
 ## Service endpoints
 

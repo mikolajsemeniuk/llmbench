@@ -20,6 +20,7 @@ var (
 	level        string
 	withCI       bool
 	coefficients string
+	label        string
 )
 
 var dimensions = []string{"coherence", "consistency", "fluency", "relevance"}
@@ -98,6 +99,8 @@ func main() {
 	flag.BoolVar(&withCI, "ci", false, "include 95%% CI in each cell (requires bootstrap data)")
 	flag.StringVar(&coefficients, "coeffs", "spearman,kendall",
 		"comma-separated coefficients to display: spearman, pearson, kendall")
+	flag.StringVar(&label, "label", "",
+		"LaTeX label for the table (default: tab:correlations_<level>)")
 	flag.Parse()
 
 	if level != "summary" && level != "system" {
@@ -117,8 +120,12 @@ func main() {
 		log.Fatalf("no reports found in %s", input)
 	}
 
+	if label == "" {
+		label = fmt.Sprintf("tab:correlations_%s", level)
+	}
+
 	rows := buildRows(reports, level, coeffs)
-	table := renderLatex(rows, level, coeffs, withCI)
+	table := renderLatex(rows, level, coeffs, withCI, label)
 
 	if err := write(output, table); err != nil {
 		log.Fatal(err)
@@ -303,11 +310,14 @@ func sortRows(rows []Row) {
 	})
 }
 
-func renderLatex(rows []Row, level string, coeffs []coefficient, withCI bool) string {
+func renderLatex(rows []Row, level string, coeffs []coefficient, withCI bool, label string) string {
 	var b strings.Builder
 
 	nCoeff := len(coeffs)
-	colSpec := "l" + strings.Repeat(strings.Repeat("r", nCoeff), len(dimensions))
+	// @{} trims the outer column padding; every point counts, because the
+	// bracketed confidence intervals make these tables the widest in the
+	// paper and they must fit the elsarticle text block without scaling.
+	colSpec := "@{}l" + strings.Repeat(strings.Repeat("r", nCoeff), len(dimensions)) + "@{}"
 
 	fmt.Fprintln(&b, `\begin{table*}[t]`)
 	fmt.Fprintln(&b, `\centering`)
@@ -317,34 +327,56 @@ func renderLatex(rows []Row, level string, coeffs []coefficient, withCI bool) st
 		levelLabel = "System-level"
 	}
 
-	caption := fmt.Sprintf("%s correlations with human judgment on SummEval. %s.",
+	caption := fmt.Sprintf("%s correlations with human judgment on SummEval. %s. "+
+		"Brackets give the 95\\%% cluster-bootstrap confidence interval over articles.",
 		levelLabel, coeffLegend(coeffs))
+	if !withCI {
+		caption = fmt.Sprintf("%s correlations with human judgment on SummEval. %s.",
+			levelLabel, coeffLegend(coeffs))
+	}
 	fmt.Fprintf(&b, "\\caption{%s}\n", caption)
-	fmt.Fprintf(&b, "\\label{tab:correlations_%s}\n", level)
+	fmt.Fprintf(&b, "\\label{%s}\n", label)
+	fmt.Fprintln(&b, `\small`)
+	// Tables stay single-spaced even when the manuscript is compiled
+	// with the double-spaced elsarticle `review` option.
+	fmt.Fprintln(&b, `\linespread{1}\selectfont`)
+	fmt.Fprintln(&b, `\setlength{\tabcolsep}{4pt}`)
 	fmt.Fprintf(&b, "\\begin{tabular}{%s}\n", colSpec)
 	fmt.Fprintln(&b, `\toprule`)
 
-	fmt.Fprint(&b, "Metric")
-	for _, dim := range dimensions {
-		fmt.Fprintf(&b, ` & \multicolumn{%d}{c}{%s}`, nCoeff, dimensionShort[dim])
-	}
-	fmt.Fprintln(&b, ` \\`)
-
-	for i := range dimensions {
-		from := 2 + nCoeff*i
-		to := from + nCoeff - 1
-		fmt.Fprintf(&b, `\cmidrule(lr){%d-%d} `, from, to)
-	}
-	fmt.Fprintln(&b)
-
-	fmt.Fprint(&b, " ")
-	for range dimensions {
-		for _, c := range coeffs {
-			fmt.Fprintf(&b, ` & %s`, c.symbol)
+	// With a single coefficient the grouped two-row header carries no
+	// information the caption does not already give, so collapse it to one
+	// row: "Metric | Coh | Con | Flu | Rel".
+	if nCoeff == 1 {
+		fmt.Fprint(&b, "Metric")
+		for _, dim := range dimensions {
+			fmt.Fprintf(&b, ` & \multicolumn{1}{c}{%s}`, dimensionShort[dim])
 		}
+		fmt.Fprintln(&b, ` \\`)
+		fmt.Fprintln(&b, `\midrule`)
+	} else {
+		fmt.Fprint(&b, "Metric")
+		for _, dim := range dimensions {
+			fmt.Fprintf(&b, ` & \multicolumn{%d}{c}{%s}`, nCoeff, dimensionShort[dim])
+		}
+		fmt.Fprintln(&b, ` \\`)
+
+		for i := range dimensions {
+			from := 2 + nCoeff*i
+			to := from + nCoeff - 1
+			fmt.Fprintf(&b, `\cmidrule(lr){%d-%d} `, from, to)
+		}
+		fmt.Fprintln(&b)
+
+		fmt.Fprint(&b, " ")
+		for range dimensions {
+			for _, c := range coeffs {
+				fmt.Fprintf(&b, ` & %s`, c.symbol)
+			}
+		}
+		fmt.Fprintln(&b, ` \\`)
+		fmt.Fprintln(&b, `\midrule`)
 	}
-	fmt.Fprintln(&b, ` \\`)
-	fmt.Fprintln(&b, `\midrule`)
 
 	for _, r := range rows {
 		fmt.Fprint(&b, r.Label)

@@ -1,0 +1,12 @@
+Highlights
+
+Lead-biased Grounding Score: injecting discourse-structural knowledge into
+reference-free, cost-constrained assessment of summary quality
+
+Mikolaj Semeniuk, Agnieszka Jastrzebska
+
+- LGS scores summary quality with no human reference and no LLM judge call
+- Discourse-position knowledge enters as a one-parameter prior over source sentences
+- Only 5 of 14 metrics are Pareto-optimal in cost-quality; LGS is one of them
+- LGS beats BERTScore in mean correlation at one tenth of the runtime
+- The knowledge prior must be recalibrated for each sentence-embedding backbone

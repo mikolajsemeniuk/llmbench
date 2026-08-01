@@ -46,13 +46,21 @@ benchmark-geval:
 .PHONY: paper
 paper: paper-summary paper-system paper-ablation paper-embedders paper-comparisons paper-frontier
 
+# The correlation tables carry a bootstrap CI in every cell. Emitting
+# Spearman and Kendall side by side makes the table roughly twice as wide
+# as the elsarticle text block, so each coefficient gets its own table:
+# Spearman in the results section, Kendall in the appendix.
 .PHONY: paper-summary
 paper-summary:
-	go run ./cmd/paper -ci -level summary -output paper/summary.gen.tex
+	go run ./cmd/paper -ci -level summary -coeffs spearman -output paper/summary.gen.tex
+	go run ./cmd/paper -ci -level summary -coeffs kendall \
+		-label tab:correlations_summary_kendall -output paper/summary_kendall.gen.tex
 
 .PHONY: paper-system
 paper-system:
-	go run ./cmd/paper -ci -level system  -output paper/system.gen.tex
+	go run ./cmd/paper -ci -level system  -coeffs spearman -output paper/system.gen.tex
+	go run ./cmd/paper -ci -level system  -coeffs kendall \
+		-label tab:correlations_system_kendall -output paper/system_kendall.gen.tex
 
 .PHONY: paper-ablation
 paper-ablation:

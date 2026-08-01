@@ -2,16 +2,24 @@
 \centering
 \caption{Paired bootstrap comparison of LGS against baselines on summary-level Spearman correlations. Each cell reports $\Delta\rho$ (ours minus baseline) with 95\% CI in brackets and $p$-value. Bold marks significant improvements ($p<0.05$, CI excludes 0).}
 \label{tab:compare_lgs_summary}
-\begin{tabular}{lcccc}
+\small
+\linespread{1}\selectfont
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lcccc@{}}
 \toprule
 Baseline & Coh & Con & Flu & Rel \\
 \midrule
-UniEval & -.173 {\scriptsize [-.236, -.113], $p$=<.001} & -.177 {\scriptsize [-.233, -.123], $p$=<.001} & -.287 {\scriptsize [-.355, -.226], $p$=<.001} & -.107 {\scriptsize [-.176, -.039], $p$=0.003} \\
-BERTScore & +.019 {\scriptsize [-.039, +.076], $p$=0.509} & \textbf{+.118 {\scriptsize [+.059, +.181], $p$=<.001}} & +.015 {\scriptsize [-.039, +.068], $p$=0.612} & -.016 {\scriptsize [-.081, +.052], $p$=0.634} \\
-G-Eval & +.003 {\scriptsize [-.076, +.080], $p$=0.938} & -.262 {\scriptsize [-.320, -.203], $p$=<.001} & +.017 {\scriptsize [-.055, +.086], $p$=0.638} & -.061 {\scriptsize [-.144, +.023], $p$=0.152} \\
-SMART-Model & \textbf{+.068 {\scriptsize [+.020, +.118], $p$=0.005}} & \textbf{+.134 {\scriptsize [+.084, +.182], $p$=<.001}} & \textbf{+.089 {\scriptsize [+.038, +.141], $p$=<.001}} & +.035 {\scriptsize [-.022, +.095], $p$=0.248} \\
-ChrF & \textbf{+.237 {\scriptsize [+.145, +.326], $p$=<.001}} & +.053 {\scriptsize [-.013, +.121], $p$=0.123} & +.046 {\scriptsize [-.017, +.113], $p$=0.171} & +.062 {\scriptsize [-.031, +.153], $p$=0.188} \\
-EmbedScorer & \textbf{+.117 {\scriptsize [+.061, +.174], $p$=<.001}} & \textbf{+.171 {\scriptsize [+.122, +.222], $p$=<.001}} & \textbf{+.116 {\scriptsize [+.058, +.173], $p$=<.001}} & +.036 {\scriptsize [-.026, +.101], $p$=0.283} \\
+UniEval & \begin{tabular}[t]{@{}c@{}}-.173\\{\scriptsize [-.236, -.113]}\\{\scriptsize $p<.001$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}-.177\\{\scriptsize [-.233, -.123]}\\{\scriptsize $p<.001$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}-.287\\{\scriptsize [-.355, -.226]}\\{\scriptsize $p<.001$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}-.107\\{\scriptsize [-.176, -.039]}\\{\scriptsize $p$=0.003}\end{tabular} \\
+\addlinespace[3pt]
+BERTScore & \begin{tabular}[t]{@{}c@{}}+.019\\{\scriptsize [-.039, +.076]}\\{\scriptsize $p$=0.509}\end{tabular} & \begin{tabular}[t]{@{}c@{}}\textbf{+.118}\\{\scriptsize [+.059, +.181]}\\{\scriptsize $p<.001$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}+.015\\{\scriptsize [-.039, +.068]}\\{\scriptsize $p$=0.612}\end{tabular} & \begin{tabular}[t]{@{}c@{}}-.016\\{\scriptsize [-.081, +.052]}\\{\scriptsize $p$=0.634}\end{tabular} \\
+\addlinespace[3pt]
+G-Eval & \begin{tabular}[t]{@{}c@{}}+.003\\{\scriptsize [-.076, +.080]}\\{\scriptsize $p$=0.938}\end{tabular} & \begin{tabular}[t]{@{}c@{}}-.262\\{\scriptsize [-.320, -.203]}\\{\scriptsize $p<.001$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}+.017\\{\scriptsize [-.055, +.086]}\\{\scriptsize $p$=0.638}\end{tabular} & \begin{tabular}[t]{@{}c@{}}-.061\\{\scriptsize [-.144, +.023]}\\{\scriptsize $p$=0.152}\end{tabular} \\
+\addlinespace[3pt]
+SMART-Model & \begin{tabular}[t]{@{}c@{}}\textbf{+.068}\\{\scriptsize [+.020, +.118]}\\{\scriptsize $p$=0.005}\end{tabular} & \begin{tabular}[t]{@{}c@{}}\textbf{+.134}\\{\scriptsize [+.084, +.182]}\\{\scriptsize $p<.001$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}\textbf{+.089}\\{\scriptsize [+.038, +.141]}\\{\scriptsize $p<.001$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}+.035\\{\scriptsize [-.022, +.095]}\\{\scriptsize $p$=0.248}\end{tabular} \\
+\addlinespace[3pt]
+ChrF & \begin{tabular}[t]{@{}c@{}}\textbf{+.237}\\{\scriptsize [+.145, +.326]}\\{\scriptsize $p<.001$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}+.053\\{\scriptsize [-.013, +.121]}\\{\scriptsize $p$=0.123}\end{tabular} & \begin{tabular}[t]{@{}c@{}}+.046\\{\scriptsize [-.017, +.113]}\\{\scriptsize $p$=0.171}\end{tabular} & \begin{tabular}[t]{@{}c@{}}+.062\\{\scriptsize [-.031, +.153]}\\{\scriptsize $p$=0.188}\end{tabular} \\
+\addlinespace[3pt]
+EmbedScorer & \begin{tabular}[t]{@{}c@{}}\textbf{+.117}\\{\scriptsize [+.061, +.174]}\\{\scriptsize $p<.001$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}\textbf{+.171}\\{\scriptsize [+.122, +.222]}\\{\scriptsize $p<.001$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}\textbf{+.116}\\{\scriptsize [+.058, +.173]}\\{\scriptsize $p<.001$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}+.036\\{\scriptsize [-.026, +.101]}\\{\scriptsize $p$=0.283}\end{tabular} \\
 \bottomrule
 \end{tabular}
 \end{table*}

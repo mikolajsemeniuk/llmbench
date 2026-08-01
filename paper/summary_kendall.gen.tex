@@ -1,0 +1,28 @@
+\begin{table*}[t]
+\centering
+\caption{Summary-level correlations with human judgment on SummEval. $\tau$ = Kendall. Brackets give the 95\% cluster-bootstrap confidence interval over articles.}
+\label{tab:correlations_summary_kendall}
+\small
+\linespread{1}\selectfont
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+Metric & \multicolumn{1}{c}{Coh} & \multicolumn{1}{c}{Con} & \multicolumn{1}{c}{Flu} & \multicolumn{1}{c}{Rel} \\
+\midrule
+BLEU & .072 {\scriptsize [.024, .115]} & .107 {\scriptsize [.065, .147]} & .051 {\scriptsize [.005, .097]} & .148 {\scriptsize [.094, .203]} \\
+ROUGE-L & .115 {\scriptsize [.067, .162]} & .110 {\scriptsize [.062, .154]} & .083 {\scriptsize [.036, .134]} & .144 {\scriptsize [.084, .202]} \\
+ChrF & .112 {\scriptsize [.065, .160]} & .137 {\scriptsize [.101, .174]} & .086 {\scriptsize [.043, .132]} & .210 {\scriptsize [.158, .264]} \\
+METEOR & .139 {\scriptsize [.100, .176]} & .105 {\scriptsize [.064, .143]} & .101 {\scriptsize [.051, .151]} & .131 {\scriptsize [.078, .179]} \\
+SMART-String & -.004 {\scriptsize [-.051, .043]} & .087 {\scriptsize [.043, .130]} & .081 {\scriptsize [.037, .123]} & .088 {\scriptsize [.034, .143]} \\
+EmbedScorer & .197 {\scriptsize [.153, .238]} & .044 {\scriptsize [-.004, .088]} & .031 {\scriptsize [-.018, .081]} & .229 {\scriptsize [.179, .279]} \\
+BERTScore & .269 {\scriptsize [.225, .307]} & .085 {\scriptsize [.038, .128]} & .110 {\scriptsize [.063, .156]} & .270 {\scriptsize [.224, .318]} \\
+MoverScore & .106 {\scriptsize [.059, .150]} & -.020 {\scriptsize [-.066, .026]} & .009 {\scriptsize [-.045, .057]} & .072 {\scriptsize [.016, .125]} \\
+SMART-Model & .233 {\scriptsize [.191, .273]} & .074 {\scriptsize [.029, .116]} & .052 {\scriptsize [.004, .103]} & .229 {\scriptsize [.182, .277]} \\
+BARTScore & .117 {\scriptsize [.075, .161]} & .092 {\scriptsize [.046, .137]} & .083 {\scriptsize [.033, .132]} & .195 {\scriptsize [.141, .252]} \\
+GPTScore & .256 {\scriptsize [.218, .293]} & .166 {\scriptsize [.119, .216]} & .142 {\scriptsize [.096, .194]} & .221 {\scriptsize [.175, .264]} \\
+UniEval & .408 {\scriptsize [.378, .437]} & .323 {\scriptsize [.293, .353]} & .352 {\scriptsize [.317, .385]} & .334 {\scriptsize [.293, .370]} \\
+G-Eval & .318 {\scriptsize [.276, .361]} & .448 {\scriptsize [.410, .484]} & .131 {\scriptsize [.094, .165]} & .345 {\scriptsize [.293, .398]} \\
+LGS & .285 {\scriptsize [.243, .326]} & .179 {\scriptsize [.137, .219]} & .120 {\scriptsize [.076, .169]} & .257 {\scriptsize [.216, .298]} \\
+\bottomrule
+\end{tabular}
+\end{table*}

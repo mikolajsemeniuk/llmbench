@@ -362,7 +362,7 @@ func renderConsole(target string, cells []comparisonCell) string {
 func renderLatex(target string, baselines []baselineEntry, cells []comparisonCell, level string) string {
 	var b strings.Builder
 
-	colSpec := "l" + strings.Repeat("c", len(dimensions))
+	colSpec := "@{}l" + strings.Repeat("c", len(dimensions)) + "@{}"
 
 	fmt.Fprintln(&b, `\begin{table*}[t]`)
 	fmt.Fprintln(&b, `\centering`)
@@ -378,6 +378,11 @@ func renderLatex(target string, baselines []baselineEntry, cells []comparisonCel
 			"Bold marks significant improvements ($p<0.05$, CI excludes 0).}\n",
 		display(target), levelLabel)
 	fmt.Fprintf(&b, "\\label{tab:compare_%s_%s}\n", target, level)
+	fmt.Fprintln(&b, `\small`)
+	// Tables stay single-spaced even when the manuscript is compiled
+	// with the double-spaced elsarticle `review` option.
+	fmt.Fprintln(&b, `\linespread{1}\selectfont`)
+	fmt.Fprintln(&b, `\setlength{\tabcolsep}{4pt}`)
 	fmt.Fprintf(&b, "\\begin{tabular}{%s}\n", colSpec)
 	fmt.Fprintln(&b, `\toprule`)
 
@@ -396,7 +401,12 @@ func renderLatex(target string, baselines []baselineEntry, cells []comparisonCel
 		byBase[c.baseline][c.dimension] = c
 	}
 
-	for _, base := range baselines {
+	for i, base := range baselines {
+		if i > 0 {
+			// Each cell spans three lines; without this the blocks of two
+			// adjacent baselines run together.
+			fmt.Fprintln(&b, `\addlinespace[3pt]`)
+		}
 		fmt.Fprintf(&b, "%s", display(base.key))
 		for _, dim := range dimensions {
 			c := byBase[base.key][dim]
@@ -416,16 +426,20 @@ func fmtLatexCell(c eval.PairedComparison) string {
 	ci := fmt.Sprintf(`[%s, %s]`,
 		stripLeadingZero(c.DeltaCI.Low),
 		stripLeadingZero(c.DeltaCI.High))
-	pStr := fmt.Sprintf("%.3f", c.PValue)
+	pStr := fmt.Sprintf("$p$=%.3f", c.PValue)
 	if c.PValue < 0.001 {
-		pStr = "<.001"
+		pStr = "$p<.001$"
 	}
 
-	body := fmt.Sprintf("%s {\\scriptsize %s, $p$=%s}", delta, ci, pStr)
+	// Stack delta / CI / p-value vertically inside the cell. On one line the
+	// five-column table is roughly 1.75x wider than the elsarticle text
+	// block; stacked, it fits without scaling or rotation.
 	if c.DeltaCI.Low > 0 {
-		body = `\textbf{` + body + `}`
+		delta = `\textbf{` + delta + `}`
 	}
-	return body
+	return fmt.Sprintf(
+		`\begin{tabular}[t]{@{}c@{}}%s\\{\scriptsize %s}\\{\scriptsize %s}\end{tabular}`,
+		delta, ci, pStr)
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────
