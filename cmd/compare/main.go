@@ -35,6 +35,7 @@ var (
 	bootstrap int
 	level     string
 	seed      uint64
+	fdrAlpha  float64
 )
 
 var dimensions = []string{"coherence", "consistency", "fluency", "relevance"}
@@ -81,6 +82,14 @@ type comparisonCell struct {
 	comp      eval.PairedComparison
 	targetRho float64
 	baseRho   float64
+
+	// qValue is the Benjamini-Hochberg adjusted p-value over the whole
+	// table. Every (baseline, dimension) pair is one test of the same
+	// hypothesis family -- "does the target metric correlate
+	// differently from this baseline?" -- so reading the raw p-values
+	// at 0.05 would inflate the family-wise error rate across the
+	// len(baselines) x 4 cells.
+	qValue float64
 }
 
 func main() {
@@ -95,6 +104,8 @@ func main() {
 		"number of paired bootstrap resamples (5000+ recommended)")
 	flag.StringVar(&level, "level", "summary", "correlation level: summary|system")
 	flag.Uint64Var(&seed, "seed", 42, "random seed for reproducibility")
+	flag.Float64Var(&fdrAlpha, "fdr-alpha", 0.05,
+		"Benjamini-Hochberg false-discovery rate for the family of (baseline, dimension) tests")
 	flag.Parse()
 
 	if target == "" {
@@ -160,6 +171,8 @@ func main() {
 			})
 		}
 	}
+
+	applyFDR(cells)
 
 	fmt.Println(renderConsole(target, cells))
 
@@ -319,15 +332,60 @@ func systemLevelPaired(samples []eval.Sample, scoresA, scoresB, human []float64,
 	return comp, targetRho, baseRho
 }
 
+// ── Multiple-comparison correction ─────────────────────────────────────
+
+// applyFDR fills in each cell's qValue using the Benjamini-Hochberg
+// step-up procedure. Sorting the m raw p-values ascending, the adjusted
+// value of the k-th is p_(k) * m / k, made monotone by sweeping from
+// the largest downward and capping at 1. Controlling the false
+// discovery rate rather than the family-wise error rate is the
+// conventional choice when the tests are numerous and positively
+// dependent, which they are here: the cells share both the target
+// metric's scores and the same resampled articles.
+func applyFDR(cells []comparisonCell) {
+	m := len(cells)
+	if m == 0 {
+		return
+	}
+	order := make([]int, m)
+	for i := range order {
+		order[i] = i
+	}
+	sort.SliceStable(order, func(a, b int) bool {
+		return cells[order[a]].comp.PValue < cells[order[b]].comp.PValue
+	})
+
+	prev := 1.0
+	for k := m - 1; k >= 0; k-- {
+		i := order[k]
+		q := cells[i].comp.PValue * float64(m) / float64(k+1)
+		if q > prev {
+			q = prev
+		}
+		if q > 1 {
+			q = 1
+		}
+		cells[i].qValue = q
+		prev = q
+	}
+}
+
+// significant reports whether a cell survives as a positive finding:
+// the adjusted p-value clears the FDR threshold AND the paired
+// bootstrap CI for the delta excludes zero on the positive side.
+func significant(c comparisonCell) bool {
+	return c.qValue < fdrAlpha && c.comp.DeltaCI.Low > 0
+}
+
 // ── Output rendering ───────────────────────────────────────────────────
 
 func renderConsole(target string, cells []comparisonCell) string {
 	var b strings.Builder
 
 	fmt.Fprintf(&b, "Paired bootstrap: %s vs baselines (Spearman)\n\n", display(target))
-	fmt.Fprintf(&b, "%-15s %-12s %8s %8s %8s %20s %8s\n",
-		"Baseline", "Dimension", "ours", "base", "Δ", "95% CI", "p")
-	fmt.Fprintln(&b, strings.Repeat("─", 88))
+	fmt.Fprintf(&b, "%-15s %-12s %8s %8s %8s %20s %8s %8s\n",
+		"Baseline", "Dimension", "ours", "base", "Δ", "95% CI", "p", "q(BH)")
+	fmt.Fprintln(&b, strings.Repeat("─", 97))
 
 	wins, ties, losses := 0, 0, 0
 	for _, c := range cells {
@@ -335,27 +393,28 @@ func renderConsole(target string, cells []comparisonCell) string {
 		ciStr := fmt.Sprintf("[%+.3f, %+.3f]", ci.Low, ci.High)
 		sig := " "
 		switch {
-		case ci.Low > 0:
+		case significant(c):
 			sig = "↑"
 			wins++
-		case ci.High < 0:
+		case ci.High < 0 && c.qValue < fdrAlpha:
 			sig = "↓"
 			losses++
 		default:
 			ties++
 		}
-		fmt.Fprintf(&b, "%-15s %-12s %+.3f   %+.3f   %+.3f   %s   %.4f %s\n",
+		fmt.Fprintf(&b, "%-15s %-12s %+.3f   %+.3f   %+.3f   %s   %.4f   %.4f %s\n",
 			display(c.baseline), c.dimension,
 			c.targetRho, c.baseRho, c.comp.DeltaMean,
-			ciStr, c.comp.PValue, sig)
+			ciStr, c.comp.PValue, c.qValue, sig)
 	}
 
 	fmt.Fprintln(&b)
 	fmt.Fprintf(&b, "Summary: wins=%d, ties=%d, losses=%d (across %d comparisons)\n",
 		wins, ties, losses, len(cells))
-	fmt.Fprintln(&b, "↑ = ours significantly higher (95% CI excludes 0)")
-	fmt.Fprintln(&b, "↓ = ours significantly lower")
+	fmt.Fprintf(&b, "↑ = ours significantly higher (95%% CI excludes 0 and q < %.2f)\n", fdrAlpha)
+	fmt.Fprintf(&b, "↓ = ours significantly lower (same criterion)\n")
 	fmt.Fprintln(&b, "  = no significant difference")
+	fmt.Fprintf(&b, "q = Benjamini-Hochberg adjusted p over all %d cells of this table\n", len(cells))
 	return b.String()
 }
 
@@ -374,9 +433,12 @@ func renderLatex(target string, baselines []baselineEntry, cells []comparisonCel
 	fmt.Fprintf(&b,
 		"\\caption{Paired bootstrap comparison of %s against baselines on %s "+
 			"Spearman correlations. Each cell reports $\\Delta\\rho$ "+
-			"(ours minus baseline) with 95\\%% CI in brackets and $p$-value. "+
-			"Bold marks significant improvements ($p<0.05$, CI excludes 0).}\n",
-		display(target), levelLabel)
+			"(ours minus baseline) with 95\\%% CI in brackets, the raw "+
+			"two-sided $p$-value, and $q$, the Benjamini-Hochberg adjusted "+
+			"$p$-value over all %d (baseline, dimension) cells of this table. "+
+			"Bold marks improvements that survive the correction "+
+			"($q<%.2f$ and CI excludes 0).}\n",
+		display(target), levelLabel, len(cells), fdrAlpha)
 	fmt.Fprintf(&b, "\\label{tab:compare_%s_%s}\n", target, level)
 	fmt.Fprintln(&b, `\small`)
 	// Tables stay single-spaced even when the manuscript is compiled
@@ -410,7 +472,7 @@ func renderLatex(target string, baselines []baselineEntry, cells []comparisonCel
 		fmt.Fprintf(&b, "%s", display(base.key))
 		for _, dim := range dimensions {
 			c := byBase[base.key][dim]
-			fmt.Fprintf(&b, " & %s", fmtLatexCell(c.comp))
+			fmt.Fprintf(&b, " & %s", fmtLatexCell(c))
 		}
 		fmt.Fprintln(&b, ` \\`)
 	}
@@ -421,25 +483,30 @@ func renderLatex(target string, baselines []baselineEntry, cells []comparisonCel
 	return b.String()
 }
 
-func fmtLatexCell(c eval.PairedComparison) string {
-	delta := stripLeadingZero(c.DeltaMean)
+func fmtLatexCell(c comparisonCell) string {
+	delta := stripLeadingZero(c.comp.DeltaMean)
 	ci := fmt.Sprintf(`[%s, %s]`,
-		stripLeadingZero(c.DeltaCI.Low),
-		stripLeadingZero(c.DeltaCI.High))
-	pStr := fmt.Sprintf("$p$=%.3f", c.PValue)
-	if c.PValue < 0.001 {
-		pStr = "$p<.001$"
-	}
+		stripLeadingZero(c.comp.DeltaCI.Low),
+		stripLeadingZero(c.comp.DeltaCI.High))
 
-	// Stack delta / CI / p-value vertically inside the cell. On one line the
-	// five-column table is roughly 1.75x wider than the elsarticle text
-	// block; stacked, it fits without scaling or rotation.
-	if c.DeltaCI.Low > 0 {
+	// Stack delta / CI / p / q vertically inside the cell. On one line
+	// the five-column table is roughly 1.75x wider than the elsarticle
+	// text block; stacked, it fits without scaling or rotation.
+	if significant(c) {
 		delta = `\textbf{` + delta + `}`
 	}
 	return fmt.Sprintf(
-		`\begin{tabular}[t]{@{}c@{}}%s\\{\scriptsize %s}\\{\scriptsize %s}\end{tabular}`,
-		delta, ci, pStr)
+		`\begin{tabular}[t]{@{}c@{}}%s\\{\scriptsize %s}\\{\scriptsize %s}\\{\scriptsize %s}\end{tabular}`,
+		delta, ci, fmtSig("p", c.comp.PValue), fmtSig("q", c.qValue))
+}
+
+// fmtSig renders a p- or q-value, collapsing anything below the
+// resolution the bootstrap can actually support into an inequality.
+func fmtSig(name string, v float64) string {
+	if v < 0.001 {
+		return fmt.Sprintf("$%s<.001$", name)
+	}
+	return fmt.Sprintf("$%s$=%.3f", name, v)
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────
@@ -490,4 +557,3 @@ func writeFile(path, content string) error {
 	_, err = io.WriteString(f, content)
 	return err
 }
-

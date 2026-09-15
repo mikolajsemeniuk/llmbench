@@ -19,6 +19,13 @@ The mean-of-max grounding ("is each summary sentence anchored in some source sen
 
 **Held-out selection of λ**. SummEval is split by article into a 50-article development set (first 50 docs in dataset order) and a 50-article test set (last 50). On dev, λ ∈ {0, 0.25, 0.5, 1.0, 2.0} is swept and the value maximising mean Spearman ρ across the four SummEval dimensions is selected. The dev winner is **λ\* = 0.5**: dev mean ρ rises from .233 (λ=0) to .252 (+.019), with all four dimensions improving (coh +.021, con +.007, flu +.011, rel +.036). On the held-out test split λ\*=0.5 also beats the no-prior baseline (mean ρ .319 vs .314).
 
+**How much of λ\* is reproducible** (`make paper-lambdaci`, `paper/lambdaci.gen.tex`). The selection procedure is itself run inside the cluster bootstrap: on each of 5,000 resamples of the dev articles the whole sweep is recomputed and its argmax recorded. Two results, and they point in opposite directions:
+
+- *Switching the prior on is robust.* λ=0 is selected in **0.7%** of dev resamples and **0.3%** of test resamples.
+- *The exponent is not identifiable.* λ=0.3 wins 27.6%, λ=0.4 wins 20.4%, the reported λ\*=0.5 wins **17.8%**, λ=0.25 wins 17.5%. The protocol returns the interval **[0.25, 0.6]**, not a point.
+
+Controls on the grid common to all configurations: a fixed configuration compared against *itself* on two independent draws reselects the same λ only **43.5%** of the time (disagreeing symmetrically, 28.6% / 27.9%) — that is the noise floor. Cross-backbone agreement is **37.8%**, i.e. barely below it, so disagreement alone proves nothing; what does separate is direction (nomic picks the larger λ in 61.9% of resamples vs 0.4% reverse). Caveat: changing only *which* 50 articles are used produces the same asymmetry (52.8% vs 0.9%), so the backbone is not isolated as the cause.
+
 ## LGS — positioning
 
 LGS is reference-free and runs on a small Ollama embedder (`nomic-embed-text`, 137M params). It is **not** intended to beat UniEval — UniEval still wins on raw correlation. The claim is that LGS:
@@ -29,6 +36,7 @@ LGS is reference-free and runs on a small Ollama embedder (`nomic-embed-text`, 1
 - Beats **ChrF** significantly on coherence (Δρ=+.237, p<.001).
 - Outscores BLEU, ROUGE-L, METEOR, SMART-String, MoverScore, BARTScore on the point estimate of every SummEval dimension.
 - Loses to UniEval on every dimension (p<.001) and to G-Eval on consistency (p<.001); other G-Eval comparisons are statistical ties. This is openly reported in `paper/comparisons.gen.tex`.
+- All eight significant comparisons above survive Benjamini-Hochberg correction over the 24 (baseline, dimension) cells of `paper/comparisons.gen.tex`; the weakest survivor is coherence vs SMART-Model at q=.010. `cmd/compare` reports both raw p and adjusted q.
 - **Robust to embedder choice** (`paper/embedders.gen.tex`). The canonical metric is run with four sentence-embedder backbones spanning a ~24× parameter range — `all-minilm` (23M), `nomic-embed-text` (137M, headline), `mxbai-embed-large` (335M), `bge-m3` (567M). Mean Spearman ρ stays in [.284, .312]; per-dimension profile shifts (nomic dominates coh / rel, others con / flu) but the metric design is not specific to one backbone.
 
 The paper's contribution is "a reference-free metric you can deploy with a single Ollama model, with one tunable hyperparameter (lead-bias λ) selected via held-out methodology that prior metric papers skip" — efficiency, reference-freeness, methodological honesty, and an empirically-validated structural prior.
@@ -62,6 +70,12 @@ make benchmark-embedder-ablation    # 4 embedders, full set (~7 min)
 # 4. (Optional) Inspect the snapshots and rendered tables:
 ls ablation/                        # lgs_recall_*.json + lgs_lead_*.json + lgs_embedder_*.json
 cat paper/ablation.gen.tex paper/embedders.gen.tex
+
+# 5. (Optional) Statistics-only targets. These read the per-sample
+#    scores already stored in output/ and ablation/, so they need
+#    neither Ollama nor the model server:
+make paper-lambdaci                 # λ selection uncertainty (~3 min)
+make paper-comparisons              # paired bootstrap + BH-FDR (~2 min)
 ```
 
 The canonical hyperparameters are encoded as Make variables: `LGS_LAMBDA=0.5` (dev-selected) and `LGS_EMBED_MODEL=nomic-embed-text` (the headline embedder). To rerun the canonical with a different choice — for instance, λ=0.25 or a larger embedder:

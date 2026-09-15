@@ -101,10 +101,15 @@ Spearman correlations of 0.396, 0.227, 0.156 and 0.356 on coherence,
 consistency, fluency and relevance, and is one of only five
 Pareto-optimal metrics in the resulting cost--quality plane; it
 strictly dominates six widely used metrics, including BERTScore, whose
-mean correlation it exceeds while running ten times faster. We further
-show that the knowledge prior must be recalibrated whenever the
-embedding backbone changes: transferring a tuned exponent between
-backbones drives the metric below its own no-prior baseline.
+mean correlation it exceeds while running ten times faster. Re-running
+the entire selection procedure inside a cluster bootstrap further shows
+that the knowledge prior is worth switching on --- the no-prior setting
+is selected in under 1\% of resamples --- but that its exponent is not
+identifiable at benchmark scale: the reported value is selected in 18\%
+of resamples, and an unchanged backbone scored on two draws of the same
+50 articles agrees with itself on the exponent only 44\% of the time.
+We therefore present the prior as a design element carrying an
+obligatory, and demonstrably underdetermined, calibration step.
 \end{abstract}
 
 \begin{keyword}
@@ -198,16 +203,21 @@ mean summary-level Spearman $\rho$ while running roughly ten times
 faster. The same analysis shows that the LLM-judge metric in our
 reproduction is itself dominated by the fine-tuned-encoder metric.
 
-\item \textbf{An empirical demonstration that a structural knowledge
-prior does not transfer across representation spaces.} The exponent
-that governs the prior must be calibrated against the embedding
-backbone it is injected into. Tuned on
-\texttt{nomic-embed-text} the optimum is $\lambda^{*}\!=\!0.5$; tuned
-on \texttt{bge-m3} it is $\lambda^{*}\!=\!0.25$, and reusing the first
-value with the second backbone pushes the metric \emph{below} its own
-no-prior baseline (Section~\ref{sec:ablation-lead-bge}). We therefore
-present LGS as a design plus an obligatory calibration protocol
-(Section~\ref{sec:methodology}), not as a fixed numerical recipe.
+\item \textbf{A measurement of how much of a tuned structural prior is
+signal and how much is the luck of the development draw.} Metric
+papers report the selected hyperparameter as a number; we instead
+re-run the \emph{entire selection procedure} on every cluster-bootstrap
+resample and report the resulting distribution over grid values
+(Section~\ref{sec:lambda-identifiability}). Two facts follow. Switching
+the prior on is robust: $\lambda{=}0$ is selected in $0.7\%$ of
+development resamples and $0.3\%$ of test resamples. Which exponent to
+switch it to is not: the reported $\lambda^{*}{=}0.5$ is selected in
+$17.8\%$ of resamples, and a fixed backbone compared against itself on
+two independent draws of the same 50 articles agrees on the exponent
+only $43.5\%$ of the time. We therefore present LGS as a design plus an
+obligatory calibration protocol (Section~\ref{sec:methodology}) whose
+output is a usable interval rather than a reproducible point, and we
+report the width of that interval instead of suppressing it.
 
 \item \textbf{A reproducible artefact.} The full pipeline --- all
 fourteen metrics, the calibration sweep, the backbone ablation and
@@ -677,19 +687,28 @@ isolates this contribution.
 
 \subsection{Why calibration is a first-class step}
 A structural prior is a statement about the source documents, but it
-acts inside a learned representation space, and the two interact. We
-show in Section~\ref{sec:ablation-lead-bge} that the optimal value of
-$\lambda$ \emph{shifts} non-trivially across sentence-embedder
-backbones: with \texttt{nomic-embed-text} the development-set optimum is
-$\lambda^{*}\!=\!0.5$; with \texttt{bge-m3}~\cite{chen2024bgem3} it is
+acts inside a learned representation space, and the two interact. Two
+separate findings make the sweep obligatory rather than decorative.
+
+First, the point estimate of the optimum differs across backbones:
+with \texttt{nomic-embed-text} the development-set optimum is
+$\lambda^{*}\!=\!0.5$, with \texttt{bge-m3}~\cite{chen2024bgem3} it is
 $\lambda^{*}\!=\!0.25$, and applying the nomic-tuned value to
-\texttt{bge-m3} \emph{underperforms} the no-prior baseline.
-A practitioner reusing the published numerical value with a different
-embedder, without re-running the sweep, is therefore not reproducing
-LGS --- they are running a misconfigured metric. Because the sweep
-requires no additional embedder passes
-(Section~\ref{sec:complexity}), treating it as obligatory costs almost
-nothing; the cost of skipping it is silent miscalibration.
+\texttt{bge-m3} \emph{underperforms} the no-prior baseline
+(Section~\ref{sec:ablation-lead-bge}).
+
+Second --- and this is the finding that actually forces the protocol
+--- the exponent is not identifiable from a 50-article development
+split at all, on any backbone. Section~\ref{sec:lambda-identifiability}
+measures this directly by re-running the selection procedure inside the
+cluster bootstrap: the selected value carries under a fifth of the
+selection mass, and an \emph{unchanged} configuration disagrees with
+itself across two draws more than half the time. A practitioner who
+copies the published number is therefore not merely risking a
+backbone mismatch; they are copying one draw's answer to a question
+that this much data cannot settle. What transfers is the sweep, which
+costs no additional embedder passes (Section~\ref{sec:complexity}),
+and the interval it returns.
 
 \subsection{Article-level split}
 \textsc{SummEval} contains 100 source articles, each summarised by
@@ -716,6 +735,18 @@ require the test split's argmax to match $\lambda^*$; the
 selection is over the development split only, and a flat optimum
 (where multiple $\lambda$ values give near-equal performance) is
 operationally desirable.
+
+Reporting $\lambda^{*}$ as a bare number would leave open how much of
+it is reproducible, so the selection procedure is itself submitted to
+the cluster bootstrap of Section~\ref{sec:methodology-bootstrap}: on
+each resample of the development articles the full sweep is recomputed
+and its argmax recorded, giving a distribution over grid values rather
+than a single winner. Section~\ref{sec:lambda-identifiability} reports
+that distribution together with two controls that separate a genuine
+shift in the optimum from ordinary resampling noise. We recommend that
+any future variant of this protocol report the same distribution; a
+selection procedure that cannot state how often it would reselect its
+own output has not finished reporting its result.
 
 \subsection{Choice of correlation coefficient}
 \label{sec:methodology-corr}
@@ -766,6 +797,25 @@ paired procedure also yields directly interpretable
 ``LGS-significantly-better-than-baseline'' verdicts, which is
 the form the comparison table in
 Section~\ref{sec:results} reports.
+
+\paragraph{Multiple comparisons}
+The comparison table tests one hypothesis family --- ``does LGS
+correlate with human judgment differently from this baseline on this
+dimension?'' --- once per (baseline, dimension) cell, for
+$6 \times 4 = 24$ cells. Reading 24 raw $p$-values against a
+per-test threshold of $0.05$ would put the expected number of spurious
+positives near one even if no real difference existed, so every cell
+also carries $q$, its Benjamini--Hochberg adjusted $p$-value over the
+whole table~\cite{benjamini1995fdr}. Controlling the false discovery
+rate rather than the family-wise error rate is the appropriate choice
+here because the cells are numerous and positively dependent: they
+share the target metric's score vector and are computed on the same
+resampled articles. A cell is reported as a positive finding only when
+$q<0.05$ \emph{and} the paired-bootstrap interval for $\Delta\rho$
+excludes zero. Every significant verdict in
+Table~\ref{tab:compare_lgs_summary} survives the correction; the
+weakest survivor is the coherence comparison against SMART-Model at
+$q=.010$.
 
 \subsection{Final scoring}
 After verification, the headline correlations reported in
@@ -1140,16 +1190,23 @@ mean drops, indicating that the prior becomes too aggressive
 once the article tail is heavily suppressed.
 
 The mean gap between $\lambda=0.25$ (.251) and $\lambda^*=0.5$
-(.252) is $.001$, well inside the bootstrap noise. To verify that
-$\lambda^*=0.5$ is not a noise pick, we re-ran a finer sweep
+(.252) is $.001$, well inside the bootstrap noise. To characterise
+the surface around the optimum we re-ran a finer sweep
 $\lambda \in \{0.30, 0.40, 0.50, 0.60, 0.75\}$ with paired
 bootstrap (5{,}000 resamples) on both splits. The development surface
 around the optimum is smooth and flat: per-dimension $\rho$ values
 move by less than the bootstrap half-width across the entire
 $[0.30, 0.75]$ window, and the test surface mirrors this pattern.
-We therefore read $\lambda^*=0.5$ as the centre of a robust
-plateau rather than an isolated peak; any value in
-$[0.4, 0.6]$ is operationally equivalent.
+On the combined nine-point grid the development argmax is in fact
+$\lambda{=}0.4$ ($.2528$) rather than the $\lambda^{*}{=}0.5$
+($.2519$) selected on the five-point grid of the pre-registered
+protocol; the two differ by $.0009$. We retain $\lambda^{*}{=}0.5$
+because the protocol of Section~\ref{sec:methodology} fixes the grid
+before the sweep and the finer grid was added afterwards, but the
+discrepancy is itself evidence that the argmax is not a stable object
+--- which the next section measures rather than asserts. We therefore
+read $\lambda^*=0.5$ as one representative of a flat plateau rather
+than an isolated peak.
 
 The per-dimension picture on the test split is more nuanced than
 on the development split. On development, all four \textsc{SummEval}
@@ -1302,6 +1359,78 @@ any single dimension.}
 \label{fig:lambda-perdim}
 \end{figure}
 
+\subsection{\texorpdfstring{How identifiable is $\lambda^{*}$?}{How identifiable is lambda*?}}
+\label{sec:lambda-identifiability}
+Every number reported so far treats $\lambda^{*}$ as if the
+development split had determined it. It did not determine it; it
+selected it, and a different draw of 50 articles would have selected
+something else. Because the entire calibration protocol of
+Section~\ref{sec:methodology} rests on that selection, we measure how
+reproducible it is instead of assuming it.
+
+The procedure is the cluster bootstrap of
+Section~\ref{sec:methodology-bootstrap} applied one level up. On each
+of $5{,}000$ resamples of the development articles we recompute the
+mean Spearman $\rho$ at \emph{every} grid value and record which value
+wins, yielding a distribution over the grid rather than a point.
+Table~\ref{tab:lambda_selection_ci} reports it. Because the per-sample
+scores for each $\lambda$ are already stored, the measurement requires
+no additional embedder passes.
+
+\input{lambdaci.gen.tex}
+
+\paragraph{Switching the prior on is reproducible}
+The no-prior setting $\lambda{=}0$ is selected in $0.7\%$ of
+development resamples and $0.3\%$ of test resamples. Whatever else is
+uncertain, the decision to impose \emph{some} positional prior is
+not: it survives resampling in more than $99\%$ of draws on both
+splits. This is the claim the ablation supports, and it is weaker
+than --- and logically prior to --- any claim about a particular
+exponent.
+
+\paragraph{The exponent itself is not identifiable}
+The selection mass does not concentrate. On the development split with
+the canonical backbone, $\lambda{=}0.3$ wins $27.6\%$ of resamples,
+$\lambda{=}0.4$ wins $20.4\%$, the reported $\lambda^{*}{=}0.5$ wins
+$17.8\%$, and $\lambda{=}0.25$ wins $17.5\%$: four grid values within
+ten points of each other, none commanding even a third of the mass.
+A 50-article development split does not contain enough information to
+separate them. The practical reading is that the protocol returns the
+interval $[0.25, 0.6]$, inside which no value is distinguishable from
+any other, and that quoting a three-significant-figure optimum from
+such a surface overstates what was measured.
+
+\paragraph{Two controls, and what they do to the backbone claim}
+The lower panel of Table~\ref{tab:lambda_selection_ci} compares whole
+selection outcomes rather than single $\rho$ values, on the grid
+common to every configuration. The control that matters is the third
+row of the reasoning: a configuration compared \emph{against itself}
+on two independent draws of the same 50 articles reselects the same
+exponent only $43.5\%$ of the time, and when it disagrees the
+direction is a coin flip ($28.6\%$ versus $27.9\%$). That is the
+noise floor. Against it, the cross-backbone agreement of $37.8\%$ is
+barely lower --- so the observation that two backbones pick different
+exponents is, on its own, uninformative.
+
+What does separate from the noise floor is the \emph{direction}. When
+\texttt{nomic-embed-text} and \texttt{bge-m3} are scored on the same
+resample and disagree, the former selects the larger exponent in
+$61.9\%$ of resamples against $0.4\%$ for the reverse, a ratio no
+symmetric noise process produces. We therefore claim a directional
+backbone effect --- \texttt{bge-m3} prefers a weaker prior --- and
+explicitly do not claim a quantified shift from $0.5$ to $0.25$.
+
+One confound must be stated because it limits even that claim. The
+same asymmetry appears between the development and test splits under
+an \emph{unchanged} backbone ($52.8\%$ versus $0.9\%$). Changing which
+50 articles are used therefore induces a directional shift of
+comparable strength to changing the representation space. Our design
+cannot attribute the cross-backbone asymmetry to the backbone alone,
+and a clean attribution would need the sweep repeated over many
+disjoint article samples per backbone --- which, on a 100-article
+benchmark, is not available. Section~\ref{sec:future-work} lists the
+multi-corpus replication that would supply it.
+
 \subsection{Backbone ablation}
 \label{sec:ablation-embedder}
 Table~\ref{tab:ablation_embedder} shows the canonical
@@ -1349,8 +1478,8 @@ the per-dimension ordering is not.
 
 \subsection{Cross-backbone calibration of the prior}
 \label{sec:ablation-lead-bge}
-The most consequential finding of the backbone ablation is that
-the optimal value of $\lambda$ is \emph{not universal}.
+The backbone ablation also bears on \emph{where} the prior should be
+set, not only on how well the metric scores.
 Figure~\ref{fig:lambda-curve} shows the development-split mean Spearman
 $\rho$ as a function of $\lambda$ for two embedders:
 \texttt{nomic-embed-text} (the canonical backbone) and
@@ -1366,27 +1495,39 @@ baseline) and $\lambda^{*}{=}0.25$ for \texttt{bge-m3}
 
 The practical consequence is sharp: applying the nomic-tuned
 $\lambda{=}0.5$ to \texttt{bge-m3} yields a development mean of $.302$,
-which is \emph{below} its no-prior baseline of $.305$. The lead-bias
-prior, beneficial when $\lambda$ is calibrated against the same
-backbone, is actively \emph{harmful} when a $\lambda$ from a different
-backbone is reused. This is the empirical justification for treating
-the calibration protocol of Section~\ref{sec:methodology} as part of
-the method rather than as generic machine-learning hygiene: a
-numerical recipe without re-tuning is not LGS, it is a misconfigured
-metric.
+which is \emph{below} its no-prior baseline of $.305$. A prior that
+helps when its exponent is calibrated against the backbone in use can
+therefore cost more than it returns when an exponent is carried over
+from elsewhere.
+
+Two qualifications are essential, and
+Section~\ref{sec:lambda-identifiability} supplies both. First, the gap
+between $.302$ and $.305$ is a fraction of the bootstrap half-width,
+so this particular pair of numbers is an illustration rather than a
+demonstration. What carries statistical weight is the directional
+result: scored on the same resample, \texttt{nomic-embed-text} selects
+the larger exponent $61.9\%$ of the time against $0.4\%$ for the
+reverse. Second, that asymmetry is not uniquely attributable to the
+backbone, because a change of article sample under a fixed backbone
+produces one of comparable strength. The defensible claim is therefore
+that the exponent should be re-derived in situ --- not that the
+backbone is the specific variable that invalidates a borrowed value.
+That weaker claim is sufficient for the protocol, since the sweep is
+what transfers and it costs no additional embedder passes.
 
 We hypothesise that the size of the lift depends on the density of the
 backbone's representation. \texttt{bge-m3} already produces a
 stronger position-agnostic recall (.305 development mean at
 $\lambda{=}0$, versus $.233$ for \texttt{nomic-embed-text}), leaving
-less room for a positional prior to add value. We do not need to
-commit to this explanation to support the methodological claim; the
-empirical fact that $\lambda^*$ shifts is sufficient. The general
-lesson is that an a priori structural prior and a learned
-representation are not independent components: the amount of
-structure the representation has already absorbed determines how much
-an explicit prior can still contribute, and that quantity is not
-knowable without measurement.
+less room for a positional prior to add value. We flag this as a
+hypothesis rather than a result: with two backbones swept and an
+exponent that Section~\ref{sec:lambda-identifiability} shows to be
+poorly identified, the evidence does not discriminate between it and
+simpler accounts. The general lesson we do draw is weaker and, we
+think, more durable: an a priori structural prior and a learned
+representation are not independent components, and how much the
+explicit prior can still contribute is not knowable without
+measurement on the deployment's own data.
 
 % ------------------------------------------------------------------
 \section{Discussion}
@@ -1460,11 +1601,18 @@ dimensions and on \emph{coherence} specifically; we do
 fluency, or relevance, where the development-side improvements
 ($+.007$, $+.011$, $+.036$ respectively) attenuate to within
 bootstrap noise on test ($-.001$, $+.001$, $+.003$).
-(iii)~The canonical $\lambda^* = 0.5$ is selected on the development
-split with \texttt{nomic-embed-text}; we do \emph{not} claim a
-universal optimum --- a sweep with \texttt{bge-m3} (567M) peaks at
-$\lambda^* = 0.25$, and reusing the nomic-tuned $\lambda = 0.5$
-on \texttt{bge-m3} underperforms its no-prior baseline
+(iii)~Imposing some positional prior is supported: $\lambda{=}0$ is
+selected in under $1\%$ of bootstrap resamples on either split. We do
+\emph{not} claim that $\lambda^{*} = 0.5$ is the optimum, universal or
+otherwise --- it wins $17.8\%$ of development resamples, three other
+grid values win comparable shares, and an unchanged configuration
+reselects it only $43.5\%$ of the time across two draws. What the
+protocol returns is the interval $[0.25, 0.6]$
+(Section~\ref{sec:lambda-identifiability}). We further claim a
+\emph{directional} backbone effect --- \texttt{bge-m3} prefers a
+weaker prior --- but not a quantified shift, and we note that a change
+of article sample under a fixed backbone produces a directional shift
+of comparable strength, so the backbone is not isolated as the cause
 (Section~\ref{sec:ablation-lead-bge}).
 (iv)~The cost figures characterise a single-machine, CPU-only,
 single-thread deployment target; we do \emph{not} claim that the same
@@ -1640,20 +1788,30 @@ widely used metrics --- among them BERTScore, whose mean
 summary-level Spearman $\rho$ it exceeds while running roughly ten
 times faster and without access to the human reference summary. In
 the same analysis the LLM-judge baseline is itself dominated by the
-fine-tuned-encoder baseline, which is a conclusion that no
-correlation-only table can reach. We are explicit that UniEval attains
+fine-tuned-encoder baseline --- a statement about the budget
+configurations of Table~\ref{tab:simplifications}, not about G-Eval
+with a frontier-grade judge, and one we make only for the
+reproduction pool defined in Section~\ref{sec:experiments}. Even so
+restricted, it is a conclusion that no correlation-only table can
+reach. We are explicit that UniEval attains
 a higher correlation than LGS on every dimension; the claim of this
 paper is a position in the cost--quality plane, not a correlation
 record.
 
 The second contribution is methodological and, we believe, transfers
-beyond this metric: an explicit structural prior and a learned
-representation are not independent components. The optimal exponent
-shifts non-trivially between sentence-embedder backbones, and
-transferring a tuned value from one backbone to another pushed the
-metric below its own no-prior baseline. A knowledge-informed metric of
-this kind should therefore be published as a \emph{design plus an
-obligatory calibration protocol}, not as a fixed numerical recipe.
+beyond this metric. Submitting the hyperparameter \emph{selection
+procedure} to the same bootstrap that validates the correlations
+separates two claims that a point estimate conflates. That the prior
+should be switched on is reproducible: the no-prior setting is
+selected in under $1\%$ of resamples. Which exponent to switch it to
+is not: the reported value wins under a fifth of resamples, and an
+unchanged configuration reselects it less than half the time across
+two draws of the same articles. A knowledge-informed metric of this
+kind should therefore be published as a \emph{design plus an
+obligatory calibration protocol} that returns an interval, not as a
+fixed numerical recipe --- and the width of that interval belongs in
+the paper, because a practitioner who copies a published exponent is
+otherwise copying one draw's answer to an underdetermined question.
 The calibration is cheap --- five $\lambda$ values on 50 articles,
 approximately five minutes on a laptop CPU thread, with no additional
 embedder passes --- and the cost of skipping it is silent
@@ -1675,7 +1833,14 @@ $\lambda$ sweep on the development and test splits,
 \texttt{make benchmark-embedder-ablation} runs the canonical
 metric with the four backbones, and \texttt{make paper}
 regenerates every \texttt{.tex} table from the corresponding
-JSON outputs. Bootstrap seeds are fixed in \texttt{pkg/eval}
+JSON outputs. The selection-uncertainty analysis of
+Section~\ref{sec:lambda-identifiability} is
+\texttt{make paper-lambdaci}, and the multiple-comparison correction
+of Section~\ref{sec:methodology-bootstrap} is applied inside
+\texttt{cmd/compare}; both read the stored per-sample scores and
+need neither Ollama nor the model server, so a reviewer can
+reproduce every statistical claim in this paper without running a
+single metric. Bootstrap seeds are fixed in \texttt{pkg/eval}
 (seed 42 for cluster bootstrap, seed-derived for paired
 comparisons). The sentence embedders are pinned by Ollama tag in
 the Makefile (\texttt{nomic-embed-text},

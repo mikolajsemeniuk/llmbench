@@ -1,0 +1,373 @@
+\begin{thebibliography}{10}
+\expandafter\ifx\csname url\endcsname\relax
+  \def\url#1{\texttt{#1}}\fi
+\expandafter\ifx\csname urlprefix\endcsname\relax\def\urlprefix{URL }\fi
+\expandafter\ifx\csname href\endcsname\relax
+  \def\href#1#2{#2} \def\path#1{#1}\fi
+
+\bibitem{papineni2002bleu}
+K.~Papineni, S.~Roukos, T.~Ward, W.-J. Zhu,
+  \href{https://aclanthology.org/P02-1040/}{{BLEU}: a method for automatic
+  evaluation of machine translation}, in: Proceedings of the 40th Annual
+  Meeting of the Association for Computational Linguistics (ACL), 2002, pp.
+  311--318.
+\newblock \href {https://doi.org/10.3115/1073083.1073135}
+  {\path{doi:10.3115/1073083.1073135}}.
+\newline\urlprefix\url{https://aclanthology.org/P02-1040/}
+
+\bibitem{lin2004rouge}
+C.-Y. Lin, \href{https://aclanthology.org/W04-1013/}{{ROUGE}: A package for
+  automatic evaluation of summaries}, in: Text Summarization Branches Out,
+  Association for Computational Linguistics, Barcelona, Spain, 2004, pp.
+  74--81.
+\newline\urlprefix\url{https://aclanthology.org/W04-1013/}
+
+\bibitem{banerjee2005meteor}
+S.~Banerjee, A.~Lavie, \href{https://aclanthology.org/W05-0909/}{{METEOR}: An
+  automatic metric for {MT} evaluation with improved correlation with human
+  judgments}, in: Proceedings of the ACL Workshop on Intrinsic and Extrinsic
+  Evaluation Measures for Machine Translation and/or Summarization, Association
+  for Computational Linguistics, Ann Arbor, Michigan, 2005, pp. 65--72.
+\newline\urlprefix\url{https://aclanthology.org/W05-0909/}
+
+\bibitem{popovic2015chrf}
+M.~Popovi{\'c}, \href{https://aclanthology.org/W15-3049/}{{chrF}: character
+  n-gram {F}-score for automatic {MT} evaluation}, in: Proceedings of the Tenth
+  Workshop on Statistical Machine Translation (WMT), 2015, pp. 392--395.
+\newblock \href {https://doi.org/10.18653/v1/W15-3049}
+  {\path{doi:10.18653/v1/W15-3049}}.
+\newline\urlprefix\url{https://aclanthology.org/W15-3049/}
+
+\bibitem{zhang2020bertscore}
+T.~Zhang, V.~Kishore, F.~Wu, K.~Q. Weinberger, Y.~Artzi,
+  \href{https://openreview.net/forum?id=SkeHuCVFDr}{{BERTScore}: Evaluating
+  text generation with {BERT}}, in: International Conference on Learning
+  Representations (ICLR), 2020.
+\newline\urlprefix\url{https://openreview.net/forum?id=SkeHuCVFDr}
+
+\bibitem{zhao2019moverscore}
+W.~Zhao, M.~Peyrard, F.~Liu, Y.~Gao, C.~M. Meyer, S.~Eger,
+  \href{https://aclanthology.org/D19-1053/}{{MoverScore}: Text generation
+  evaluating with contextualized embeddings and {Earth Mover Distance}}, in:
+  Proceedings of the 2019 Conference on Empirical Methods in Natural Language
+  Processing and the 9th International Joint Conference on Natural Language
+  Processing (EMNLP-IJCNLP), 2019, pp. 563--578.
+\newblock \href {https://doi.org/10.18653/v1/D19-1053}
+  {\path{doi:10.18653/v1/D19-1053}}.
+\newline\urlprefix\url{https://aclanthology.org/D19-1053/}
+
+\bibitem{yuan2021bartscore}
+W.~Yuan, G.~Neubig, P.~Liu,
+  \href{https://arxiv.org/abs/2106.11520}{{BARTScore}: Evaluating generated
+  text as text generation}, in: Advances in Neural Information Processing
+  Systems (NeurIPS), Vol.~34, 2021, pp. 27263--27277.
+\newline\urlprefix\url{https://arxiv.org/abs/2106.11520}
+
+\bibitem{amplayo2022smart}
+R.~K. Amplayo, P.~J. Liu, Y.~Zhao, S.~Narayan,
+  \href{https://arxiv.org/abs/2208.01030}{{SMART}: Sentences as basic units for
+  text evaluation}, arXiv preprint arXiv:2208.01030 (2022).
+\newblock \href {https://doi.org/10.48550/arXiv.2208.01030}
+  {\path{doi:10.48550/arXiv.2208.01030}}.
+\newline\urlprefix\url{https://arxiv.org/abs/2208.01030}
+
+\bibitem{fabbri2021summeval}
+A.~R. Fabbri, W.~Kry{\'s}ci{\'n}ski, B.~McCann, C.~Xiong, R.~Socher, D.~Radev,
+  \href{https://aclanthology.org/2021.tacl-1.24/}{{SummEval}: Re-evaluating
+  summarization evaluation}, Transactions of the Association for Computational
+  Linguistics 9 (2021) 391--409.
+\newblock \href {https://doi.org/10.1162/tacl_a_00373}
+  {\path{doi:10.1162/tacl_a_00373}}.
+\newline\urlprefix\url{https://aclanthology.org/2021.tacl-1.24/}
+
+\bibitem{zhong2022unieval}
+M.~Zhong, Y.~Liu, D.~Yin, Y.~Mao, Y.~Jiao, P.~Liu, C.~Zhu, H.~Ji, J.~Han,
+  \href{https://aclanthology.org/2022.emnlp-main.131/}{Towards a unified
+  multi-dimensional evaluator for text generation}, in: Proceedings of the 2022
+  Conference on Empirical Methods in Natural Language Processing (EMNLP), 2022,
+  pp. 2023--2038.
+\newblock \href {https://doi.org/10.18653/v1/2022.emnlp-main.131}
+  {\path{doi:10.18653/v1/2022.emnlp-main.131}}.
+\newline\urlprefix\url{https://aclanthology.org/2022.emnlp-main.131/}
+
+\bibitem{liu2023geval}
+Y.~Liu, D.~Iter, Y.~Xu, S.~Wang, R.~Xu, C.~Zhu,
+  \href{https://aclanthology.org/2023.emnlp-main.153/}{{G-Eval}: {NLG}
+  evaluation using {GPT-4} with better human alignment}, in: Proceedings of the
+  2023 Conference on Empirical Methods in Natural Language Processing (EMNLP),
+  2023, pp. 2511--2522.
+\newblock \href {https://doi.org/10.18653/v1/2023.emnlp-main.153}
+  {\path{doi:10.18653/v1/2023.emnlp-main.153}}.
+\newline\urlprefix\url{https://aclanthology.org/2023.emnlp-main.153/}
+
+\bibitem{ito2025reffree}
+T.~Ito, K.~van Deemter, J.~Suzuki,
+  \href{https://arxiv.org/abs/2501.12011}{Reference-free evaluation metrics for
+  text generation: A survey}, arXiv preprint arXiv:2501.12011 (2025).
+\newblock \href {https://doi.org/10.48550/arXiv.2501.12011}
+  {\path{doi:10.48550/arXiv.2501.12011}}.
+\newline\urlprefix\url{https://arxiv.org/abs/2501.12011}
+
+\bibitem{gu2024judgesurvey}
+J.~Gu, X.~Jiang, Z.~Shi, H.~Tan, X.~Zhai, C.~Xu, W.~Li, Y.~Shen, S.~Ma, H.~Liu,
+  S.~Wang, K.~Zhang, Y.~Wang, W.~Gao, L.~Ni, J.~Guo,
+  \href{https://arxiv.org/abs/2411.15594}{A survey on {LLM}-as-a-judge}, arXiv
+  preprint arXiv:2411.15594 (2024).
+\newblock \href {https://doi.org/10.48550/arXiv.2411.15594}
+  {\path{doi:10.48550/arXiv.2411.15594}}.
+\newline\urlprefix\url{https://arxiv.org/abs/2411.15594}
+
+\bibitem{kedzie2018content}
+C.~Kedzie, K.~McKeown, H.~Daum{\'e}~III,
+  \href{https://aclanthology.org/D18-1208/}{Content selection in deep learning
+  models of summarization}, in: Proceedings of the 2018 Conference on Empirical
+  Methods in Natural Language Processing (EMNLP), 2018, pp. 1818--1828.
+\newblock \href {https://doi.org/10.18653/v1/D18-1208}
+  {\path{doi:10.18653/v1/D18-1208}}.
+\newline\urlprefix\url{https://aclanthology.org/D18-1208/}
+
+\bibitem{grusky2018newsroom}
+M.~Grusky, M.~Naaman, Y.~Artzi,
+  \href{https://aclanthology.org/N18-1065/}{{Newsroom}: A dataset of 1.3
+  million summaries with diverse extractive strategies}, in: Proceedings of the
+  2018 Conference of the North American Chapter of the Association for
+  Computational Linguistics: Human Language Technologies (NAACL-HLT), 2018, pp.
+  708--719.
+\newblock \href {https://doi.org/10.18653/v1/N18-1065}
+  {\path{doi:10.18653/v1/N18-1065}}.
+\newline\urlprefix\url{https://aclanthology.org/N18-1065/}
+
+\bibitem{vaswani2017attention}
+A.~Vaswani, N.~Shazeer, N.~Parmar, J.~Uszkoreit, L.~Jones, A.~N. Gomez,
+  {\L}.~Kaiser, I.~Polosukhin,
+  \href{https://arxiv.org/abs/1706.03762}{Attention is all you need}, in:
+  Advances in Neural Information Processing Systems (NIPS), Vol.~30, 2017, pp.
+  5998--6008.
+\newline\urlprefix\url{https://arxiv.org/abs/1706.03762}
+
+\bibitem{devlin2019bert}
+J.~Devlin, M.-W. Chang, K.~Lee, K.~Toutanova,
+  \href{https://aclanthology.org/N19-1423/}{{BERT}: Pre-training of deep
+  bidirectional transformers for language understanding}, in: Proceedings of
+  the 2019 Conference of the North American Chapter of the Association for
+  Computational Linguistics: Human Language Technologies (NAACL-HLT), 2019, pp.
+  4171--4186.
+\newblock \href {https://doi.org/10.18653/v1/N19-1423}
+  {\path{doi:10.18653/v1/N19-1423}}.
+\newline\urlprefix\url{https://aclanthology.org/N19-1423/}
+
+\bibitem{lewis2020bart}
+M.~Lewis, Y.~Liu, N.~Goyal, M.~Ghazvininejad, A.~Mohamed, O.~Levy, V.~Stoyanov,
+  L.~Zettlemoyer, \href{https://aclanthology.org/2020.acl-main.703/}{{BART}:
+  Denoising sequence-to-sequence pre-training for natural language generation,
+  translation, and comprehension}, in: Proceedings of the 58th Annual Meeting
+  of the Association for Computational Linguistics (ACL), 2020, pp. 7871--7880.
+\newblock \href {https://doi.org/10.18653/v1/2020.acl-main.703}
+  {\path{doi:10.18653/v1/2020.acl-main.703}}.
+\newline\urlprefix\url{https://aclanthology.org/2020.acl-main.703/}
+
+\bibitem{sellam2020bleurt}
+T.~Sellam, D.~Das, A.~P. Parikh,
+  \href{https://aclanthology.org/2020.acl-main.704/}{{BLEURT}: Learning robust
+  metrics for text generation}, in: Proceedings of the 58th Annual Meeting of
+  the Association for Computational Linguistics (ACL), 2020, pp. 7881--7892.
+\newblock \href {https://doi.org/10.18653/v1/2020.acl-main.704}
+  {\path{doi:10.18653/v1/2020.acl-main.704}}.
+\newline\urlprefix\url{https://aclanthology.org/2020.acl-main.704/}
+
+\bibitem{rei2020comet}
+R.~Rei, C.~Stewart, A.~C. Farinha, A.~Lavie,
+  \href{https://aclanthology.org/2020.emnlp-main.213/}{{COMET}: A neural
+  framework for {MT} evaluation}, in: Proceedings of the 2020 Conference on
+  Empirical Methods in Natural Language Processing (EMNLP), 2020, pp.
+  2685--2702.
+\newblock \href {https://doi.org/10.18653/v1/2020.emnlp-main.213}
+  {\path{doi:10.18653/v1/2020.emnlp-main.213}}.
+\newline\urlprefix\url{https://aclanthology.org/2020.emnlp-main.213/}
+
+\bibitem{kryscinski2020factcc}
+W.~Kry{\'s}ci{\'n}ski, B.~McCann, C.~Xiong, R.~Socher,
+  \href{https://aclanthology.org/2020.emnlp-main.750/}{Evaluating the factual
+  consistency of abstractive text summarization}, in: Proceedings of the 2020
+  Conference on Empirical Methods in Natural Language Processing (EMNLP), 2020,
+  pp. 9332--9346.
+\newblock \href {https://doi.org/10.18653/v1/2020.emnlp-main.750}
+  {\path{doi:10.18653/v1/2020.emnlp-main.750}}.
+\newline\urlprefix\url{https://aclanthology.org/2020.emnlp-main.750/}
+
+\bibitem{laban2022summac}
+P.~Laban, T.~Schnabel, P.~N. Bennett, M.~A. Hearst,
+  \href{https://aclanthology.org/2022.tacl-1.10/}{{SummaC}: Re-visiting
+  {NLI}-based models for inconsistency detection in summarization},
+  Transactions of the Association for Computational Linguistics 10 (2022)
+  163--177.
+\newblock \href {https://doi.org/10.1162/tacl_a_00453}
+  {\path{doi:10.1162/tacl_a_00453}}.
+\newline\urlprefix\url{https://aclanthology.org/2022.tacl-1.10/}
+
+\bibitem{brown2020gpt3}
+T.~B. Brown, B.~Mann, N.~Ryder, M.~Subbiah, J.~Kaplan, P.~Dhariwal,
+  A.~Neelakantan, P.~Shyam, G.~Sastry, A.~Askell, S.~Agarwal, A.~Herbert-Voss,
+  G.~Krueger, T.~Henighan, R.~Child, A.~Ramesh, D.~M. Ziegler, J.~Wu,
+  C.~Winter, C.~Hesse, M.~Chen, E.~Sigler, M.~Litwin, S.~Gray, B.~Chess,
+  J.~Clark, C.~Berner, S.~McCandlish, A.~Radford, I.~Sutskever, D.~Amodei,
+  \href{https://arxiv.org/abs/2005.14165}{Language models are few-shot
+  learners}, in: Advances in Neural Information Processing Systems (NeurIPS),
+  Vol.~33, 2020, pp. 1877--1901.
+\newline\urlprefix\url{https://arxiv.org/abs/2005.14165}
+
+\bibitem{wei2022cot}
+J.~Wei, X.~Wang, D.~Schuurmans, M.~Bosma, B.~Ichter, F.~Xia, E.~H. Chi, Q.~V.
+  Le, D.~Zhou, \href{https://arxiv.org/abs/2201.11903}{Chain-of-thought
+  prompting elicits reasoning in large language models}, in: Advances in Neural
+  Information Processing Systems (NeurIPS), Vol.~35, 2022, pp. 24824--24837.
+\newline\urlprefix\url{https://arxiv.org/abs/2201.11903}
+
+\bibitem{balamurali2025nli}
+S.~S. Balamurali, L.~Cheng, \href{https://arxiv.org/abs/2511.07659}{Revisiting
+  {NLI}: Towards cost-effective and human-aligned metrics for evaluating {LLM}s
+  in question answering}, arXiv preprint arXiv:2511.07659 (2025).
+\newblock \href {https://doi.org/10.48550/arXiv.2511.07659}
+  {\path{doi:10.48550/arXiv.2511.07659}}.
+\newline\urlprefix\url{https://arxiv.org/abs/2511.07659}
+
+\bibitem{raffel2020t5}
+C.~Raffel, N.~Shazeer, A.~Roberts, K.~Lee, S.~Narang, M.~Matena, Y.~Zhou,
+  W.~Li, P.~J. Liu, \href{https://jmlr.org/papers/v21/20-074.html}{Exploring
+  the limits of transfer learning with a unified text-to-text transformer},
+  Journal of Machine Learning Research 21~(140) (2020) 1--67.
+\newline\urlprefix\url{https://jmlr.org/papers/v21/20-074.html}
+
+\bibitem{fu2023gptscore}
+J.~Fu, S.-K. Ng, Z.~Jiang, P.~Liu,
+  \href{https://arxiv.org/abs/2302.04166}{{GPTScore}: Evaluate as you desire},
+  arXiv preprint arXiv:2302.04166 (2023).
+\newblock \href {https://doi.org/10.48550/arXiv.2302.04166}
+  {\path{doi:10.48550/arXiv.2302.04166}}.
+\newline\urlprefix\url{https://arxiv.org/abs/2302.04166}
+
+\bibitem{liu2019bertsum}
+Y.~Liu, M.~Lapata, \href{https://aclanthology.org/D19-1387/}{Text summarization
+  with pretrained encoders}, in: Proceedings of the 2019 Conference on
+  Empirical Methods in Natural Language Processing and the 9th International
+  Joint Conference on Natural Language Processing (EMNLP-IJCNLP), 2019, pp.
+  3730--3740.
+\newblock \href {https://doi.org/10.18653/v1/D19-1387}
+  {\path{doi:10.18653/v1/D19-1387}}.
+\newline\urlprefix\url{https://aclanthology.org/D19-1387/}
+
+\bibitem{zhang2020pegasus}
+J.~Zhang, Y.~Zhao, M.~Saleh, P.~J. Liu,
+  \href{https://proceedings.mlr.press/v119/zhang20ae.html}{{PEGASUS}:
+  Pre-training with extracted gap-sentences for abstractive summarization}, in:
+  Proceedings of the 37th International Conference on Machine Learning (ICML),
+  2020, pp. 11328--11339.
+\newline\urlprefix\url{https://proceedings.mlr.press/v119/zhang20ae.html}
+
+\bibitem{see2017pointer}
+A.~See, P.~J. Liu, C.~D. Manning, \href{https://aclanthology.org/P17-1099/}{Get
+  to the point: Summarization with pointer-generator networks}, in: Proceedings
+  of the 55th Annual Meeting of the Association for Computational Linguistics
+  (ACL), 2017, pp. 1073--1083.
+\newblock \href {https://doi.org/10.18653/v1/P17-1099}
+  {\path{doi:10.18653/v1/P17-1099}}.
+\newline\urlprefix\url{https://aclanthology.org/P17-1099/}
+
+\bibitem{reimers2019sbert}
+N.~Reimers, I.~Gurevych,
+  \href{https://aclanthology.org/D19-1410/}{{Sentence-BERT}: Sentence
+  embeddings using {Siamese BERT-Networks}}, in: Proceedings of the 2019
+  Conference on Empirical Methods in Natural Language Processing and the 9th
+  International Joint Conference on Natural Language Processing (EMNLP-IJCNLP),
+  2019, pp. 3982--3992.
+\newblock \href {https://doi.org/10.18653/v1/D19-1410}
+  {\path{doi:10.18653/v1/D19-1410}}.
+\newline\urlprefix\url{https://aclanthology.org/D19-1410/}
+
+\bibitem{nussbaum2024nomic}
+Z.~Nussbaum, J.~X. Morris, B.~Duderstadt, A.~Mulyar,
+  \href{https://arxiv.org/abs/2402.01613}{Nomic embed: Training a reproducible
+  long context text embedder}, arXiv preprint arXiv:2402.01613 (2024).
+\newblock \href {https://doi.org/10.48550/arXiv.2402.01613}
+  {\path{doi:10.48550/arXiv.2402.01613}}.
+\newline\urlprefix\url{https://arxiv.org/abs/2402.01613}
+
+\bibitem{hermann2015cnndm}
+K.~M. Hermann, T.~Ko{\v{c}}isk{\'y}, E.~Grefenstette, L.~Espeholt, W.~Kay,
+  M.~Suleyman, P.~Blunsom, \href{https://arxiv.org/abs/1506.03340}{Teaching
+  machines to read and comprehend}, in: Advances in Neural Information
+  Processing Systems (NIPS), Vol.~28, 2015, pp. 1693--1701.
+\newline\urlprefix\url{https://arxiv.org/abs/1506.03340}
+
+\bibitem{chen2024bgem3}
+J.~Chen, S.~Xiao, P.~Zhang, K.~Luo, D.~Lian, Z.~Liu,
+  \href{https://aclanthology.org/2024.findings-acl.137/}{{M3-Embedding}:
+  Multi-linguality, multi-functionality, multi-granularity text embeddings
+  through self-knowledge distillation}, in: Findings of the Association for
+  Computational Linguistics: ACL 2024, 2024, pp. 2318--2335.
+\newblock \href {https://doi.org/10.18653/v1/2024.findings-acl.137}
+  {\path{doi:10.18653/v1/2024.findings-acl.137}}.
+\newline\urlprefix\url{https://aclanthology.org/2024.findings-acl.137/}
+
+\bibitem{efron1993bootstrap}
+B.~Efron, R.~J. Tibshirani, An Introduction to the Bootstrap, Vol.~57 of
+  Monographs on Statistics and Applied Probability, Chapman \& Hall/CRC, New
+  York, 1993.
+
+\bibitem{benjamini1995fdr}
+Y.~Benjamini, Y.~Hochberg, Controlling the false discovery rate: A practical
+  and powerful approach to multiple testing, Journal of the Royal Statistical
+  Society: Series B (Methodological) 57~(1) (1995) 289--300.
+\newblock \href {https://doi.org/10.1111/j.2517-6161.1995.tb02031.x}
+  {\path{doi:10.1111/j.2517-6161.1995.tb02031.x}}.
+
+\bibitem{wang2020minilm}
+W.~Wang, F.~Wei, L.~Dong, H.~Bao, N.~Yang, M.~Zhou,
+  \href{https://arxiv.org/abs/2002.10957}{{MiniLM}: Deep self-attention
+  distillation for task-agnostic compression of pre-trained transformers}, in:
+  Advances in Neural Information Processing Systems (NeurIPS), Vol.~33, 2020,
+  pp. 5776--5788.
+\newline\urlprefix\url{https://arxiv.org/abs/2002.10957}
+
+\bibitem{qwen2024}
+{Qwen Team}, {Qwen2.5}: A party of foundation models,
+  \url{https://qwenlm.github.io/blog/qwen2.5/}, blog post, accessed 2026-05-31
+  (2024).
+
+\bibitem{ollama2024}
+{Ollama}, {Ollama}: Get up and running with large language models, locally,
+  \url{https://ollama.com}, software project page, accessed 2026-05-31 (2024).
+
+\bibitem{wolf2020transformers}
+T.~Wolf, L.~Debut, V.~Sanh, J.~Chaumond, C.~Delangue, A.~Moi, P.~Cistac,
+  T.~Rault, R.~Louf, M.~Funtowicz, J.~Davison, S.~Shleifer, P.~von Platen,
+  C.~Ma, Y.~Jernite, J.~Plu, C.~Xu, T.~Le~Scao, S.~Gugger, M.~Drame, Q.~Lhoest,
+  A.~M. Rush,
+  \href{https://aclanthology.org/2020.emnlp-demos.6/}{{HuggingFace}'s
+  {Transformers}: State-of-the-art natural language processing}, in:
+  Proceedings of the 2020 Conference on Empirical Methods in Natural Language
+  Processing: System Demonstrations, 2020, pp. 38--45.
+\newblock \href {https://doi.org/10.18653/v1/2020.emnlp-demos.6}
+  {\path{doi:10.18653/v1/2020.emnlp-demos.6}}.
+\newline\urlprefix\url{https://aclanthology.org/2020.emnlp-demos.6/}
+
+\bibitem{cohan2018arxiv}
+A.~Cohan, F.~Dernoncourt, D.~S. Kim, T.~Bui, S.~Kim, W.~Chang, N.~Goharian,
+  \href{https://aclanthology.org/N18-2097/}{A discourse-aware attention model
+  for abstractive summarization of long documents}, in: Proceedings of the 2018
+  Conference of the North American Chapter of the Association for Computational
+  Linguistics: Human Language Technologies (NAACL-HLT), 2018, pp. 615--621.
+\newblock \href {https://doi.org/10.18653/v1/N18-2097}
+  {\path{doi:10.18653/v1/N18-2097}}.
+\newline\urlprefix\url{https://aclanthology.org/N18-2097/}
+
+\bibitem{gliwa2019samsum}
+B.~Gliwa, I.~Mochol, M.~Biesek, A.~Wawer,
+  \href{https://aclanthology.org/D19-5409/}{{SAMSum} corpus: A human-annotated
+  dialogue dataset for abstractive summarization}, in: Proceedings of the 2nd
+  Workshop on New Frontiers in Summarization, 2019, pp. 70--79.
+\newblock \href {https://doi.org/10.18653/v1/D19-5409}
+  {\path{doi:10.18653/v1/D19-5409}}.
+\newline\urlprefix\url{https://aclanthology.org/D19-5409/}
+
+\end{thebibliography}

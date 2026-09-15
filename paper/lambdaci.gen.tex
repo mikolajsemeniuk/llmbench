@@ -1,0 +1,49 @@
+\begin{table*}[t]
+\centering
+\caption{Selection uncertainty of the lead-bias exponent. For each (split, backbone) the whole selection procedure --- compute mean Spearman $\rho$ across the four \textsc{SummEval} dimensions at every grid value, take the argmax --- is re-run on 5000 cluster-bootstrap resamples over articles. $P(\arg\max)$ is the fraction of resamples in which that grid value is selected; a selection procedure that identifies a well-separated optimum concentrates this mass on one row. $\lambda^{\star}$ marks the argmax of the point estimate, i.e.\ the value the ablation table reports.}
+\label{tab:lambda_selection_ci}
+\small
+\linespread{1}\selectfont
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}llrrr@{}}
+\toprule
+Split / backbone & $\lambda$ & Mean $\rho$ & 95\% CI & $P(\arg\max)$ \\
+\midrule
+dev / \texttt{bge-m3} & 0 & .305 & {\scriptsize [.248, .361]} & 13.8\% \\
+ & 0.25 $\star$ & .311 & {\scriptsize [.254, .366]} & 84.2\% \\
+ & 0.5 & .302 & {\scriptsize [.247, .355]} & 2.0\% \\
+ & 1 & .281 & {\scriptsize [.231, .330]} & 0.0\% \\
+ & 2 & .249 & {\scriptsize [.204, .295]} & 0.0\% \\
+\addlinespace[3pt]
+dev / \texttt{nomic-embed-text} & 0 & .233 & {\scriptsize [.168, .299]} & 0.7\% \\
+ & 0.25 & .251 & {\scriptsize [.188, .315]} & 17.5\% \\
+ & 0.3 & .253 & {\scriptsize [.189, .315]} & 27.6\% \\
+ & 0.4 $\star$ & .253 & {\scriptsize [.189, .315]} & 20.4\% \\
+ & 0.5 & .252 & {\scriptsize [.189, .314]} & 17.8\% \\
+ & 0.6 & .250 & {\scriptsize [.188, .312]} & 9.9\% \\
+ & 0.75 & .247 & {\scriptsize [.186, .308]} & 2.6\% \\
+ & 1 & .242 & {\scriptsize [.182, .301]} & 2.9\% \\
+ & 2 & .221 & {\scriptsize [.165, .276]} & 0.5\% \\
+\addlinespace[3pt]
+test / \texttt{nomic-embed-text} & 0 & .314 & {\scriptsize [.273, .352]} & 0.3\% \\
+ & 0.25 $\star$ & .334 & {\scriptsize [.291, .371]} & 85.0\% \\
+ & 0.3 & .332 & {\scriptsize [.289, .370]} & 14.6\% \\
+ & 0.4 & .326 & {\scriptsize [.282, .365]} & 0.1\% \\
+ & 0.5 & .319 & {\scriptsize [.274, .359]} & 0.0\% \\
+ & 0.6 & .311 & {\scriptsize [.265, .352]} & 0.0\% \\
+ & 0.75 & .299 & {\scriptsize [.252, .340]} & 0.0\% \\
+ & 1 & .280 & {\scriptsize [.228, .325]} & 0.0\% \\
+ & 2 & .237 & {\scriptsize [.182, .288]} & 0.0\% \\
+\bottomrule
+\end{tabular}
+\vspace{2mm}
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+Paired comparison & $P(\lambda^{\star}_A{=}\lambda^{\star}_B)$ & $P(\lambda^{\star}_A{<}\lambda^{\star}_B)$ & $P(\lambda^{\star}_A{>}\lambda^{\star}_B)$ \\
+\midrule
+cross-backbone (shared draw) & 37.8\% & 0.4\% & 61.9\% \\
+same backbone, two independent draws (noise floor) & 43.5\% & 28.6\% & 27.9\% \\
+dev vs test, same backbone & 46.3\% & 0.9\% & 52.8\% \\
+\bottomrule
+\end{tabular}
+\end{table*}

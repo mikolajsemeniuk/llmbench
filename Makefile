@@ -44,7 +44,7 @@ benchmark-geval:
 	go run ./cmd/geval -dimension relevance   -runs $(GEVAL_RUNS) -temperature $(GEVAL_TEMPERATURE) -base-seed $(GEVAL_BASE_SEED)
 
 .PHONY: paper
-paper: paper-summary paper-system paper-ablation paper-embedders paper-comparisons paper-frontier
+paper: paper-summary paper-system paper-ablation paper-embedders paper-comparisons paper-frontier paper-lambdaci
 
 # The correlation tables carry a bootstrap CI in every cell. Emitting
 # Spearman and Kendall side by side makes the table roughly twice as wide
@@ -77,6 +77,19 @@ paper-comparisons:
 .PHONY: paper-frontier
 paper-frontier:
 	go run ./cmd/frontier -input output -output paper/frontier.gen.tex
+
+# paper-lambdaci quantifies how much of the reported lambda* is signal
+# and how much is the luck of drawing 50 development articles. It
+# re-runs the whole selection procedure on each cluster-bootstrap
+# resample and reports P(argmax) per grid value, plus paired
+# cross-backbone and same-backbone controls. Reads the per-sample
+# scores already in ablation/ -- no embedder passes, so it is cheap to
+# re-run after any change to the sweep.
+.PHONY: paper-lambdaci
+paper-lambdaci:
+	go run ./cmd/lambdaci -input ablation -bootstrap 5000 \
+		-backbone-a $(LGS_EMBED_MODEL) -backbone-b bge-m3 \
+		-output paper/lambdaci.gen.tex
 
 # Canonical hyperparameters. λ is the lead-bias decay (selected on
 # the dev split — see benchmark-ablation-lead). LGS_EMBED_MODEL is
