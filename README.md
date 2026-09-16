@@ -28,7 +28,7 @@ Controls on the grid common to all configurations: a fixed configuration compare
 
 ## LGS — positioning
 
-LGS is reference-free and runs on a small Ollama embedder (`nomic-embed-text`, 137M params). It is **not** intended to beat UniEval — UniEval still wins on raw correlation. The claim is that LGS:
+LGS is reference-free and runs on a small Ollama embedder (`nomic-embed-text`, 137M params). It is **not** intended to beat UniEval — UniEval still wins on raw correlation. Within the pool of *learned/embedding* metrics, LGS:
 
 - Beats **EmbedScorer** (the whole-text cosine baseline using the *same* embedder) significantly on coh / con / flu (Δρ = +.117 / +.171 / +.116, p<.001), tie on rel — this isolates the contribution of sentence-level grounding + lead-bias prior over a plain whole-text cosine.
 - Beats **SMART-Model** significantly on coh / con / flu (Δρ = +.068 / +.134 / +.089, p ≤ .005), tie on rel — same family (sentence-level + embedder), so this isolates the value of reference-freeness + lead-bias prior.
@@ -39,7 +39,9 @@ LGS is reference-free and runs on a small Ollama embedder (`nomic-embed-text`, 1
 - All eight significant comparisons above survive Benjamini-Hochberg correction over the 24 (baseline, dimension) cells of `paper/comparisons.gen.tex`; the weakest survivor is coherence vs SMART-Model at q=.010. `cmd/compare` reports both raw p and adjusted q.
 - **Robust to embedder choice** (`paper/embedders.gen.tex`). The canonical metric is run with four sentence-embedder backbones spanning a ~24× parameter range — `all-minilm` (23M), `nomic-embed-text` (137M, headline), `mxbai-embed-large` (335M), `bge-m3` (567M). Mean Spearman ρ stays in [.284, .312]; per-dimension profile shifts (nomic dominates coh / rel, others con / flu) but the metric design is not specific to one backbone.
 
-The paper's contribution is "a reference-free metric you can deploy with a single Ollama model, with one tunable hyperparameter (lead-bias λ) selected via held-out methodology that prior metric papers skip" — efficiency, reference-freeness, methodological honesty, and an empirically-validated structural prior.
+**But this comparison is confounded, and the honest picture is weaker.** SummEval's mean-of-dimension correlation is heavily driven by *extractiveness* — how much a candidate copies verbatim from the source — and a four-line lead-window heuristic with no model at all (`cmd/leadbaseline`) beats LGS on raw mean Spearman ρ at ~950× lower cost (`paper/frontier.gen.tex`, `paper/ablation.gen.tex` §Pareto). Controlling for extractiveness (`cmd/confound`, `paper/confound.gen.tex`) narrows this: on the confound-partialled axis LGS is not statistically distinguishable from the cheapest lead baseline (Lead-3, Δρ=+.045, p=.064) and ties BERTScore (Δρ=−.043, p=.074), though it does show a marginal edge over Lead-5 (Δρ=+.044, p=.033). A Friedman test across the full 17-metric pool (14 published + 3 lead controls), blocked by article rather than by dimension for statistical power, confirms this is not a fluke of one comparison (`cmd/friedman`, `paper/friedman.gen.tex`): LGS is significantly behind UniEval on every dimension and not reliably ahead of the lead-window controls on consistency or fluency. See `improvements.txt` for the full account and `paper/main.tex` §"Pareto analysis" / §"Extractiveness confound" for the reconciled claims.
+
+The paper's contribution is a reference-free metric with one tunable hyperparameter (lead-bias λ) selected via held-out methodology that prior metric papers skip — but the lead-bias prior itself contributes only +.005 mean ρ held-out and its exponent is not reliably identifiable from a 50-article split (see λ\* discussion above and `paper/splitrobust.gen.tex`), so the paper's central empirical claim is methodological honesty about a confounded benchmark, not a metric that is unambiguously better than the cheapest available baseline.
 
 ## Reproducing the paper
 
@@ -76,6 +78,10 @@ cat paper/ablation.gen.tex paper/embedders.gen.tex
 #    neither Ollama nor the model server:
 make paper-lambdaci                 # λ selection uncertainty (~3 min)
 make paper-comparisons              # paired bootstrap + BH-FDR (~2 min)
+make paper-confound                 # extractiveness confound (~2 min)
+make benchmark-lead                 # lead-window controls (~1 min)
+make paper-friedman                 # Friedman + Wilcoxon over the full pool (~1 min)
+make paper-splitrobust              # λ* random-split robustness (~1 min)
 ```
 
 The canonical hyperparameters are encoded as Make variables: `LGS_LAMBDA=0.5` (dev-selected) and `LGS_EMBED_MODEL=nomic-embed-text` (the headline embedder). To rerun the canonical with a different choice — for instance, λ=0.25 or a larger embedder:

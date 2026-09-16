@@ -44,7 +44,7 @@ benchmark-geval:
 	go run ./cmd/geval -dimension relevance   -runs $(GEVAL_RUNS) -temperature $(GEVAL_TEMPERATURE) -base-seed $(GEVAL_BASE_SEED)
 
 .PHONY: paper
-paper: paper-summary paper-system paper-ablation paper-embedders paper-comparisons paper-frontier paper-lambdaci
+paper: paper-summary paper-system paper-ablation paper-embedders paper-comparisons paper-frontier paper-lambdaci paper-friedman paper-splitrobust paper-lambdadim
 
 # The correlation tables carry a bootstrap CI in every cell. Emitting
 # Spearman and Kendall side by side makes the table roughly twice as wide
@@ -101,6 +101,39 @@ paper-lambdaci:
 paper-confound:
 	go run ./cmd/confound -input output -bootstrap 2000 \
 		-ours lgs -output paper/confound.gen.tex
+
+# Omnibus + post-hoc significance testing across the whole metric
+# pool (reviewers #1 #5 and #5 #9): Friedman test blocked by article
+# (100 blocks, not the 4 dimensions -- see cmd/friedman for why),
+# Wilcoxon signed-rank of LGS against every other metric with
+# Holm correction, and the Nemenyi critical difference on average
+# rank. Reads output/*.json only, no Ollama or model server needed.
+.PHONY: paper-friedman
+paper-friedman:
+	go run ./cmd/friedman \
+		-metrics bleu,rouge,chrf,meteor,smartstring,embedscorer,bertscore,moverscore,smartmodel,bartscore,gptscore,unieval,geval,lgs,lead3sent,lead5sent,lead3whole \
+		-output paper/friedman.gen.tex
+
+# Random-split robustness of the lambda* selection protocol
+# (reviewer #3 m1): the manuscript selects lambda* on the JSONL-order
+# 50/50 dev/test split; this re-runs the whole selection procedure on
+# thousands of random 50/50 article splits by merging the per-sample
+# scores already in ablation/lgs_recall_*.json and
+# ablation/lgs_lead_{dev,test}_l*.json, so it needs neither Ollama nor
+# the model server. Depends on benchmark-ablation-recall,
+# benchmark-ablation-lead and benchmark-ablation-lead-finer(-test)
+# having been run at least once.
+.PHONY: paper-splitrobust
+paper-splitrobust:
+	go run ./cmd/splitrobust -input ablation -splits 2000 -output paper/splitrobust.gen.tex
+
+# Per-dimension lead-bias exponent decision matrix (reviewer #5 #7):
+# the ablation table selects one lambda* by mean rho across all four
+# dimensions; this selects the dev-argmax lambda separately per
+# dimension and verifies it on test. Reads ablation/*.json only.
+.PHONY: paper-lambdadim
+paper-lambdadim:
+	go run ./cmd/lambdadim -input ablation -output paper/lambdadim.gen.tex
 
 # Lead-window controls. No embedder, no model, no hyperparameter: keep
 # the first k source sentences and match them with ROUGE-L. `sent`

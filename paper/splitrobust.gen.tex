@@ -1,0 +1,25 @@
+\begin{table}[t]
+\centering
+\caption{Robustness of the $\lambda^{\star}$ selection protocol to the choice of dev/test split. The manuscript uses the JSONL-emission-order split (first 50 documents = dev, last 50 = test); here the entire selection procedure --- sweep the grid on a dev half, take the argmax, score it on the complementary test half --- is re-run on 2000 independent random 50/50 article splits. $P(\mathrm{win})$ is the fraction of random splits whose dev-argmax lands on that grid value. The bottom row summarises the test-side mean $\rho$ the protocol would have reported under each random split's own winner, against the JSONL split's actual test result.}
+\label{tab:splitrobust}
+\small
+\linespread{1}\selectfont
+\begin{tabular}{@{}lr@{}}
+\toprule
+$\lambda$ & $P(\mathrm{win}\mid\text{random split})$ \\
+\midrule
+0 & 0.0\% \\
+0.25 & 52.1\% \\
+0.3 & 42.1\% \\
+0.4 $\star$ & 5.6\% \\
+0.5 & 0.1\% \\
+0.6 & 0.0\% \\
+0.75 & 0.0\% \\
+1 & 0.0\% \\
+2 & 0.0\% \\
+\midrule
+\multicolumn{2}{@{}l}{$P(\text{random winner}=\lambda^{\star}_{\mathrm{JSONL}}{=}.4000)$: 5.6\%} \\
+\multicolumn{2}{@{}l}{Test $\rho$ at random winner: mean .2900, sd .0198 (JSONL test $\rho$: .3262)} \\
+\bottomrule
+\end{tabular}
+\end{table}

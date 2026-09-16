@@ -1,0 +1,108 @@
+\begin{table*}[t]
+\centering
+\caption{Friedman test (blocks = 100 \textsc{SummEval} articles, treatments = metrics, response = each metric's within-article Spearman correlation with human ratings) and Wilcoxon signed-rank post-hoc comparisons of LGS against every other metric, Holm-corrected across the family of comparisons within each dimension. $\chi^2_F$ is the Friedman statistic (df in parentheses); the omnibus test rejects the null of equal average rank across all four dimensions. The Nemenyi critical difference (CD, $\alpha=0.05$) is the minimum gap in average rank for two metrics to be called significantly different without a paired test. Wilcoxon columns report LGS's average-rank gap against the listed baseline and the Holm-adjusted $p$-value; \textbf{bold} survives $p_{\mathrm{Holm}}<0.05$.}
+\label{tab:friedman}
+\small
+\linespread{1}\selectfont
+\setlength{\tabcolsep}{4pt}
+\subsubsection*{Coherence: $\chi^2_F(16){=}346.3$, $p<.001$, CD${=}2.47$}
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+Metric & Mean $\rho$ & Avg.\ rank & $z$ (vs LGS) & $p_{\mathrm{Holm}}$ \\
+\midrule
+UniEval & 0.552 & 14.38 & -5.17 & \textbf{0.000} \\
+BERTScore & 0.358 & 11.68 & -0.09 & 1.000 \\
+\textbf{LGS} & 0.370 & 11.50 & --- & --- \\
+G-Eval & 0.379 & 11.14 & +0.08 & 1.000 \\
+GPTScore & 0.355 & 10.90 & +0.97 & 0.994 \\
+SMART-Model & 0.279 & 9.79 & +3.01 & \textbf{0.010} \\
+EmbedScorer & 0.239 & 9.21 & +3.74 & \textbf{0.001} \\
+Lead-5 (sent) & 0.232 & 8.54 & +5.33 & \textbf{0.000} \\
+Lead-3 (sent) & 0.228 & 8.35 & +6.11 & \textbf{0.000} \\
+Lead-3 (whole) & 0.228 & 8.27 & +5.61 & \textbf{0.000} \\
+ROUGE-L & 0.179 & 8.20 & +4.17 & \textbf{0.000} \\
+BARTScore & 0.206 & 8.08 & +4.39 & \textbf{0.000} \\
+METEOR & 0.163 & 7.95 & +4.33 & \textbf{0.000} \\
+ChrF & 0.158 & 7.17 & +5.29 & \textbf{0.000} \\
+MoverScore & 0.090 & 6.60 & +5.76 & \textbf{0.000} \\
+BLEU & 0.081 & 6.51 & +5.84 & \textbf{0.000} \\
+SMART-String & -0.014 & 4.75 & +6.95 & \textbf{0.000} \\
+\bottomrule
+\end{tabular}
+\vspace{2mm}
+\subsubsection*{Consistency: $\chi^2_F(16){=}370.0$, $p<.001$, CD${=}2.47$}
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+Metric & Mean $\rho$ & Avg.\ rank & $z$ (vs LGS) & $p_{\mathrm{Holm}}$ \\
+\midrule
+G-Eval & 0.492 & 14.49 & -6.78 & \textbf{0.000} \\
+Lead-5 (sent) & 0.361 & 12.29 & -3.84 & \textbf{0.001} \\
+UniEval & 0.369 & 11.73 & -3.47 & \textbf{0.003} \\
+Lead-3 (sent) & 0.330 & 11.31 & -2.28 & 0.067 \\
+Lead-3 (whole) & 0.310 & 10.51 & -1.31 & 0.383 \\
+\textbf{LGS} & 0.267 & 10.02 & --- & --- \\
+GPTScore & 0.239 & 9.55 & +0.88 & 0.383 \\
+ChrF & 0.189 & 8.54 & +2.42 & 0.062 \\
+BARTScore & 0.172 & 8.02 & +3.05 & \textbf{0.011} \\
+ROUGE-L & 0.144 & 7.92 & +3.72 & \textbf{0.001} \\
+BLEU & 0.138 & 7.79 & +3.91 & \textbf{0.001} \\
+SMART-String & 0.112 & 7.41 & +4.33 & \textbf{0.000} \\
+SMART-Model & 0.095 & 7.35 & +5.56 & \textbf{0.000} \\
+METEOR & 0.095 & 7.29 & +5.20 & \textbf{0.000} \\
+BERTScore & 0.099 & 7.21 & +4.73 & \textbf{0.000} \\
+EmbedScorer & 0.049 & 6.50 & +5.77 & \textbf{0.000} \\
+MoverScore & -0.041 & 5.07 & +6.66 & \textbf{0.000} \\
+\bottomrule
+\end{tabular}
+\vspace{2mm}
+\subsubsection*{Fluency: $\chi^2_F(16){=}229.8$, $p<.001$, CD${=}2.47$}
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+Metric & Mean $\rho$ & Avg.\ rank & $z$ (vs LGS) & $p_{\mathrm{Holm}}$ \\
+\midrule
+UniEval & 0.411 & 13.59 & -5.96 & \textbf{0.000} \\
+Lead-5 (sent) & 0.292 & 11.86 & -2.83 & \textbf{0.033} \\
+Lead-3 (sent) & 0.259 & 11.02 & -1.33 & 0.553 \\
+\textbf{LGS} & 0.218 & 10.35 & --- & --- \\
+GPTScore & 0.216 & 9.93 & -0.11 & 1.000 \\
+Lead-3 (whole) & 0.222 & 9.71 & +0.26 & 1.000 \\
+BERTScore & 0.167 & 9.19 & +1.80 & 0.286 \\
+ROUGE-L & 0.158 & 9.03 & +2.20 & 0.139 \\
+ChrF & 0.149 & 8.45 & +2.47 & 0.082 \\
+SMART-Model & 0.114 & 8.18 & +4.01 & \textbf{0.001} \\
+BARTScore & 0.122 & 8.02 & +2.93 & \textbf{0.027} \\
+BLEU & 0.112 & 7.86 & +3.25 & \textbf{0.012} \\
+METEOR & 0.119 & 7.83 & +3.22 & \textbf{0.012} \\
+G-Eval & 0.102 & 7.53 & +4.19 & \textbf{0.000} \\
+SMART-String & 0.109 & 7.49 & +3.96 & \textbf{0.001} \\
+EmbedScorer & 0.048 & 6.99 & +4.92 & \textbf{0.000} \\
+MoverScore & 0.006 & 6.00 & +5.54 & \textbf{0.000} \\
+\bottomrule
+\end{tabular}
+\vspace{2mm}
+\subsubsection*{Relevance: $\chi^2_F(16){=}189.1$, $p<.001$, CD${=}2.47$}
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+Metric & Mean $\rho$ & Avg.\ rank & $z$ (vs LGS) & $p_{\mathrm{Holm}}$ \\
+\midrule
+UniEval & 0.420 & 12.32 & -4.08 & \textbf{0.001} \\
+G-Eval & 0.410 & 12.06 & -4.30 & \textbf{0.000} \\
+BERTScore & 0.311 & 10.49 & -1.12 & 1.000 \\
+BARTScore & 0.315 & 10.42 & -1.18 & 1.000 \\
+ChrF & 0.294 & 10.20 & -0.55 & 1.000 \\
+\textbf{LGS} & 0.276 & 9.64 & --- & --- \\
+EmbedScorer & 0.254 & 9.39 & -0.15 & 1.000 \\
+Lead-3 (whole) & 0.254 & 8.96 & +1.15 & 1.000 \\
+SMART-Model & 0.244 & 8.89 & +0.85 & 1.000 \\
+Lead-3 (sent) & 0.226 & 8.31 & +2.71 & 0.074 \\
+ROUGE-L & 0.186 & 8.24 & +2.04 & 0.287 \\
+GPTScore & 0.213 & 8.21 & +2.31 & 0.168 \\
+Lead-5 (sent) & 0.218 & 8.20 & +2.66 & 0.079 \\
+BLEU & 0.145 & 7.61 & +2.61 & 0.080 \\
+METEOR & 0.143 & 7.47 & +2.90 & \textbf{0.045} \\
+SMART-String & 0.104 & 6.50 & +4.07 & \textbf{0.001} \\
+MoverScore & 0.053 & 6.04 & +4.49 & \textbf{0.000} \\
+\bottomrule
+\end{tabular}
+\vspace{2mm}
+\end{table*}

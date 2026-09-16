@@ -1,0 +1,17 @@
+\begin{table}[t]
+\centering
+\caption{Per-dimension lead-bias exponent decision matrix. The ablation table selects one $\lambda^{\star}$ by mean Spearman $\rho$ across all four dimensions; this table instead selects the dev-argmax $\lambda$ separately for each dimension and reports it on the held-out test split, alongside the no-prior ($\lambda{=}0$) reference. A practitioner tuning LGS for a single dimension should read this table, not the aggregate one.}
+\label{tab:lambdadim}
+\small
+\linespread{1}\selectfont
+\begin{tabular}{@{}lrrrrr@{}}
+\toprule
+Dimension & $\hat\lambda$ & Dev $\rho$ & Test $\rho$ & $\lambda{=}0$ dev & $\lambda{=}0$ test \\
+\midrule
+Coherence & 0.4 & .3633 & .4321 & .3418 & .4146 \\
+Consistency & 0.25 & .1968 & .2950 & .1801 & .2717 \\
+Fluency & 0.3 & .1558 & .1779 & .1388 & .1611 \\
+Relevance & 2 & .3223 & .3363 & .2711 & .4105 \\
+\bottomrule
+\end{tabular}
+\end{table}
