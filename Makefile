@@ -91,6 +91,41 @@ paper-lambdaci:
 		-backbone-a $(LGS_EMBED_MODEL) -backbone-b bge-m3 \
 		-output paper/lambdaci.gen.tex
 
+# paper-confound reports how much of each metric's correlation with
+# human ratings is explained by plain extractiveness -- the fraction of
+# candidate bigrams copied verbatim out of the source. Motivated by the
+# lead-window controls below: they rival far more expensive metrics on
+# raw correlation, and this target is what separates "the cheap
+# baseline is as good" from "the benchmark rewards copying".
+.PHONY: paper-confound
+paper-confound:
+	go run ./cmd/confound -input output -bootstrap 2000 \
+		-ours lgs -output paper/confound.gen.tex
+
+# Lead-window controls. No embedder, no model, no hyperparameter: keep
+# the first k source sentences and match them with ROUGE-L. `sent`
+# reuses LGS's own mean-of-max aggregation so the comparison isolates
+# the embedder; `whole` is the cruder single-block variant. These are
+# the baselines a reference-free lead-biased metric has to beat, and
+# they are CPU-only -- neither Ollama nor the model server is needed.
+.PHONY: benchmark-lead
+benchmark-lead:
+	go run ./cmd/leadbaseline -lead-k 3 -mode sent  -output output/lead3sent.json
+	go run ./cmd/leadbaseline -lead-k 5 -mode sent  -output output/lead5sent.json
+	go run ./cmd/leadbaseline -lead-k 3 -mode whole -output output/lead3whole.json
+
+.PHONY: benchmark-lead-sweep
+benchmark-lead-sweep:
+	@mkdir -p ablation
+	go run ./cmd/leadbaseline -lead-k 1 -mode sent  -bootstrap 0 -output ablation/lead1sent.json
+	go run ./cmd/leadbaseline -lead-k 2 -mode sent  -bootstrap 0 -output ablation/lead2sent.json
+	go run ./cmd/leadbaseline -lead-k 3 -mode sent  -bootstrap 0 -output ablation/lead3sent.json
+	go run ./cmd/leadbaseline -lead-k 5 -mode sent  -bootstrap 0 -output ablation/lead5sent.json
+	go run ./cmd/leadbaseline -lead-k 1 -mode whole -bootstrap 0 -output ablation/lead1whole.json
+	go run ./cmd/leadbaseline -lead-k 2 -mode whole -bootstrap 0 -output ablation/lead2whole.json
+	go run ./cmd/leadbaseline -lead-k 3 -mode whole -bootstrap 0 -output ablation/lead3whole.json
+	go run ./cmd/leadbaseline -lead-k 5 -mode whole -bootstrap 0 -output ablation/lead5whole.json
+
 # Canonical hyperparameters. λ is the lead-bias decay (selected on
 # the dev split — see benchmark-ablation-lead). LGS_EMBED_MODEL is
 # the canonical sentence-embedder used for the headline run; the

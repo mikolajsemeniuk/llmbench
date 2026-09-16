@@ -1,0 +1,33 @@
+\begin{table*}[t]
+\centering
+\caption{Extractiveness confound on \textsc{SummEval}. The copy rate of a candidate is the fraction of its token 2-grams that occur in the source; it requires no model, no reference and no hyperparameter. $\bar{\rho}$ is the mean summary-level Spearman correlation with human ratings across the four dimensions, $\bar{\rho}_{\mathrm{part}}$ the same quantity with the copy rate partialled out of both sides, and $\rho_{\mathrm{copy}}$ the correlation between the metric and the copy rate. Brackets give the 95\% cluster-bootstrap interval over articles. The final row is the copy rate scored as if it were a metric: on the raw axis it outranks most of the pool. Pareto status is given on both axes.}
+\label{tab:confound}
+\small
+\linespread{1}\selectfont
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lrrrrl@{}}
+\toprule
+Metric & ms/sample & $\bar{\rho}$ & $\bar{\rho}_{\mathrm{part}}$ & $\rho_{\mathrm{copy}}$ & Pareto \\
+\midrule
+UniEval & 430.31 & .470 & .424 {\scriptsize [.397, .451]} & .396 & raw, partial \\
+G-Eval & 13593.99 & .359 & .318 {\scriptsize [.286, .349]} & .404 & --- \\
+BERTScore & 567.66 & .250 & .241 {\scriptsize [.194, .283]} & .058 & --- \\
+\textbf{LGS} & 57.01 & .284 & .198 {\scriptsize [.158, .238]} & .386 & partial \\
+SMART-Model & 890.02 & .202 & .182 {\scriptsize [.140, .225]} & .096 & --- \\
+GPTScore & 90.53 & .264 & .165 {\scriptsize [.124, .205]} & .433 & --- \\
+METEOR & 0.98 & .162 & .165 {\scriptsize [.123, .205]} & .013 & partial \\
+EmbedScorer & 339.33 & .174 & .164 {\scriptsize [.121, .207]} & .052 & --- \\
+Lead-5 (mean-of-max) & 0.06 & .296 & .154 {\scriptsize [.115, .192]} & .684 & raw, partial \\
+Lead-3 (mean-of-max) & 0.04 & .284 & .154 {\scriptsize [.113, .195]} & .607 & raw, partial \\
+Lead-3 (whole block) & 0.02 & .267 & .144 {\scriptsize [.104, .185]} & .550 & raw, partial \\
+BARTScore & 523.46 & .166 & .136 {\scriptsize [.092, .181]} & .128 & --- \\
+ChrF & 2.77 & .184 & .128 {\scriptsize [.083, .170]} & .232 & --- \\
+ROUGE-L & 0.12 & .153 & .127 {\scriptsize [.077, .172]} & .115 & --- \\
+BLEU & 0.57 & .128 & .091 {\scriptsize [.044, .136]} & .149 & --- \\
+MoverScore & 1276.58 & .060 & .091 {\scriptsize [.045, .137]} & -.102 & --- \\
+SMART-String & 0.52 & .084 & .081 {\scriptsize [.036, .125]} & .025 & --- \\
+\midrule
+Copy rate (no metric) & 0.00 & .275 & .000 & 1.000 & \emph{diagnostic} \\
+\bottomrule
+\end{tabular}
+\end{table*}
