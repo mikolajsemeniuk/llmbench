@@ -14,6 +14,8 @@ Endpoints:
     POST /unieval        — T5-based Boolean QA evaluator (canonical-style prompts)
     POST /gptscore       — generative log-probability scoring (GPT-2)
     POST /bartscore      — canonical BARTScore via facebook/bart-large-cnn
+    POST /nli            — NLI entailment probability for a (premise, hypothesis) pair
+    POST /fluency        — candidate-only GPT-2 perplexity score (no source/reference)
     GET  /health         — health check + loaded models
 """
 
@@ -335,6 +337,58 @@ def gptscore():
     return jsonify({"score": round(score, 6)})
 
 
+# ── Fluency (unconditioned perplexity) ──────────────────────────────────
+#
+# Candidate-only GPT-2 log-likelihood, with no source or reference in
+# the context at all. Unlike GPTScore (candidate conditioned on a
+# reference) this never looks at the source, so it structurally cannot
+# reward copying -- it can only reward text that reads like fluent
+# English. Reuses GPTScore's model instance; only the scoring function
+# differs (no conditioning prefix).
+
+
+def _fluency_perplexity(candidate, tokenizer, model):
+    inputs = tokenizer(
+        candidate, return_tensors="pt", truncation=True, max_length=1024
+    ).to(DEVICE)
+    input_ids = inputs["input_ids"]
+    if input_ids.shape[1] < 2:
+        return 0.0
+
+    with torch.no_grad():
+        outputs = model(input_ids, labels=input_ids)
+        logits = outputs.logits
+        log_probs = torch.log_softmax(logits, dim=-1)
+
+        total_log_prob = 0.0
+        n_tokens = 0
+        for i in range(1, input_ids.shape[1]):
+            token_id = input_ids[0, i].item()
+            total_log_prob += log_probs[0, i - 1, token_id].item()
+            n_tokens += 1
+
+    if n_tokens == 0:
+        return 0.0
+
+    avg_log_prob = total_log_prob / n_tokens
+    # Same sigmoid scale as GPTScore, for a score in [0, 1] comparable
+    # in range even though the underlying quantity (unconditioned vs.
+    # reference-conditioned log-likelihood) differs.
+    return 1.0 / (1.0 + math.exp(-(avg_log_prob + 3)))
+
+
+@app.route("/fluency", methods=["POST"])
+def fluency():
+    data = request.json
+    cand = data.get("candidate", "")
+    if not cand:
+        return jsonify({"error": "candidate required"}), 400
+
+    tokenizer, model = get_gptscore_model()
+    score = _fluency_perplexity(cand, tokenizer, model)
+    return jsonify({"score": round(score, 6)})
+
+
 # ── BARTScore ──────────────────────────────────────────────────────────
 
 
@@ -406,6 +460,73 @@ def bartscore():
     return jsonify({"score": round(score, 6)})
 
 
+# ── NLI (go/no-go probe for the entailment signal class) ────────────────
+#
+# Motivated by improvements.txt section 6: LGS's cosine-similarity
+# grounding is not entailment, and consistency (LGS's worst dimension)
+# is the one that would benefit most from a signal that actually
+# penalises unsupported/contradicted claims rather than paraphrase
+# distance. This endpoint scores one (premise, hypothesis) pair with a
+# pretrained NLI classifier and returns the entailment class
+# probability. It deliberately reuses the reference/candidate request
+# shape (reference=premise/source sentence, candidate=hypothesis/
+# candidate sentence) so the existing Go ModelServer client needs no
+# new wire format.
+
+NLI_MODEL = os.environ.get("NLI_MODEL", "cross-encoder/nli-deberta-v3-small")
+
+
+def get_nli_model():
+    if "nli_model" not in _cache:
+        logger.info(f"Loading NLI model {NLI_MODEL}...")
+        from transformers import AutoModelForSequenceClassification, AutoTokenizer
+
+        _cache["nli_tokenizer"] = AutoTokenizer.from_pretrained(NLI_MODEL)
+        model = AutoModelForSequenceClassification.from_pretrained(NLI_MODEL).to(
+            DEVICE
+        )
+        model.eval()
+        _cache["nli_model"] = model
+
+        # Don't hardcode the entailment class index: NLI checkpoints
+        # order {entailment, neutral, contradiction} inconsistently.
+        # Read it from the model's own label map.
+        label2id = {v.lower(): k for k, v in model.config.id2label.items()}
+        if "entailment" not in label2id:
+            raise RuntimeError(
+                f"NLI model {NLI_MODEL} has no 'entailment' label in "
+                f"id2label={model.config.id2label}"
+            )
+        _cache["nli_entail_idx"] = label2id["entailment"]
+        logger.info(
+            f"NLI model loaded (entailment index={_cache['nli_entail_idx']})."
+        )
+    return _cache["nli_tokenizer"], _cache["nli_model"], _cache["nli_entail_idx"]
+
+
+def _nli_entailment_prob(premise, hypothesis, tokenizer, model, entail_idx):
+    inputs = tokenizer(
+        premise, hypothesis, return_tensors="pt", truncation=True, max_length=256
+    ).to(DEVICE)
+    with torch.no_grad():
+        logits = model(**inputs).logits[0]
+    probs = torch.softmax(logits, dim=-1)
+    return float(probs[entail_idx].item())
+
+
+@app.route("/nli", methods=["POST"])
+def nli():
+    data = request.json
+    premise = data.get("reference", "")
+    hypothesis = data.get("candidate", "")
+    if not premise or not hypothesis:
+        return jsonify({"error": "reference (premise) and candidate (hypothesis) required"}), 400
+
+    tokenizer, model, entail_idx = get_nli_model()
+    score = _nli_entailment_prob(premise, hypothesis, tokenizer, model, entail_idx)
+    return jsonify({"score": round(score, 6)})
+
+
 # ── Health ─────────────────────────────────────────────────────────────
 
 
@@ -425,6 +546,8 @@ def health():
                 "unieval",
                 "gptscore",
                 "bartscore",
+                "nli",
+                "fluency",
             ],
         }
     )
@@ -449,6 +572,7 @@ def warmup():
         ("UniEval", get_unieval_model),
         ("GPTScore", get_gptscore_model),
         ("BARTScore", get_bartscore_model),
+        ("NLI", get_nli_model),
     ]
 
     for name, fn in loaders:

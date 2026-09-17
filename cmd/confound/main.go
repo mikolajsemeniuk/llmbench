@@ -57,6 +57,8 @@ var (
 	bootstrap int
 	seed      uint64
 	oursLabel string
+
+	perDimension bool
 )
 
 var dimensions = []string{"coherence", "consistency", "fluency", "relevance"}
@@ -68,6 +70,7 @@ func main() {
 	flag.IntVar(&bootstrap, "bootstrap", 2000, "cluster-bootstrap resamples over articles (0 = point estimates only)")
 	flag.Uint64Var(&seed, "seed", 42, "random seed")
 	flag.StringVar(&oursLabel, "ours", "lgs", "metric base name to mark as ours")
+	flag.BoolVar(&perDimension, "per-dimension", false, "also print each metric's raw/partial rho broken down by dimension (console only)")
 	flag.Parse()
 
 	if ngram < 1 {
@@ -110,6 +113,9 @@ func main() {
 	sort.Slice(rows, func(i, j int) bool { return rows[i].PartialMean > rows[j].PartialMean })
 
 	fmt.Print(renderConsole(rows))
+	if perDimension {
+		fmt.Print(renderPerDimension(rows))
+	}
 	if err := writeFile(outputTex, renderLatex(rows)); err != nil {
 		log.Fatal(err)
 	}
@@ -450,6 +456,9 @@ var displayNames = map[string]string{
 	"gptscore": "GPTScore", "unieval": "UniEval", "geval": "G-Eval",
 	"lgs": "LGS", "lead3sent": "Lead-3 (mean-of-max)",
 	"lead5sent": "Lead-5 (mean-of-max)", "lead3whole": "Lead-3 (whole block)",
+	"nli":        "NLI-small (entailment, mean-of-max)",
+	"nlilarge":   "NLI-large-anli (entailment, mean-of-max)",
+	"fluencyppl": "Fluency (unconditioned GPT-2 PPL)",
 }
 
 func displayName(base string) string {
@@ -488,6 +497,30 @@ func renderConsole(rows []row) string {
 	}
 	fmt.Fprintln(&b, "\n* = ours   † = the confound itself, not a metric")
 	fmt.Fprintln(&b, "drop = how much of the raw correlation was extractiveness")
+	return b.String()
+}
+
+// renderPerDimension prints raw/partial rho broken down by dimension
+// (dimensions order: coherence, consistency, fluency, relevance),
+// used to decide the entailment go/no-go: the aggregate mean the main
+// table sorts on can hide a per-dimension win, and the consistency
+// column specifically is what improvements.txt section 6 asks about.
+func renderPerDimension(rows []row) string {
+	var b strings.Builder
+	fmt.Fprintln(&b, "\nPer-dimension raw / partial rho (partial = copy-rate partialled out)")
+	fmt.Fprintf(&b, "%-22s", "Metric")
+	for _, d := range dimensions {
+		fmt.Fprintf(&b, " %18s", d)
+	}
+	fmt.Fprintln(&b)
+	fmt.Fprintln(&b, strings.Repeat("─", 22+19*len(dimensions)))
+	for _, r := range rows {
+		fmt.Fprintf(&b, "%-22s", r.Display)
+		for i := range dimensions {
+			fmt.Fprintf(&b, " %8.3f/%8.3f", r.RawPerDim[i], r.PartPerDim[i])
+		}
+		fmt.Fprintln(&b)
+	}
 	return b.String()
 }
 

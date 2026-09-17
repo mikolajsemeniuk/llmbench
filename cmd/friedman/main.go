@@ -50,6 +50,7 @@ var metricDisplayName = map[string]string{
 	"unieval":     "UniEval",
 	"geval":       "G-Eval",
 	"lgs":         "LGS",
+	"nli":         "NLI",
 	"lead3sent":   "Lead-3 (sent)",
 	"lead5sent":   "Lead-5 (sent)",
 	"lead3whole":  "Lead-3 (whole)",

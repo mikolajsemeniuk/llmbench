@@ -55,6 +55,7 @@ var metricDisplayName = map[string]string{
 	"unieval":     "UniEval",
 	"geval":       "G-Eval",
 	"lgs":         "LGS",
+	"nli":         "NLI",
 }
 
 var dimensionalMetrics = []struct {

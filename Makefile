@@ -20,6 +20,32 @@ benchmark-modelsrv:
 	go run ./cmd/unieval -dimension fluency
 	go run ./cmd/unieval -dimension relevance
 
+# ── Entailment go/no-go probe (improvements.txt §6) ────────────────────
+#
+# LGS's mean-of-max grounding uses embedding cosine similarity, which
+# is semantic proximity, not entailment. Consistency is LGS's worst
+# dimension (.227 raw rho) and is exactly what entailment should help
+# with. This swaps LGS's own aggregation (mean over candidate
+# sentences of max over source sentences) from cosine to NLI
+# entailment probability, via a new /nli endpoint on cmd/modelsrv
+# (cross-encoder/nli-deberta-v3-small, ~140M params, CPU or GPU).
+#
+# Decision: run `make go-no-go-nli` after this, and read the
+# CONSISTENCY column of the per-dimension breakdown it prints. If NLI's
+# partial rho clears ~.23 (the ceiling every cosine/lexical/positional
+# signal in the pool has hit, see paper/confound.gen.tex), entailment
+# is a genuinely different signal class and worth a Paper 2 built
+# around it. If it plateaus at the same ceiling, the problem was never
+# the signal type.
+.PHONY: benchmark-nli
+benchmark-nli:
+	go run ./cmd/nliscorer -output output/nli.json
+
+.PHONY: go-no-go-nli
+go-no-go-nli:
+	go run ./cmd/confound -input output -bootstrap 2000 -per-dimension \
+		-output paper/confound-nli-probe.gen.tex
+
 .PHONY: benchmark-ollama
 benchmark-ollama:
 	go run ./cmd/embedscorer

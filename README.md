@@ -43,6 +43,17 @@ LGS is reference-free and runs on a small Ollama embedder (`nomic-embed-text`, 1
 
 The paper's contribution is a reference-free metric with one tunable hyperparameter (lead-bias λ) selected via held-out methodology that prior metric papers skip — but the lead-bias prior itself contributes only +.005 mean ρ held-out and its exponent is not reliably identifiable from a 50-article split (see λ\* discussion above and `paper/splitrobust.gen.tex`), so the paper's central empirical claim is methodological honesty about a confounded benchmark, not a metric that is unambiguously better than the cheapest available baseline.
 
+## Entailment go/no-go probe (unreleased, gates a possible Paper 2)
+
+`improvements.txt` §6 flags cosine similarity as the wrong signal type for the consistency dimension: cosine measures semantic proximity, not entailment, and a paraphrase and a subtle contradiction can sit at nearly the same cosine distance. Consistency is LGS's worst dimension (.227 raw ρ), which is exactly what an entailment signal should help with. `cmd/nliscorer` swaps LGS's own aggregation (mean over candidate sentences of max over source sentences) from embedding cosine to NLI entailment probability, scored by a small cross-encoder (`cross-encoder/nli-deberta-v3-small`, ~140M) served from a new `/nli` endpoint on `cmd/modelsrv` — no Ollama needed, CPU or GPU.
+
+```sh
+make benchmark-nli      # writes output/nli.json (needs cmd/modelsrv running with /nli loaded)
+make go-no-go-nli       # writes paper/confound-nli-probe.gen.tex + prints the per-dimension breakdown
+```
+
+Decision rule: read the **consistency** column of the per-dimension partial-rho breakdown. Every cosine/lexical/positional signal in the pool plateaus around a confound-controlled partial ρ of ~.23 (`paper/confound.gen.tex`). If NLI clears that ceiling on consistency, entailment is a genuinely different signal class and is worth building a metric around (Paper 2 in `improvements.txt` §6). If it plateaus at the same ceiling, the problem was never the signal type. This does not touch the canonical `paper/confound.gen.tex` table — its output is a separate probe file.
+
 ## Reproducing the paper
 
 Every number in `paper/*.gen.tex` regenerates from Make targets. Steps below assume Ollama on `localhost:11434` with `nomic-embed-text` pulled and the model server (`cmd/modelsrv`) running on port 9200 for the reference-based baselines.

@@ -62,6 +62,8 @@ var metricDisplayName = map[string]string{
 	"unieval":     "UniEval",
 	"geval":       "G-Eval",
 	"lgs":         "LGS",
+	"nli":         "NLI",
+	"composite":   "Composite (NLI+LGS+PPL)",
 }
 
 // ── Domain types ───────────────────────────────────────────────────────
@@ -128,7 +130,10 @@ func main() {
 		log.Fatalf("load dataset: %v", err)
 	}
 
-	targetScores, err := loadScores(samples, inputDir, target)
+	// loadBaseline also handles the common flat case (same score reused
+	// for every dimension), so it works for both a flat target like lgs
+	// and a dimensional one like unieval or composite.
+	targetByDim, err := loadBaseline(samples, inputDir, target)
 	if err != nil {
 		log.Fatalf("load target %q: %v", target, err)
 	}
@@ -146,6 +151,7 @@ func main() {
 	for _, b := range baselineEntries {
 		for _, dim := range dimensions {
 			human := humanScores(samples, dim)
+			targetScores := targetByDim[dim]
 			baseScores := b.scoresByDim[dim]
 
 			fn := eval.Spearman
