@@ -40,6 +40,12 @@ _cache = {}
 
 BERTSCORE_MODEL = os.environ.get("BERTSCORE_MODEL", "roberta-large")
 
+# The manuscript's simplification table declared GPT-2 large for
+# GPTScore while the code loaded plain gpt2 (124M, ~6x smaller). The
+# model is now explicit and configurable so the table and the code can
+# be checked against each other.
+GPTSCORE_MODEL = os.environ.get("GPTSCORE_MODEL", "gpt2-large")
+
 
 def _detect_device():
     override = os.environ.get("METRICS_DEVICE", "")
@@ -263,12 +269,12 @@ def unieval():
 
 def get_gptscore_model():
     if "gptscore_model" not in _cache:
-        logger.info("Loading GPT-2 for GPTScore...")
+        logger.info(f"Loading {GPTSCORE_MODEL} for GPTScore...")
         from transformers import GPT2LMHeadModel, GPT2Tokenizer
 
-        _cache["gptscore_tokenizer"] = GPT2Tokenizer.from_pretrained("gpt2")
+        _cache["gptscore_tokenizer"] = GPT2Tokenizer.from_pretrained(GPTSCORE_MODEL)
         _cache["gptscore_model"] = GPT2LMHeadModel.from_pretrained(
-            "gpt2", use_safetensors=True
+            GPTSCORE_MODEL, use_safetensors=True
         ).to(DEVICE)
         _cache["gptscore_model"].eval()
         logger.info("GPTScore model loaded.")

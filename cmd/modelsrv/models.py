@@ -19,11 +19,12 @@ from transformers import AutoModelForSeq2SeqLM
 AutoTokenizer.from_pretrained("MingZhong/unieval-sum")
 AutoModelForSeq2SeqLM.from_pretrained("MingZhong/unieval-sum", use_safetensors=True)
 
-print("Downloading GPT-2 (GPTScore)...")
+GPTSCORE_MODEL = os.environ.get("GPTSCORE_MODEL", "gpt2-large")
+print(f"Downloading {GPTSCORE_MODEL} (GPTScore)...")
 from transformers import GPT2LMHeadModel, GPT2Tokenizer
 
-GPT2Tokenizer.from_pretrained("gpt2")
-GPT2LMHeadModel.from_pretrained("gpt2", use_safetensors=True)
+GPT2Tokenizer.from_pretrained(GPTSCORE_MODEL)
+GPT2LMHeadModel.from_pretrained(GPTSCORE_MODEL, use_safetensors=True)
 
 print("Downloading BART-large-cnn (BARTScore)...")
 from transformers import BartForConditionalGeneration, BartTokenizer

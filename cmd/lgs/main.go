@@ -197,15 +197,21 @@ func applyDocSplit(samples []eval.Sample, split string) []eval.Sample {
 		return samples
 	}
 	docs := uniqueDocsInOrder(samples)
-	if len(docs) < 100 {
-		log.Fatalf("doc-split %q expects ≥100 documents, got %d", split, len(docs))
+	if len(docs) < 4 {
+		log.Fatalf("doc-split %q needs at least 4 documents, got %d", split, len(docs))
 	}
+	// The split is by halves of the article list in dataset order. The
+	// names are historical: on SummEval's 100 articles a half is 50
+	// articles, and they are kept so existing snapshot filenames and
+	// Make targets stay valid on a second corpus with a different
+	// article count (cmd/newsroom writes 60).
+	half := len(docs) / 2
 	var keep map[string]struct{}
 	switch split {
 	case "first50":
-		keep = setOf(docs[:50])
+		keep = setOf(docs[:half])
 	case "last50":
-		keep = setOf(docs[len(docs)-50:])
+		keep = setOf(docs[half:])
 	default:
 		log.Fatalf("invalid doc-split: %s", split)
 	}

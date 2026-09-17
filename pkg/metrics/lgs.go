@@ -109,6 +109,12 @@ func (b *LGS) Score(ctx context.Context, in LGSInput) (LGSOutput, error) {
 		recall += best
 	}
 	recall /= float64(len(candEmbs))
+	// The mean-of-max of a cosine lies in [-1, 1], so a candidate whose
+	// every sentence is anti-correlated with the whole source would
+	// score below zero. Such a case does not occur on the corpora used
+	// here, but the clamp is kept and documented rather than left as an
+	// undeclared difference between the code and the stated range: the
+	// reported range of the metric is [0, 1].
 	if recall < 0 {
 		recall = 0
 	}

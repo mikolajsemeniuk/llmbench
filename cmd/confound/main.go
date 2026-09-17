@@ -51,18 +51,20 @@ import (
 )
 
 var (
-	inputDir  string
-	outputTex string
-	ngram     int
-	bootstrap int
-	seed      uint64
-	oursLabel string
+	datasetPath string
+	inputDir    string
+	outputTex   string
+	ngram       int
+	bootstrap   int
+	seed        uint64
+	oursLabel   string
 )
 
 var dimensions = []string{"coherence", "consistency", "fluency", "relevance"}
 
 func main() {
 	flag.StringVar(&inputDir, "input", "output", "directory containing metric JSON reports")
+	flag.StringVar(&datasetPath, "dataset", "", "dataset JSONL path (empty = the embedded SummEval release); use with a converted corpus such as data/newsroom.jsonl")
 	flag.StringVar(&outputTex, "output", "paper/confound.gen.tex", "path to write LaTeX table (- for stdout)")
 	flag.IntVar(&ngram, "ngram", 2, "n-gram order for the copy rate (1 = unigram, 2 = bigram)")
 	flag.IntVar(&bootstrap, "bootstrap", 2000, "cluster-bootstrap resamples over articles (0 = point estimates only)")
@@ -74,7 +76,7 @@ func main() {
 		log.Fatalf("-ngram must be ≥ 1, got %d", ngram)
 	}
 
-	samples, err := eval.NewDataset(dataset.Summeval, dataset.SummevalDefaultPath, 0)
+	samples, err := loadDataset(datasetPath)
 	if err != nil {
 		log.Fatalf("load dataset: %v", err)
 	}
@@ -461,7 +463,7 @@ func displayName(base string) string {
 
 func renderConsole(rows []row) string {
 	var b strings.Builder
-	fmt.Fprintf(&b, "Extractiveness confound on SummEval (copy rate = fraction of candidate %d-grams found in source)\n\n", ngram)
+	fmt.Fprintf(&b, "Extractiveness confound on %s (copy rate = fraction of candidate %d-grams found in source)\n\n", corpusName(), ngram)
 	fmt.Fprintf(&b, "%-22s %9s %9s %8s %9s %10s %s\n",
 		"Metric", "raw rho", "part rho", "drop", "rho_copy", "ms/sample", "Pareto(raw/part)")
 	fmt.Fprintln(&b, strings.Repeat("─", 96))
@@ -488,6 +490,29 @@ func renderConsole(rows []row) string {
 	}
 	fmt.Fprintln(&b, "\n* = ours   † = the confound itself, not a metric")
 	fmt.Fprintln(&b, "drop = how much of the raw correlation was extractiveness")
+
+	// Per-dimension partial rho. The mean hides the thing that matters
+	// most for choosing a metric in practice: metrics differ by
+	// dimension far more than they differ on average, and a metric
+	// whose mean is unremarkable can still be the best available
+	// coherence detector.
+	fmt.Fprintf(&b, "\nPartial rho per dimension (copy rate partialled out)\n\n")
+	fmt.Fprintf(&b, "%-22s", "Metric")
+	for _, d := range dimensions {
+		fmt.Fprintf(&b, "%13s", d)
+	}
+	fmt.Fprintln(&b)
+	fmt.Fprintln(&b, strings.Repeat("─", 22+13*len(dimensions)))
+	for _, r := range rows {
+		if r.IsConfound {
+			continue
+		}
+		fmt.Fprintf(&b, "%-22s", r.Display)
+		for _, v := range r.PartPerDim {
+			fmt.Fprintf(&b, "%13.3f", v)
+		}
+		fmt.Fprintln(&b)
+	}
 	return b.String()
 }
 
@@ -495,7 +520,7 @@ func renderLatex(rows []row) string {
 	var b strings.Builder
 	fmt.Fprintln(&b, `\begin{table*}[t]`)
 	fmt.Fprintln(&b, `\centering`)
-	fmt.Fprintf(&b, `\caption{Extractiveness confound on \textsc{SummEval}. The copy rate of a candidate is the fraction of its token %d-grams that occur in the source; it requires no model, no reference and no hyperparameter. $\bar{\rho}$ is the mean summary-level Spearman correlation with human ratings across the four dimensions, $\bar{\rho}_{\mathrm{part}}$ the same quantity with the copy rate partialled out of both sides, and $\rho_{\mathrm{copy}}$ the correlation between the metric and the copy rate. Brackets give the 95\%% cluster-bootstrap interval over articles. The final row is the copy rate scored as if it were a metric: on the raw axis it outranks most of the pool. Pareto status is given on both axes.}`+"\n", ngram)
+	fmt.Fprintf(&b, `\caption{Extractiveness confound on \textsc{%s}. The copy rate of a candidate is the fraction of its token %d-grams that occur in the source; it requires no model, no reference and no hyperparameter. $\bar{\rho}$ is the mean summary-level Spearman correlation with human ratings across the four dimensions, $\bar{\rho}_{\mathrm{part}}$ the same quantity with the copy rate partialled out of both sides, and $\rho_{\mathrm{copy}}$ the correlation between the metric and the copy rate. Brackets give the 95\%% cluster-bootstrap interval over articles. The final row is the copy rate scored as if it were a metric: on the raw axis it outranks most of the pool. Pareto status is given on both axes.}`+"\n", corpusName(), ngram)
 	fmt.Fprintln(&b, `\label{tab:confound}`)
 	fmt.Fprintln(&b, `\small`)
 	fmt.Fprintln(&b, `\linespread{1}\selectfont`)
@@ -548,6 +573,16 @@ func num(x float64) string {
 	return s
 }
 
+// corpusName labels the table with the corpus actually analysed, so a
+// Newsroom run is not reported as SummEval.
+func corpusName() string {
+	if datasetPath == "" {
+		return "SummEval"
+	}
+	base := filepath.Base(datasetPath)
+	return strings.TrimSuffix(strings.TrimSuffix(base, ".jsonl"), ".json")
+}
+
 func writeFile(path, content string) error {
 	var w io.Writer = os.Stdout
 	if path != "" && path != "-" {
@@ -565,4 +600,14 @@ func writeFile(path, content string) error {
 	}
 	_, err := io.WriteString(w, content)
 	return err
+}
+
+// loadDataset reads the embedded SummEval release by default, or an
+// external JSONL corpus in the same shape -- see cmd/newsroom, which
+// converts the Newsroom human-evaluation release into it.
+func loadDataset(path string) ([]eval.Sample, error) {
+	if path == "" {
+		return eval.NewDataset(dataset.Summeval, dataset.SummevalDefaultPath, 0)
+	}
+	return eval.NewDataset(os.DirFS(filepath.Dir(path)), filepath.Base(path), 0)
 }

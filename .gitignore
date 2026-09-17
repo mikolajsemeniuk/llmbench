@@ -13,3 +13,8 @@ paper/*.fls
 paper/*.fdb_latexmk
 paper/*.blg
 paper/*.synctex.gz
+
+# Derived corpora. data/newsroom.jsonl is produced from the upstream
+# Newsroom human-evaluation CSV by `make data/newsroom.jsonl`; it is
+# third-party article text and is regenerable, so it is not tracked.
+data/

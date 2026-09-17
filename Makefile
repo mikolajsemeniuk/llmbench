@@ -275,3 +275,123 @@ benchmark-embedder-ablation:
 	go run ./cmd/lgs -doc-split all -lead-bias-lambda $(LGS_LAMBDA) -embed-model mxbai-embed-large -bootstrap 0 -output ablation/lgs_embedder_mxbai.json
 	go run ./cmd/lgs -doc-split all -lead-bias-lambda $(LGS_LAMBDA) -embed-model bge-m3            -bootstrap 0 -output ablation/lgs_embedder_bge.json
 	go run ./cmd/lgs -doc-split all -lead-bias-lambda $(LGS_LAMBDA) -embed-model all-minilm        -bootstrap 0 -output ablation/lgs_embedder_minilm.json
+
+# ── Counterfactual-margin metric (CFM) ────────────────────────────────
+#
+# CFM scores a summary by how strongly a small frozen LM prefers it over
+# minimally corrupted versions of itself, instead of by similarity to
+# the source. Because every corruption permutes the candidate's own
+# tokens or substitutes a mention taken from the source, the corrupted
+# candidate has the same verbatim overlap with the source as the
+# original, so a pure copy detector has a margin of exactly zero --
+# the design answer to the extractiveness confound measured by
+# `paper-confound`. All four dimensions come out of one pass.
+#
+# Requires the scoring server:
+#   cd cmd/lmsrv && pip install -r requirements.txt && python3 app.py
+CFM_PERTURB ?= 4
+.PHONY: benchmark-cfm
+benchmark-cfm:
+	go run ./cmd/cfm -perturb $(CFM_PERTURB) -output-dir output
+
+# Corruption-count ablation: how many samples of each perturbation
+# family the margin needs before it stops moving. Writes into ablation/
+# under distinct metric names so the reports do not collide with the
+# canonical run.
+.PHONY: benchmark-cfm-ablation
+benchmark-cfm-ablation:
+	@mkdir -p ablation
+	go run ./cmd/cfm -perturb 1 -bootstrap 0 -suffix _m1 -output-dir ablation
+	go run ./cmd/cfm -perturb 2 -bootstrap 0 -suffix _m2 -output-dir ablation
+	go run ./cmd/cfm -perturb 4 -bootstrap 0 -suffix _m4 -output-dir ablation
+	go run ./cmd/cfm -perturb 8 -bootstrap 0 -suffix _m8 -output-dir ablation
+
+# Zero-shot NLI grounding baseline (SummaC-ZS style). The prior-art
+# comparison for any reference-free grounding metric, and the control
+# that separates "the confound is a property of lexical matching" from
+# "the confound is a property of source-similarity metrics in general".
+.PHONY: benchmark-nli
+benchmark-nli:
+	go run ./cmd/nlibase -aggregate zs   -output output/nlizs.json
+	go run ./cmd/nlibase -aggregate conv -output output/nliconv.json
+
+# Rank-averaged metric combinations scored on the partialled axis, on
+# one half of the articles so the combination is never selected and
+# evaluated on the same data.
+.PHONY: paper-combine
+paper-combine:
+	go run ./cmd/combine -input output -split last50 -bootstrap 2000 \
+		-combos "lgs,lead5sent,unieval,cfm,nlizs,cfm+nlizs,unieval+cfm,unieval+lgs,lgs+cfm"
+
+# Signal-to-dimension assignment for CFM: selected on the development
+# articles on the partialled axis, verified on the held-out half, with
+# the selection procedure itself submitted to a cluster bootstrap. With
+# -emit the selected scores are written as four per-dimension reports so
+# CFM enters the pool tables like any other dimensional scorer.
+.PHONY: paper-cfm
+paper-cfm:
+	go run ./cmd/cfmselect -input output -prefix cfm -max-k 3 \
+		-bootstrap-select 2000 -random-splits 500 -emit -output paper/cfm.gen.tex
+
+# Cross-corpus transfer of the assignment, in both directions. The
+# honest counterpart of paper-cfm: an assignment selected on one corpus
+# and applied unchanged to the other, which is what a practitioner who
+# does not have human ratings for their own data would have to do.
+.PHONY: paper-cfm-transfer
+paper-cfm-transfer:
+	go run ./cmd/cfmselect -dataset data/newsroom.jsonl -input output/newsroom -prefix cfm \
+		-fixed "coherence=lm_logprob_min+scram_margin+perm_margin,consistency=spec_sent_mean+spec_summary,fluency=scram_margin+spec_summary,relevance=lm_logprob+lm_logprob_min+scram_margin"
+	go run ./cmd/cfmselect -input output -prefix cfm \
+		-fixed "coherence=lm_logprob+swap_margin,consistency=lm_logprob+perm_winrate,fluency=lm_logprob+swap_margin,relevance=lm_logprob"
+
+# Boolean-question signals and their counterfactual margins: the same
+# question UniEval is fine-tuned to answer, asked of a general small LM
+# with no fine-tuning, and then calibrated against the judge's own
+# answer on a corrupted summary. The expensive family -- the candidate
+# sits inside the prompt, so the article cannot be encoded once per
+# article and shared across its candidates.
+.PHONY: benchmark-boolq
+benchmark-boolq:
+	go run ./cmd/boolq -output-dir output
+
+# ── Second corpus: Newsroom ───────────────────────────────────────────
+#
+# The single-corpus objection (reviewer #4) needs a corpus whose lead
+# bias and extractiveness profile differ from CNN/DailyMail. Newsroom's
+# human-evaluation subset rates 7 systems on 60 articles and includes a
+# literal lead-3 system, so the extractiveness confound is visible
+# directly. Newsroom ships no reference summaries: only reference-free
+# metrics can run on it.
+data/newsroom.jsonl:
+	curl -sL -o /tmp/newsroom-human-eval.csv \
+		https://raw.githubusercontent.com/lil-lab/newsroom/master/humaneval/newsroom-human-eval.csv
+	go run ./cmd/newsroom -input /tmp/newsroom-human-eval.csv -output $@
+
+.PHONY: benchmark-newsroom
+benchmark-newsroom: data/newsroom.jsonl
+	@mkdir -p output/newsroom
+	go run ./cmd/leadbaseline -input data/newsroom.jsonl -lead-k 3 -mode sent -bootstrap 0 -output output/newsroom/lead3sent.json
+	go run ./cmd/leadbaseline -input data/newsroom.jsonl -lead-k 5 -mode sent -bootstrap 0 -output output/newsroom/lead5sent.json
+	go run ./cmd/lgs         -input data/newsroom.jsonl -doc-split all -lead-bias-lambda $(LGS_LAMBDA) -bootstrap 0 -output output/newsroom/lgs.json
+	go run ./cmd/nlibase     -input data/newsroom.jsonl -aggregate zs -bootstrap 0 -output output/newsroom/nlizs.json
+	go run ./cmd/cfm         -input data/newsroom.jsonl -bootstrap 0 -output-dir output/newsroom
+
+# Cross-corpus lead-bias exponent: the experiment that decides whether
+# the positional prior is a property of summarisation or a property of
+# one corpus. Newsroom's articles are also news, so a prior that does
+# not transfer here does not transfer anywhere.
+.PHONY: benchmark-newsroom-lambda
+benchmark-newsroom-lambda: data/newsroom.jsonl
+	@mkdir -p ablation/newsroom
+	for l in 0 0.25 0.5 1.0 2.0; do \
+		for sp in first50 last50; do \
+			go run ./cmd/lgs -input data/newsroom.jsonl -doc-split $$sp \
+				-lead-bias-lambda $$l -bootstrap 0 \
+				-output ablation/newsroom/lgs_$${sp}_l$${l}.json; \
+		done; \
+	done
+
+.PHONY: paper-confound-newsroom
+paper-confound-newsroom:
+	go run ./cmd/confound -dataset data/newsroom.jsonl -input output/newsroom \
+		-bootstrap 2000 -ours lgs -output paper/confound_newsroom.gen.tex

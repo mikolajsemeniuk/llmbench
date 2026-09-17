@@ -43,6 +43,54 @@ LGS is reference-free and runs on a small Ollama embedder (`nomic-embed-text`, 1
 
 The paper's contribution is a reference-free metric with one tunable hyperparameter (lead-bias λ) selected via held-out methodology that prior metric papers skip — but the lead-bias prior itself contributes only +.005 mean ρ held-out and its exponent is not reliably identifiable from a 50-article split (see λ\* discussion above and `paper/splitrobust.gen.tex`), so the paper's central empirical claim is methodological honesty about a confounded benchmark, not a metric that is unambiguously better than the cheapest available baseline.
 
+## CFM — counterfactual margins (new)
+
+`cmd/cfm` is a second, structurally different metric family, designed against the
+*confound-corrected* axis rather than the raw one. The motivation is the finding in
+`cmd/confound`: mean Spearman ρ on SummEval largely measures extractiveness, and every
+metric built out of candidate–source **similarity** — lexical, positional or embedding —
+plateaus at partial ρ ≈ .23 once the bigram copy rate is partialled out.
+
+CFM asks a different question. Instead of *how similar is the candidate to the source*,
+it asks *does a frozen language model prefer this candidate over a minimally corrupted
+version of itself, or over the same candidate read against a different article*:
+
+```
+margin = s(C, D) − E_{C' ~ T(C)} [ s(C', D) ]
+```
+
+where `s` is a length-normalised teacher-forced log-probability under a small causal LM
+(default `Qwen/Qwen3-0.6B-Base`, served by `cmd/lmsrv`) and `T` is a corruption family.
+
+**Decorrelation by construction.** Every candidate-side corruption either permutes the
+candidate's own tokens (sentence order, word order) or replaces a mention with another
+mention taken out of the same source (entities), so the corrupted candidate carries
+essentially the same verbatim overlap with the source as the original. A metric that
+only counts copied n-grams therefore scores both identically and its margin is exactly
+zero: extractiveness cannot enter a margin the way it enters a similarity.
+
+The binary emits a *family* of signals (order-permutation margin, word-scramble margin,
+entity-swap margin, source-specificity at summary and sentence level, discourse PMI,
+plain and worst-sentence log-probability). `cmd/cfmselect` assigns signals to SummEval
+dimensions on the development articles and verifies the assignment on the held-out half,
+with the selection itself submitted to a cluster bootstrap — the methodology
+`cmd/lambdaci` applies to λ, applied to the assignment.
+
+`cmd/nlibase` adds the zero-shot NLI grounding baseline (SummaC-ZS style) that the
+previous manuscript was missing: the prior-art comparison for any reference-free
+grounding metric, and the control that separates "the confound is a property of lexical
+matching" from "the confound is a property of source-similarity metrics in general".
+
+```sh
+# scoring server (torch + transformers only, two small models)
+cd cmd/lmsrv && pip install -r requirements.txt && python3 app.py
+
+make benchmark-cfm        # the signal family, one pass over SummEval
+make benchmark-nli        # SummaC-ZS style NLI baseline
+make paper-cfm            # selection table (dev) + held-out verification
+make paper-combine        # rank-averaged combinations on the partialled axis
+```
+
 ## Reproducing the paper
 
 Every number in `paper/*.gen.tex` regenerates from Make targets. Steps below assume Ollama on `localhost:11434` with `nomic-embed-text` pulled and the model server (`cmd/modelsrv`) running on port 9200 for the reference-based baselines.
