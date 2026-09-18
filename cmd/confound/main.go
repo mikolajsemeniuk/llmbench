@@ -58,6 +58,7 @@ var (
 	bootstrap   int
 	seed        uint64
 	oursLabel   string
+	partialDims bool
 )
 
 var dimensions = []string{"coherence", "consistency", "fluency", "relevance"}
@@ -69,6 +70,7 @@ func main() {
 	flag.IntVar(&ngram, "ngram", 2, "n-gram order for the copy rate (1 = unigram, 2 = bigram)")
 	flag.IntVar(&bootstrap, "bootstrap", 2000, "cluster-bootstrap resamples over articles (0 = point estimates only)")
 	flag.Uint64Var(&seed, "seed", 42, "random seed")
+	flag.BoolVar(&partialDims, "allow-partial-dims", false, "include dimensional metrics that only cover some dimensions, averaging over the ones they do (UniEval's relevance prompt needs a reference, which Newsroom does not have)")
 	flag.StringVar(&oursLabel, "ours", "lgs", "metric base name to mark as ours")
 	flag.Parse()
 
@@ -251,8 +253,12 @@ func loadMetrics(dir string, samples []eval.Sample) ([]metricScores, error) {
 		m := metricScores{name: base, display: displayName(base), perDim: map[string][]float64{}}
 		if a.isDim {
 			if len(a.perDim) != len(dimensions) {
-				log.Printf("skipping %s (only %d of %d dimension files)", base, len(a.perDim), len(dimensions))
-				continue
+				if !partialDims {
+					log.Printf("skipping %s (only %d of %d dimension files; -allow-partial-dims includes it)",
+						base, len(a.perDim), len(dimensions))
+					continue
+				}
+				log.Printf("including %s over %d of %d dimensions", base, len(a.perDim), len(dimensions))
 			}
 			m.perDim = a.perDim
 			m.runtimeMs = a.msTotal
@@ -326,6 +332,7 @@ type row struct {
 	RhoCopy     float64
 	RawPerDim   []float64
 	PartPerDim  []float64
+	Dims        int
 	IsOurs      bool
 	IsConfound  bool
 	ParetoRaw   bool
@@ -349,16 +356,36 @@ func analyse(m metricScores, human map[string][]float64, copyRate []float64, sam
 		Name: m.name, Display: m.display, RuntimeMs: m.runtimeMs,
 		IsOurs: m.name == oursLabel,
 	}
+	// A metric may cover only some dimensions (-allow-partial-dims);
+	// the mean is then over the dimensions it does cover, and the
+	// missing ones are reported as NaN rather than as zero, which would
+	// silently penalise the metric.
+	present := 0
 	for _, d := range dimensions {
 		v := m.perDim[d]
+		if v == nil {
+			r.RawPerDim = append(r.RawPerDim, math.NaN())
+			r.PartPerDim = append(r.PartPerDim, math.NaN())
+			continue
+		}
 		raw := eval.Spearman(v, human[d])
 		par := partialSpearman(v, human[d], copyRate)
 		r.RawPerDim = append(r.RawPerDim, raw)
 		r.PartPerDim = append(r.PartPerDim, par)
-		r.RawMean += raw / 4
-		r.PartialMean += par / 4
+		r.RawMean += raw
+		r.PartialMean += par
+		present++
 	}
-	r.RhoCopy = eval.Spearman(m.perDim["consistency"], copyRate)
+	if present > 0 {
+		r.RawMean /= float64(present)
+		r.PartialMean /= float64(present)
+	}
+	r.Dims = present
+	if v := m.perDim["consistency"]; v != nil {
+		r.RhoCopy = eval.Spearman(v, copyRate)
+	} else if v := m.perDim["coherence"]; v != nil {
+		r.RhoCopy = eval.Spearman(v, copyRate)
+	}
 
 	if bootstrap > 0 {
 		r.PartialCI = bootstrapPartial(m, human, copyRate, samples)
@@ -392,8 +419,13 @@ func bootstrapPartial(m metricScores, human map[string][]float64, copyRate []flo
 			pick = append(pick, byDoc[docs[rng.IntN(len(docs))]]...)
 		}
 		var total float64
+		var present int
 		for _, d := range dimensions {
 			v, h := m.perDim[d], human[d]
+			if v == nil {
+				continue
+			}
+			present++
 			bx, by, bz = bx[:0], by[:0], bz[:0]
 			for _, p := range pick {
 				bx = append(bx, v[p])
@@ -402,7 +434,10 @@ func bootstrapPartial(m metricScores, human map[string][]float64, copyRate []flo
 			}
 			total += partialSpearman(bx, by, bz)
 		}
-		vals = append(vals, total/4)
+		if present > 0 {
+			total /= float64(present)
+		}
+		vals = append(vals, total)
 	}
 	sort.Float64s(vals)
 	at := func(p float64) float64 {
@@ -509,6 +544,10 @@ func renderConsole(rows []row) string {
 		}
 		fmt.Fprintf(&b, "%-22s", r.Display)
 		for _, v := range r.PartPerDim {
+			if math.IsNaN(v) {
+				fmt.Fprintf(&b, "%13s", "n/a")
+				continue
+			}
 			fmt.Fprintf(&b, "%13.3f", v)
 		}
 		fmt.Fprintln(&b)
