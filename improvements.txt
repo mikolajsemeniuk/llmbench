@@ -1,0 +1,584 @@
+================================================================================
+IMPROVEMENTS / HANDOFF BRIEF
+Project: llmbench -- LGS metric + SummEval meta-evaluation
+Paper:   "Lead-biased Grounding Score" -- REJECTED by Knowledge-Based Systems
+Written: 2026-09-16
+Branch:  science-direct
+================================================================================
+
+WHO THIS IS FOR
+---------------
+You are picking up a rejected journal submission. The repo is a Go benchmark
+harness that reproduces 14+ summarization metrics on SummEval and renders every
+table in paper/main.tex from JSON reports. Everything is regenerable via make.
+
+This file records: which reviewer criticisms are actually valid, what we
+measured in response, what the data showed (including one result that breaks
+the paper's central claim), what was NOT attempted, and what to do next.
+
+Read sections 0-4 before touching anything. Section 5 is your work queue.
+
+IMPORTANT CONTEXT: the machine this was written on had no GPU and Ollama was
+switched off, so only CPU / post-processing work was possible. You are running
+on an ASUS Ascent GX10 (Blackwell). Everything gated on Ollama or the Python
+model server is therefore still open and is yours to run.
+
+
+================================================================================
+0. THE SITUATION IN ONE PARAGRAPH
+================================================================================
+
+The paper claimed LGS is Pareto-optimal in a cost-quality plane. We built the
+trivial control a reviewer asked for -- keep the first k source sentences, match
+with ROUGE-L, no model at all -- and it MATCHES OR BEATS LGS on the paper's own
+axis at ~1000x lower cost. That kills the Pareto claim as stated. Investigating
+why produced something better: SummEval's human ratings are heavily confounded
+with extractiveness (how much the summary copies verbatim from the source), and
+a bare n-gram copy counter outscores 11 of the 14 metrics in the paper's pool.
+Controlling for that confound, LGS recovers relative to the lead baselines but
+is NOT statistically distinguishable from them. Recommendation is to pivot the
+paper from "we built a metric" to "we found a confound in how this whole field
+is measured" -- see section 6.
+
+
+================================================================================
+1. REVIEWER CRITICISMS: WHICH ARE REAL
+================================================================================
+
+Six reviews arrived. Triage first, because two of them should not be treated as
+ordinary feedback.
+
+--- REVIEWER #2: NOT ABOUT THIS PAPER ---------------------------------------
+The entire review concerns a literature survey of aspect-based sentiment
+analysis: "corpus of 66 studies", "LLM-as-predictor / LLM-as-specialist /
+LLM-as-data-engine", SemEval datasets, PRISMA-style search methodology. None of
+that exists in this manuscript. Either the reviewer pasted the wrong review, or
+the editor assembled the decision letter with the wrong block -- in the second
+case a real review of THIS paper exists and was never seen.
+
+ACTION: report to the editorial office as a process error (not as an appeal).
+Ask whether the correct review exists. Do not build the resubmission around
+this; reviewer #3 rejected on substance independently, so the outcome would
+likely have been the same.
+
+--- REVIEWER #1: CITATION COERCION + a few fair asks -------------------------
+"For suggestion 1 to 6, author can refer and cite [two papers on entity
+alignment in multilingual knowledge graphs]". Those papers have nothing to do
+with summarization evaluation. Do not cite them. Rebut this explicitly if
+resubmitting.
+
+The underlying suggestions are still worth doing and cost hours:
+  VALID  #1 table of notation
+  VALID  #2 table of pros/cons of techniques in the related-work section
+  VALID  #3 language pass + name the AI tool/version used for editing
+  VALID  #4 update preprint citations to published versions
+  VALID  #5 Friedman / Nemenyi / Wilcoxon tests   <-- see 5.5, not done yet
+  VALID  #6 add recent (2026) literature
+
+--- REVIEWER #6: badly written, but every point maps to #3 or #4 -------------
+Garbled English, some sentences are not parseable. Do not argue about quality;
+each of its ten points duplicates a valid concern from #3 or #4. Treat it as a
+redundant copy.
+
+--- REVIEWER #3: THE ONE THAT REJECTED. Nearly all valid. --------------------
+  VALID  M1 Confounded baselines. G-Eval (GPT-4 -> 7B-Q4, N=20 -> N=3) and
+            GPTScore (GPT-3-175B -> small GPT-2) were downgraded to fit a
+            single-machine budget that LGS was designed around from the start.
+            "LGS dominates / G-Eval is dominated" is then a budget artifact.
+            NOT FIXED. See 5.4.
+  VALID  M2 lambda* is not robust: the dev-optimal lambda (0.5) differs from
+            the test-optimal (0.25) on the SAME backbone, so the claimed
+            cross-backbone shift is not separated from sampling noise.
+            FIXED AND MEASURED -- see 2.1. Reviewer was right.
+  VALID  M3 "strictly dominates BERTScore" overstates: only 1 of 4 dimensions
+            is significant; relevance numerically favours BERTScore.
+            PARTIALLY addressed (caveat exists in 6.3) but the abstract still
+            leads with the strong version. NOT FIXED.
+  VALID  M4 MetaMetrics (arXiv:2410.02381) reports runtime alongside
+            correlation and is not cited, which undercuts the novelty claim in
+            1.1 that no prior meta-evaluation does this. NOT CHECKED -- do it.
+  VALID  M5 Discussion says the G-Eval result is budget-specific; Conclusion
+            restates it as general. FIXED (commit 59e9c2c).
+  VALID  m1 Dev/test split by "JSONL order" is unjustified; random/stratified
+            would be more defensible. NOT FIXED, but cheap to test -- the
+            per-sample scores are stored, so you can re-run the selection under
+            many random article splits without recomputing any metric.
+  VALID  m2 Table 1's "Prior" column is tautological (satisfied only by LGS
+            because "Prior" is defined as what LGS adds). NOT FIXED.
+  VALID  m3 The finer lambda sweep was built post-hoc around the already
+            selected optimum -- forking-paths risk. PARTIALLY FIXED (disclosed).
+  VALID  m4 Cross-backbone claim rests on 2 of the 4 ablated backbones.
+            NOT FIXED -- needs Ollama, see 5.3.
+
+--- REVIEWER #4: thorough, constructive, mostly valid ------------------------
+Most important ones:
+  VALID  Novelty vs closer prior art is not established. The related-work
+         section jumps from reference-based metrics straight to
+         G-Eval/UniEval/GPTScore and SKIPS the entire pre-LLM reference-free
+         summarization-evaluation family: SUPERT, BLANC, SummaQA, ESTIME.
+         SUPERT in particular builds pseudo-references from salient source
+         sentences, which is conceptually very close to LGS. NOT CHECKED.
+         This is a real hole -- verify it before anything else in section 5.
+  VALID  Cosine similarity is not entailment. "Grounding" promises factual
+         support; cosine measures semantic proximity. Note the paper's own
+         numbers agree: consistency (the factuality dimension) is LGS's WORST
+         result at .227. NOT FIXED -- and see section 6, this is now the
+         most promising direction for new work.
+  VALID  Single corpus (SummEval / CNN-DailyMail only), so the lead-bias
+         premise is untested outside news. NOT FIXED. Biggest open item.
+  VALID  Sentence-level grounding contributes far more than the lead-bias
+         prior, but the prior gets the title and the framing.
+         Grounding over EmbedScorer: about +.110 mean rho.
+         Prior over no-prior on held-out test: +.005 mean rho.
+         PARTIALLY FIXED (claims weakened in commit 59e9c2c) but the centre of
+         gravity of the paper was NOT moved. Still valid.
+  VALID  Deployment scenarios (online selection, release gating, RL reward) are
+         described with zero experiments. NOT FIXED.
+  VALID  Cost is wall-clock on one CPU; no memory, energy, throughput, batching.
+         NOT FIXED, see 5.4.
+  VALID  "zero inference cost" for the prior is imprecise -- it still costs
+         arithmetic, just no extra forward pass. Trivial wording fix. NOT FIXED.
+
+--- REVIEWER #5: mixed; several very good ------------------------------------
+  VALID  #9  No multiple-comparison correction over the comparison table.
+             FIXED -- see 2.2. (Note: the reviewer says "52 comparisons
+             (4 dimensions x 13 baselines)"; the table actually has 6 baselines
+             x 4 dims = 24 cells. Miscount, but the point stands.)
+  VALID  #11 No comparison against trivial lead-based baselines.
+             FIXED, AND IT IS THE MOST DAMAGING RESULT IN THIS FILE -- see 2.3.
+  VALID  #7  Needs a per-dimension decision matrix for lambda (each dimension
+             has a different optimum). NOT FIXED.
+  VALID  #8  Deployment scenarios unvalidated (duplicate of #4's point).
+  VALID  #10 Interpretability is claimed but no anchor case studies and no
+             human evaluation of anchor quality. NOT FIXED.
+  VALID  #12 Calibrating lambda needs a human-rated dev set, which the stated
+             deployment scenarios do not have. This is self-undermining and
+             deserves a direct answer. NOT FIXED.
+  VALID  #1/#3/#5/#13 presentation: rewrite abstract, merge 1.1/1.2 into
+             section 1, contributions as 3-4 bullets with no cross-references,
+             remove em dashes, paper too long. NOT FIXED -- and note the paper
+             went from 63 to 69 pages in commit 59e9c2c, so this got worse.
+             (Roughly half the page count is the elsarticle `review` option's
+             double spacing; without it the paper is ~35pp. Reviewers see what
+             they are sent, though.)
+  WEAK   #2  wants a citation for "every organisation that operates a
+             summarisation service has to answer this question" -- fair but
+             trivially satisfied by rewording.
+  CONFUSED #4 asks why LGS does not have "Ref." and "Judge" ticks in Table 1.
+             It deliberately does not -- that is the point of the table. But the
+             question proves the table is not self-explanatory. Rework it
+             together with #3's m2.
+
+
+================================================================================
+2. WHAT WE MEASURED AND WHAT IT SHOWED
+================================================================================
+
+All of this is reproducible from stored per-sample scores. NO Ollama and NO
+model server were needed for any of it.
+
+------------------------------------------------------------------------------
+2.1  lambda* IS NOT IDENTIFIABLE   (tool: cmd/lambdaci, make paper-lambdaci)
+------------------------------------------------------------------------------
+Method: instead of reporting the argmax of the lambda sweep as a number, re-run
+the ENTIRE selection procedure inside the cluster bootstrap. On each of 5,000
+resamples of the 50 development articles, recompute mean Spearman rho at every
+grid value and record which value wins. That gives a distribution over the grid
+instead of a single winner.
+
+Selection mass, dev split, nomic-embed-text:
+
+    lambda    0     0.25   0.3    0.4    0.5    0.6    0.75   1.0    2.0
+    P(win)  0.7%   17.5%  27.6%  20.4%  17.8%   9.9%   2.6%   2.9%   0.5%
+
+TWO CONCLUSIONS, POINTING OPPOSITE WAYS:
+
+  (a) SWITCHING THE PRIOR ON IS ROBUST. lambda=0 wins 0.7% of dev resamples and
+      0.3% of test resamples. "Some positional prior beats none" survives
+      resampling in >99% of draws. This claim is safe.
+
+  (b) WHICH EXPONENT IS NOT IDENTIFIABLE. The reported lambda*=0.5 wins 17.8%.
+      Four grid values sit within 10 points of each other. The protocol returns
+      the INTERVAL [0.25, 0.6], not a point. 50 articles cannot separate them.
+
+Also found: on the combined 9-point grid the dev argmax is actually lambda=0.4
+(.2528) not 0.5 (.2519). The paper's 0.5 came from the coarse 5-point grid
+selected before the finer sweep was added, so the protocol is internally
+consistent, but this was disclosed in the text.
+
+PAIRED CONTROLS (all on the grid common to every configuration, {0,.25,.5,1,2};
+comparing agreement rates across grids of different size is invalid, the
+probability of two argmaxes coinciding falls mechanically as the grid grows):
+
+  comparison                                     P(same)  P(A<B)  P(A>B)
+  cross-backbone, shared draw (nomic vs bge-m3)   37.8%    0.4%   61.9%
+  SAME config, two independent draws (NOISE FLOOR) 43.5%   28.6%  27.9%
+  dev vs test, same backbone                      46.3%    0.9%   52.8%
+
+How to read this:
+  - Agreement rate alone proves NOTHING. Two different backbones agree 37.8% of
+    the time; one unchanged backbone agrees with ITSELF 43.5% of the time.
+    Nearly identical.
+  - DIRECTION does carry signal. The noise floor is symmetric by construction
+    (28.6 vs 27.9, a coin flip). Cross-backbone is 61.9 vs 0.4, a ~155:1 ratio
+    that no symmetric noise process produces. So bge-m3 really does prefer a
+    weaker prior.
+  - BUT the same asymmetry appears when only the ARTICLES change under a fixed
+    backbone (52.8 vs 0.9). So the backbone is NOT isolated as the cause. The
+    honest claim is "re-derive the exponent in situ", not "the backbone is the
+    variable that invalidates a borrowed value".
+
+Paper was updated accordingly in commit 59e9c2c (new section 7.3
+"How identifiable is lambda*?", plus abstract, contribution 4, 4.1, 4.3, 7.2,
+7.4, 8.2, conclusion).
+
+------------------------------------------------------------------------------
+2.2  MULTIPLE-COMPARISON CORRECTION -- CLEAN WIN   (cmd/compare)
+------------------------------------------------------------------------------
+Added Benjamini-Hochberg FDR over all 24 (baseline, dimension) cells. Table now
+prints raw p and adjusted q; bold is driven by q < 0.05 AND the paired-bootstrap
+CI excluding zero.
+
+RESULT: all 8 significant verdicts survive. Nothing was a fluke. Weakest
+survivor is coherence vs SMART-Model at q = .0096. This criticism cost the
+paper nothing and the paper is stronger for answering it.
+
+------------------------------------------------------------------------------
+2.3  THE LEAD-WINDOW CONTROL -- THIS IS THE BAD ONE
+     (tool: cmd/leadbaseline, make benchmark-lead / benchmark-lead-sweep)
+------------------------------------------------------------------------------
+Built the control reviewer #5 asked for. Two modes:
+  whole : ROUGE-L(first k source sentences as one block, candidate as one block)
+  sent  : mean over candidate sentences of max ROUGE-L against any of the first
+          k source sentences -- i.e. LGS's OWN mean-of-max aggregation, with
+          lexical overlap instead of embedding cosine and a hard cutoff instead
+          of the exponential prior.
+Both are reference-free like LGS, so the comparison isolates the machinery.
+
+RAW mean Spearman rho (the axis the paper's whole Pareto argument uses):
+
+    metric              ms/sample    mean rho
+    Lead-5 (sent)          0.06        .296     <-- beats LGS
+    Lead-3 (sent)          0.04        .284     <-- ties LGS
+    Lead-3 (whole)         0.02        .267
+    LGS                   57.01        .284
+    EmbedScorer          339.33        .174
+    BERTScore            567.66        .250
+    UniEval              430.31        .470
+
+Lead-5 is 950x cheaper than LGS and correlates BETTER. LGS is therefore
+DOMINATED and the Pareto-optimality claim -- the paper's headline contribution
+-- is false once this baseline is in the pool.
+
+Per-dimension the two are complementary (paired bootstrap, 5000 resamples):
+    LGS beats Lead-5 on coherence  +.105  and relevance +.079  (significant)
+    Lead-5 beats LGS on consistency -.129 and fluency   -.103  (significant)
+The MEAN is what the Pareto argument uses, and the mean is lost.
+
+------------------------------------------------------------------------------
+2.4  WHY LEAD-K WINS: THE EXTRACTIVENESS CONFOUND  (NEW FINDING)
+     (tool: cmd/confound, make paper-confound)
+------------------------------------------------------------------------------
+Hypothesis tested: lead-k is not measuring quality, it is measuring how much the
+summary COPIES from the source, and SummEval's human ratings reward copying.
+
+Defined copy rate = fraction of the candidate's token bigrams that occur
+verbatim in the source. No model, no reference, no hyperparameter. Pure counting.
+
+COPY RATE ALONE, scored as if it were a metric:
+
+    dimension     coherence  consistency  fluency  relevance   MEAN
+    rho             .210        .382        .305      .203      .275
+
+Mean rho .275 -- that OUTRANKS 11 OF THE 14 METRICS in the paper's own pool
+(BERTScore .250, GPTScore .264, ChrF .184, ROUGE .153, METEOR .162, BLEU .128,
+BARTScore .166, MoverScore .060, EmbedScorer .174, SMART-Model .202,
+SMART-String .084). A bigram counter beats most of the published literature on
+this benchmark's headline axis.
+
+How much of a copy detector each metric is (Spearman with copy rate):
+    Lead-5 .684 | Lead-3 .607 | GPTScore .433 | G-Eval .404 | UniEval .396
+    LGS .386 | ChrF .232 | BLEU .149 | BARTScore .128 | BERTScore .058
+
+BERTScore is nearly unconfounded because it is reference-based -- it never sees
+the source, so extractiveness cannot leak in. That is the mechanism.
+
+PARTIAL correlation (copy rate partialled out of both sides), cluster-bootstrap
+CI over articles, full set:
+
+    metric        raw    partial    drop     rho_copy   ms/sample
+    UniEval      .470     .424      .046       .396      430.31
+    G-Eval       .359     .318      .042       .404    13593.99
+    BERTScore    .250     .241      .008       .058      567.66
+    LGS          .284     .198      .085       .386       57.01
+    SMART-Model  .202     .182      .020       .096      890.02
+    GPTScore     .264     .165      .099       .433       90.53
+    METEOR       .162     .165     -.003       .013        0.98
+    EmbedScorer  .174     .164      .010       .052      339.33
+    Lead-5       .296     .154      .142       .684        0.06
+    Lead-3       .284     .154      .131       .607        0.04
+    ChrF         .184     .128      .056       .232        2.77
+    ROUGE-L      .153     .127      .026       .115        0.12
+    copy rate    .275     .000      .275      1.000        0.00
+
+LGS 95% CI on the partial axis: [.158, .238]. Lead-5: [.115, .192].
+
+PAIRED tests on the partial axis (5000 resamples, delta = LGS minus baseline):
+    vs Lead-5     +.044   [+.004, +.084]   p = .033   marginal
+    vs Lead-3     +.045   [-.003, +.090]   p = .064   NOT SIGNIFICANT
+    vs BERTScore  -.043   [-.090, +.004]   p = .074   tie, BERTScore ahead
+
+SO: controlling for the confound, LGS recovers relative to lead-k on the point
+estimate but is NOT statistically distinguishable from Lead-3, and ties
+BERTScore. The metric cannot be defended as contributing something a four-line
+lexical heuristic does not.
+
+------------------------------------------------------------------------------
+2.5  HEADROOM: THE CHEAP REGIME IS SATURATED
+------------------------------------------------------------------------------
+Question: can a better cheap metric be built by combining existing cheap signals?
+Evaluated on the HELD-OUT TEST HALF (last 50 articles) only, rank-averaged
+combinations:
+
+    combination           raw rho   partial rho   rho_copy    ms
+    LGS alone               .319       .230         .433     57.01
+    Lead-5 alone            .292       .147         .708      0.06
+    copy rate alone         .271       .000        1.000      0.00
+    LGS + Lead-5            .334       .219         .623     57.07
+    LGS + copy rate         .350       .233         .840     57.01
+    LGS + Lead-5 + ChrF     .339       .230         .583     59.84
+    all four                .348       .225         .778     59.84
+    UniEval (reference)     .473       .424           -     430.31
+
+Combining raises RAW rho (up to .350) purely by adding more copy detection
+(rho_copy climbs to .84) and changes the partial axis by nothing. Everything
+built from source-similarity -- lexical, positional, or embedding -- plateaus
+at partial rho ~= .23.
+
+CONCLUSION: "a better LGS" does not exist. Any metric of this signal class hits
+the same ceiling. Breaking past .23 cheaply requires a DIFFERENT KIND of signal,
+not better weighting of this one. UniEval sits at .424 because it performs a
+learned discriminative judgement, not a similarity measurement.
+
+
+================================================================================
+3. WHAT WAS TRIED AND DID NOT WORK / WAS NOT TRIED
+================================================================================
+
+TRIED, NEGATIVE RESULT:
+  - Seven rank-averaged combinations of cheap signals (2.5). None beat LGS alone
+    on the partial axis. Documented above so nobody repeats it.
+  - (From the original paper, appendix "Extension Log"): F-beta precision side,
+    anchor-coverage exponent, within-summary diversity penalty, top-k recall.
+    All rejected on the dev split. The paper's own explanation is that these
+    "diffuse" the matching signal. That analysis still stands.
+
+NOT TRIED -- CPU / POST-PROCESSING ONLY, DOABLE WITHOUT OLLAMA:
+  - Friedman + Nemenyi + Wilcoxon across all metrics (reviewer #1 #5). Proper
+    setup: blocks = the 100 articles, treatments = the metrics, response =
+    per-article Spearman of that metric's scores against one human dimension.
+    That gives 100 blocks x N metrics per dimension, which is enough power.
+    Do NOT use the 4 dimensions as blocks -- only 4 blocks, useless.
+  - Random / stratified dev-test splits instead of JSONL order (#3 m1). All
+    per-sample scores are stored, so you can re-run selection under hundreds of
+    random article splits with zero metric recomputation. This also strengthens
+    2.1 considerably.
+  - Per-dimension lambda decision matrix (#5 #7).
+  - Notation table, pros/cons table, preprint updates, Table 1 rework.
+
+NOT TRIED -- NEEDS OLLAMA OR THE MODEL SERVER (YOUR MACHINE):
+  - Cosine-to-lead-k control. The SHARPER version of 2.3: same embedder as LGS,
+    hard lead cutoff instead of exponential weighting. If that also matches LGS,
+    it proves neither the embedder nor the prior contributes anything. This is
+    the single most informative remaining experiment about LGS itself.
+  - lambda sweep on all-minilm and mxbai-embed-large (#3 m4). ~15 min. The
+    Makefile already has benchmark-ablation-lead-bge as a template.
+  - G-Eval with a frontier-grade judge, to answer #3 M1 honestly.
+  - The NLI go/no-go experiment -- see section 6.
+
+NOT TRIED -- LARGER PROJECTS:
+  - Second corpus (Newsroom has human ratings and strong lead bias; arXiv/PubMed
+    or SAMSum for the no-lead-bias contrast). Biggest single open item, and the
+    only thing that could rehabilitate the lead-bias prior as a contribution: if
+    lambda* is large where lead bias exists and collapses to 0 where it does
+    not, that is a real, positive, mechanistic finding -- much stronger than the
+    current cross-backbone story, and the effect size between corpora should be
+    far larger than between backbones, so it could actually clear the noise.
+  - Literature: verify MetaMetrics (arXiv:2410.02381); add and empirically
+    compare against the pre-LLM reference-free family (SUPERT, BLANC, SummaQA,
+    ESTIME). Until this is done the novelty claim is unverified.
+
+
+================================================================================
+4. BUGS AND INCONSISTENCIES FOUND IN THE REPO
+================================================================================
+
+4.1  GPTScore model mismatch -- FIX BEFORE ANY RESUBMISSION.
+     paper/main.tex, Table "tab:simplifications", declares GPTScore uses
+     "GPT-2 large (~774M)". cmd/modelsrv/app.py:269 loads plain "gpt2" (124M),
+     and cmd/modelsrv/models.py downloads "gpt2". The actual model is ~6x
+     smaller than the paper states. Reviewer #3 quoted the paper's figure in
+     good faith. The repo is public and linked from the paper; anyone checking
+     would find this. Either run gpt2-large or correct the table.
+
+4.2  LGS clamps negative scores to 0 (pkg/metrics/lgs.go, "if recall < 0").
+     Algorithm 1 in the paper declares the range as (-1, 1]. Immaterial for
+     rank correlations, but code and text disagree.
+
+4.3  paper/main.spl and paper/main.bbl are build artifacts and are now tracked.
+     .gitignore only covers __debug_bin*, CLAUDE.md, archive/. Consider adding
+     LaTeX intermediates. The PDFs are deliberately tracked, leave those.
+
+
+================================================================================
+5. WORK QUEUE
+================================================================================
+
+Ordered so that the cheap experiments that could invalidate expensive work come
+first. Do not start section 5.5 before 5.1 and 5.2 are answered.
+
+5.1  [CPU, hours]  Verify the prior-art hole. Read SUPERT (Gao et al. 2020),
+     BLANC, SummaQA, ESTIME, and MetaMetrics (arXiv:2410.02381). Question to
+     answer: does an existing published method already do "reference-free
+     sentence-level grounding against the source"? If yes, LGS has no novelty
+     even before the lead-k problem, and the pivot in section 6 becomes the only
+     option. This is cheap and it gates everything.
+
+5.2  [OLLAMA, ~30 min]  Cosine-to-lead-k control. Same embedder as LGS, hard
+     cutoff at k sentences, no exponential weight. Compare against LGS on both
+     the raw and the partial axis. Decides whether the embedder contributes
+     anything over lexical matching.
+
+5.3  [OLLAMA, ~15 min]  lambda sweep on all-minilm and mxbai-embed-large, then
+     re-run `make paper-lambdaci`. Closes reviewer #3 m4. Either strengthens the
+     directional backbone claim to 4 backbones or shows it was coincidence.
+
+5.4  [CPU, 1 day]  Hardware-independent cost axis. Instrument each cmd to count
+     neural forward passes per pair, tokens processed, and model parameter
+     count, and report those alongside wall-clock. This is the honest answer to
+     reviewer #3 M1 ("the budget was designed around LGS") because those numbers
+     do not depend on the machine. Note that some domination relations are
+     robust regardless: MoverScore costs 1277 ms for rho .060 while ROUGE-L
+     costs 0.12 ms for rho .153 -- four orders of magnitude of cost for a worse
+     result does not flip on a GPU. Separate the robust domination relations
+     from the fragile ones (G-Eval vs UniEval is fragile, it depends on the
+     judge configuration).
+
+5.5  [CPU, 1 day]  Friedman / Nemenyi / Wilcoxon (see section 3 for the correct
+     blocking structure).
+
+5.6  [CPU, hours]  Random-split robustness of lambda selection.
+
+5.7  [BIG]  Second corpus. See section 3.
+
+5.8  [TEXT]  Presentation pass: abstract, merge 1.1/1.2, contributions as
+     bullets without cross-references, notation table, pros/cons table, Table 1
+     rework, em dashes, length (69pp -> target well under 40 in non-review
+     layout), 2026 references, preprint updates, AI-tool disclosure.
+
+
+================================================================================
+6. STRATEGIC RECOMMENDATION
+================================================================================
+
+KBS imposed a 6-month embargo and requires >=50% difference for resubmission as
+a new submission. So a light revision is not an option anyway; something has to
+change structurally. Also consider whether KBS is the right venue at all -- the
+reviewer pool that produced a knowledge-graph citation demand and a
+misfiled ABSA review looks topically distant. IPM, Natural Language Engineering,
+Computer Speech & Language, or ACL/EMNLP are closer.
+
+THE CORE PROBLEM, stated plainly: the component the paper is named after (the
+exponential lead-bias prior) contributes +.005 held-out and its exponent is not
+identifiable; the component that does the work (sentence-level reference-free
+grounding) is a recombination of known parts whose closest prior art is not
+cited; and the whole thing is now beaten on the paper's own axis by a four-line
+lexical heuristic. The metric cannot carry a paper.
+
+WHAT CAN: the confound finding in 2.4. It is complete, reproducible from stored
+data, hardware-independent, and it explains the behaviour of the entire metric
+pool rather than one metric. A bare bigram counter outscoring 11 of 14 published
+metrics on this benchmark's headline axis is a result about how the field
+measures things, and no reviewer criticism in section 1 touches it -- every one
+of them attacks claims about LGS, and this paper would make none.
+
+PROPOSED SPLIT:
+
+  PAPER 1 (mostly written already, in data terms):
+    "Mean correlation on SummEval largely measures extractiveness."
+    - 17 metrics under one controlled budget
+    - the copy-rate diagnostic and the partial-correlation axis
+    - lead-window controls
+    - rankings recomputed on the corrected axis
+    - LGS included honestly as one data point, including the fact that it does
+      not separate from Lead-3
+    - the lambda-identifiability methodology from 2.1 generalises: submit the
+      SELECTION PROCEDURE to the bootstrap, not just the final number
+
+  PAPER 2 (new work, motivated by paper 1):
+    A metric designed against the corrected axis. Design target, now measurable:
+    partial rho > .23 at cost far below UniEval's 430 ms, with low rho_copy.
+    Candidate signals, chosen because they are structurally NOT copy detectors:
+      consistency <- NLI / entailment (entailment holds for paraphrase, so it
+                     does not reward verbatim copying). Also directly answers
+                     reviewers #4 and #6 on "cosine is not entailment".
+      fluency     <- small-LM perplexity (never looks at the source at all)
+      coherence   <- discourse features: entity grid, sentence ordering
+      relevance   <- source grounding (the one place LGS actually works)
+
+  GO/NO-GO FOR PAPER 2, run this before committing months:
+    Take one small NLI model on your GX10, score (source sentence, summary
+    sentence) pairs, and compute the CONSISTENCY partial rho. If it clears .23,
+    the signal class is right and the rest is engineering. If it plateaus at the
+    same ceiling, the problem is not the signal type and the design needs
+    rethinking. A few hours of work that decides several months.
+
+The infrastructure for paper 2 already exists -- harness, partial axis, lead
+baselines, selection-uncertainty tooling -- which is normally half the work.
+
+
+================================================================================
+7. REPO STATE AT HANDOFF
+================================================================================
+
+Commit 59e9c2c "Address some comments":
+    cmd/lambdaci/            selection-uncertainty analysis
+    cmd/compare/main.go      Benjamini-Hochberg FDR added
+    paper/lambdaci.gen.tex   new table
+    paper/main.tex           section 7.3 added; abstract, contribution 4, 4.1,
+                             4.3, 4.5, 7.2, 7.4, 8.2, conclusion revised
+    paper/comparisons.gen.tex, highlights.tex, references.bib, README.md
+    Makefile                 paper-lambdaci target
+
+Commit d3611a7 "Improve metric":
+    cmd/leadbaseline/        lead-window controls
+    cmd/confound/            extractiveness confound analysis
+    paper/confound.gen.tex   new table -- NOT yet referenced from main.tex, and
+                             nothing in the manuscript reports section 2.4 yet.
+                             The paper still makes the Pareto claim that
+                             section 2.3 refutes. Reconciling the manuscript
+                             with these two tables is unfinished work.
+    output/lead{3sent,5sent,3whole}.json
+    ablation/lead{1,2,3,5}{sent,whole}.json
+    Makefile                 benchmark-lead, benchmark-lead-sweep, paper-confound
+
+NOTE: output/lead*.json are picked up automatically by cmd/paper, so `make paper`
+will now add lead rows to paper/summary.gen.tex and paper/system.gen.tex. They
+are not in cmd/paper's metricOrder map, so they sort to the end with raw names.
+Add them to metricOrder and metricDisplayName if you want them placed properly,
+or move the files out of output/ if you do not want them in the main table yet.
+
+Everything verifies with:
+    go build ./... && gofmt -l cmd/ pkg/
+    cd paper && latexmk -pdf main.tex     (compiles clean, 0 errors, 69 pages)
+
+Statistics-only targets, no Ollama and no model server required:
+    make paper-lambdaci      lambda selection uncertainty  (~3 min)
+    make paper-comparisons   paired bootstrap + BH-FDR     (~2 min)
+    make paper-confound      extractiveness confound       (~2 min)
+    make benchmark-lead      lead-window controls          (~1 min)
+    make benchmark-lead-sweep  lead-k sweep into ablation/ (~1 min)
+
+================================================================================
+END
+================================================================================
