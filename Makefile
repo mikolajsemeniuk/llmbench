@@ -19,6 +19,7 @@ benchmark-modelsrv:
 	go run ./cmd/unieval -dimension consistency
 	go run ./cmd/unieval -dimension fluency
 	go run ./cmd/unieval -dimension relevance
+	$(MAKE) benchmark-ccm
 
 .PHONY: benchmark-ollama
 benchmark-ollama:
@@ -275,3 +276,99 @@ benchmark-embedder-ablation:
 	go run ./cmd/lgs -doc-split all -lead-bias-lambda $(LGS_LAMBDA) -embed-model mxbai-embed-large -bootstrap 0 -output ablation/lgs_embedder_mxbai.json
 	go run ./cmd/lgs -doc-split all -lead-bias-lambda $(LGS_LAMBDA) -embed-model bge-m3            -bootstrap 0 -output ablation/lgs_embedder_bge.json
 	go run ./cmd/lgs -doc-split all -lead-bias-lambda $(LGS_LAMBDA) -embed-model all-minilm        -bootstrap 0 -output ablation/lgs_embedder_minilm.json
+
+# CCM (Copy-invariant Contrastive Margin): log P(y|x) minus the mean
+# log-likelihood of K local perturbations of y (entity / number /
+# negation / sentence order), under a small causal LM served by the
+# model server (/ccm, CCM_MODEL defaults to Qwen/Qwen2.5-1.5B). One run
+# writes the canonical report to output/ccm.json and, from the same
+# forward passes, the ablation variants (no-contrast likelihood,
+# z-normalised margin, source-attributable margin) plus a per-sample
+# dump to ablation/ccm_*.json. K and the canonical variant are fixed a
+# priori; nothing is tuned on SummEval.
+#
+# The same run also writes CCM-D, output/ccmd_<dimension>.json: one
+# signal per SummEval dimension, selected on the development half
+# (first 50 articles) from a fixed pool and verified on the last 50
+# (see README "CCM-D"). Each CCM-D report carries a quarter of the run's
+# wall-clock, since cost-aware tools sum a dimensional metric's reports.
+CCM_K ?= 8
+.PHONY: benchmark-ccm
+benchmark-ccm:
+	go run ./cmd/ccm -doc-split all -k $(CCM_K) -output output/ccm.json -ablation-dir ablation -output-dim-dir output
+
+# Paired-bootstrap comparison (with BH-FDR) and extractiveness-confound
+# table for CCM-D. Statistics only: reads output/*.json.
+.PHONY: paper-ccmd
+paper-ccmd:
+	go run ./cmd/compare -metric ccmd -baselines unieval,geval,lgs,bertscore,gptscore,bartscore,lead5sent,lead3sent -bootstrap 5000 -output paper/ccmd_comparisons.gen.tex
+	go run ./cmd/confound -input output -bootstrap 2000 -ours ccmd -output paper/ccmd_confound.gen.tex
+
+# PSC (Paraphrased-Source Conditioning): every CCM signal recomputed as
+# log P(· | x̃), where x̃ is a meaning-preserving paraphrase of the source
+# written once per article by an Ollama instruction model. Same
+# perturbations, seed and LM as benchmark-ccm, so PSC vs CCM differs only
+# in the conditioning text. Needs Ollama (paraphraser) and the model
+# server (scoring LM). Paraphrases are cached in
+# ablation/psc_paraphrases.json; delete it to regenerate.
+PSC_PARAPHRASE_MODEL ?= qwen2.5:7b-instruct-q4_K_M
+.PHONY: benchmark-psc
+benchmark-psc:
+	go run ./cmd/psc -paraphrase-model $(PSC_PARAPHRASE_MODEL) -output-dim-dir output -ablation-dir ablation
+
+.PHONY: paper-pscd
+paper-pscd:
+	go run ./cmd/compare -metric pscd -baselines ccmd,unieval,geval,lgs,bertscore,gptscore,lead5sent -bootstrap 5000 -output paper/pscd_comparisons.gen.tex
+	go run ./cmd/confound -input output -bootstrap 2000 -ours pscd -output paper/pscd_confound.gen.tex
+
+# NLIG: SummaC-ZS-style NLI grounding (DeBERTa-v3-large NLI served by the
+# model server at /nli). Every summary sentence vs every 1- and 2-sentence
+# source window. Writes output/nlig.json + ablation/nlig_*.json.
+.PHONY: benchmark-nlig
+benchmark-nlig:
+	go run ./cmd/nlig -output output/nlig.json -ablation-dir ablation
+
+# SPL: splice-point likelihood — mean log P under the CCM LM of the words
+# where a candidate departs from a verbatim source fragment (model server
+# /tokenlogprobs). Writes output/spl.json + ablation/spl_*.json.
+.PHONY: benchmark-spl
+benchmark-spl:
+	go run ./cmd/spl -output output/spl.json -ablation-dir ablation
+
+# LNC: Likelihood–NLI Composite. Computes the CCM, NLIG and SPL signals
+# end to end, fits a per-dimension ridge calibration on the development
+# half ONLY (first 50 articles; alpha fixed a priori; ridge chosen over
+# per-dimension signal/pair selection by 5-fold CV inside dev), freezes
+# it in ablation/lnc_calibration.json and writes output/lnc_<dim>.json.
+# Use LNC_FIT=false to apply an existing calibration unchanged.
+LNC_FIT ?= true
+.PHONY: benchmark-lnc
+benchmark-lnc:
+	go run ./cmd/lnc -fit=$(LNC_FIT) -calibration ablation/lnc_calibration.json -output-dim-dir output -ablation-dir ablation
+
+.PHONY: paper-lnc
+paper-lnc:
+	go run ./cmd/compare -metric lnc -doc-split last50 -baselines unieval,geval,ccmd,lgs,bertscore,gptscore,bartscore,lead5sent -bootstrap 5000 -output paper/lnc_comparisons.gen.tex
+	go run ./cmd/confound -input output -bootstrap 2000 -ours lnc -output paper/lnc_confound.gen.tex
+
+# LNC-D: the same LNC features, ridge target = human rank with the
+# copy-rate rank projected out (copy rate is used only for fitting, never
+# as a feature). Reuses the feature dump of benchmark-lnc, no model calls.
+.PHONY: benchmark-lncd
+benchmark-lncd:
+	go run ./cmd/lnc -features-in ablation/lnc_features.json -debias -name lncd -calibration ablation/lncd_calibration.json -output-dim-dir output
+
+# LNC-fast: same features and protocol as benchmark-lnc with cost cuts
+# fixed a priori — CCM LM in bf16, K=4 perturbations, NLI against each
+# summary sentence's 4 highest-overlap source windows only. Start the model
+# server with CCM_DTYPE=bfloat16 for this target.
+.PHONY: benchmark-lncf
+benchmark-lncf:
+	go run ./cmd/lnc -k 4 -nli-topk 4 -name lncf -calibration ablation/lncf_calibration.json -output-dim-dir output -ablation-dir ablation
+
+# Paired bootstrap for LNC-fast on the held-out half, and the confound /
+# Pareto table with every GPU metric timed on the same machine (gb10/).
+.PHONY: paper-lncf
+paper-lncf:
+	go run ./cmd/compare -metric lncf -doc-split last50 -baselines unieval,geval,lnc,ccmd,lgs,bertscore,gptscore,bartscore,lead5sent -bootstrap 5000 -output paper/lncf_comparisons.gen.tex
+	go run ./cmd/confound -input output -cost-dir gb10 -bootstrap 2000 -ours lncf -output paper/lncf_confound_gb10.gen.tex

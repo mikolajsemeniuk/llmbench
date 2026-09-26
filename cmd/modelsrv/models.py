@@ -33,4 +33,10 @@ BartForConditionalGeneration.from_pretrained(
     "facebook/bart-large-cnn", use_safetensors=True
 )
 
+print("Downloading Qwen2.5-1.5B (CCM)...")
+from transformers import AutoModelForCausalLM
+
+AutoTokenizer.from_pretrained("Qwen/Qwen2.5-1.5B")
+AutoModelForCausalLM.from_pretrained("Qwen/Qwen2.5-1.5B", use_safetensors=True)
+
 print("All models downloaded.")

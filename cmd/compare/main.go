@@ -36,6 +36,7 @@ var (
 	level     string
 	seed      uint64
 	fdrAlpha  float64
+	docSplit  string
 )
 
 var dimensions = []string{"coherence", "consistency", "fluency", "relevance"}
@@ -106,6 +107,8 @@ func main() {
 	flag.Uint64Var(&seed, "seed", 42, "random seed for reproducibility")
 	flag.Float64Var(&fdrAlpha, "fdr-alpha", 0.05,
 		"Benjamini-Hochberg false-discovery rate for the family of (baseline, dimension) tests")
+	flag.StringVar(&docSplit, "doc-split", "all",
+		"compare on all|first50|last50 articles (dataset order); use last50 for a metric calibrated on first50")
 	flag.Parse()
 
 	if target == "" {
@@ -127,8 +130,11 @@ func main() {
 	if err != nil {
 		log.Fatalf("load dataset: %v", err)
 	}
+	samples = splitDocs(samples, docSplit)
 
-	targetScores, err := loadScores(samples, inputDir, target)
+	// The target may itself be dimensional (e.g. ccmd_<dim>.json): it
+	// then contributes its matching-dimension scorer to each cell.
+	targetByDim, err := loadBaseline(samples, inputDir, target)
 	if err != nil {
 		log.Fatalf("load target %q: %v", target, err)
 	}
@@ -147,6 +153,7 @@ func main() {
 		for _, dim := range dimensions {
 			human := humanScores(samples, dim)
 			baseScores := b.scoresByDim[dim]
+			targetScores := targetByDim[dim]
 
 			fn := eval.Spearman
 			var comp eval.PairedComparison
@@ -201,8 +208,8 @@ func loadScores(samples []eval.Sample, dir, name string) ([]float64, error) {
 	if err := json.Unmarshal(data, &r); err != nil {
 		return nil, fmt.Errorf("decode %s: %w", path, err)
 	}
-	if len(r.Scores) != len(samples) {
-		return nil, fmt.Errorf("expected %d scores in %s, got %d",
+	if len(r.Scores) < len(samples) {
+		return nil, fmt.Errorf("expected at least %d scores in %s, got %d",
 			len(samples), path, len(r.Scores))
 	}
 
@@ -556,4 +563,40 @@ func writeFile(path, content string) error {
 	defer f.Close()
 	_, err = io.WriteString(f, content)
 	return err
+}
+
+// splitDocs keeps the first or last 50 articles in dataset order (the
+// development/test halves every calibrated metric in this repo uses).
+func splitDocs(samples []eval.Sample, split string) []eval.Sample {
+	if split == "all" {
+		return samples
+	}
+	var docs []string
+	seen := map[string]bool{}
+	for _, s := range samples {
+		if !seen[s.DocumentID] {
+			seen[s.DocumentID] = true
+			docs = append(docs, s.DocumentID)
+		}
+	}
+	keep := map[string]bool{}
+	switch split {
+	case "first50":
+		for _, d := range docs[:50] {
+			keep[d] = true
+		}
+	case "last50":
+		for _, d := range docs[len(docs)-50:] {
+			keep[d] = true
+		}
+	default:
+		log.Fatalf("-doc-split must be all|first50|last50, got %q", split)
+	}
+	var out []eval.Sample
+	for _, s := range samples {
+		if keep[s.DocumentID] {
+			out = append(out, s)
+		}
+	}
+	return out
 }

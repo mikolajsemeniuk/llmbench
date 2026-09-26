@@ -1,0 +1,291 @@
+================================================================================
+SESSION LOG / HANDOFF — search for a successor metric to LGS
+Project: llmbench — reference-free summarization metrics on SummEval
+Written: 2026-09-18/19 (night session)
+Branch:  improve   (NOTHING IS COMMITTED — everything below is working-tree)
+Read first: improvements.txt (rejection triage), comments.txt (reviewer
+milestones), README.md (per-metric sections with all numbers)
+================================================================================
+
+0. WHERE WE STAND IN ONE PARAGRAPH
+--------------------------------------------------------------------------------
+The LGS paper was rejected (see improvements.txt). LGS cannot be defended: its
+lead-bias prior contributes ~+.005 held-out, its closest prior art (SummaC,
+Chen et al. 2021) is uncited, and a 4-line lead-window heuristic matches it on
+the benchmark's own axis. This session built and evaluated FIVE new metric
+ideas end-to-end on the full SummEval set. Three failed, two worked. The
+current best candidate is LNC-fast: a per-dimension ridge combination of cheap
+reference-free signals, 227 ms/sample on the GB10, which is Pareto-optimal on
+both the raw and the extractiveness-partialled axis when every GPU metric is
+timed on the same machine. Its novelty is empirical, not a new primitive.
+The biggest remaining hole is that its calibration is fitted on SummEval only
+(no second corpus).
+
+1. EVALUATION PROTOCOL USED THROUGHOUT (keep doing this)
+--------------------------------------------------------------------------------
+- Two axes, always reported together:
+    raw ρ̄      = mean summary-level Spearman over the 4 SummEval dimensions
+    partial ρ̄  = same with the bigram copy rate partialled out (cmd/confound)
+    ρ_copy     = the metric's own correlation with the copy rate
+  The partial axis exists because SummEval's ratings are heavily confounded
+  with extractiveness (improvements.txt §2.4). NOTE: Durmus, Ladhak,
+  Hashimoto (ACL 2022) already published this for the CONSISTENCY dimension —
+  cite them and differentiate (all four dimensions, partial correlations,
+  LLM judges).
+- Article-level splits by dataset order: dev = first 50 articles, test = last
+  50. Every design decision (which signal, which variant, ridge vs selection,
+  calibration weights) is made on dev ONLY and verified once on test.
+- For any metric calibrated on dev, paired tests must run on the test half:
+    go run ./cmd/compare -metric <name> -doc-split last50 ...
+  (-doc-split was added this session.)
+- Report random-split robustness, not just the canonical split. The JSONL-order
+  split turned out to be mildly favourable for LNC (.354 test vs .331 mean over
+  200 random 50/50 article splits). Quote the random-split number.
+- Cost claims are only valid on one machine. See §4.
+
+2. WHAT WAS BUILT AND WHAT HAPPENED
+--------------------------------------------------------------------------------
+Numbers are full-set partial ρ̄ unless marked. All code is regenerable via make
+targets; every run wrote per-sample dumps so analyses can be redone without a
+GPU.
+
+2.1 CCM — Copy-invariant Contrastive Margin   (pkg/metrics/ccm.go, cmd/ccm)
+    score = log P(y|x) − mean_k log P(y'_k|x), Qwen2.5-1.5B, K=8 local
+    perturbations of the candidate (entity swap / number change / negation
+    flip / sentence swap). Hypothesis: perturbations preserve the copy rate,
+    so the copy bonus cancels.
+    RESULT: FAILED. raw .225, partial .124, ρ_copy .43 — worse than LGS.
+    WHY: with the source in context the LM predicts verbatim-copied spans
+    almost deterministically, so perturbing a copied span costs MORE
+    likelihood than perturbing a paraphrase. The margin rewards copying.
+    Entity/number perturbations carry almost no consistency signal (~.10).
+    Closest prior art: DeltaScore (Findings EMNLP 2023) has the same formula
+    with one perturbation for story evaluation; DetectGPT/Fast-DetectGPT the
+    K-perturbation curvature. MUST be cited.
+
+2.2 CCM-D — per-dimension CCM (same run, no extra model calls)
+    One dev-selected signal per dimension from a fixed pool of 7.
+    RESULT: partial .290 full / .297 test, raw .388. Superseded by LNC.
+
+2.3 PSC — Paraphrased-Source Conditioning   (pkg/metrics/psc.go, cmd/psc)
+    Same signals but conditioned on x̃, an LLM paraphrase of the source
+    (qwen2.5:7b-instruct, 3-sentence chunks, T=0, cached in
+    ablation/psc_paraphrases.json).
+    RESULT: mechanism CONFIRMED, metric WORSE. ρ_copy of the likelihood drops
+    .74 → .18; the paraphrase shares 21% of bigrams with the source; the
+    per-summary diagnostic (log P(y|x) − log P(y|x̃))/|y| correlates .57 with
+    copy rate. But partial drops .290 → .257 (test .297 → .239): removing the
+    copy bonus also removed real signal, and the paraphrase adds noise
+    (observed drifts, e.g. an invented "During an earlier part of the season").
+    Prior art: paraphrasing the REFERENCE is known (Freitag et al. 2020,
+    Para-Ref NAACL 2024); Prism (EMNLP 2020) documents the copy bonus in
+    likelihood scoring; Dreyer et al. (EACL Findings 2023) adjust factuality
+    metrics for abstractiveness post hoc. Paraphrasing the CONDITIONING SOURCE
+    appears unpublished — this is the most defensible novel mechanism found,
+    even though it does not win as a metric.
+
+2.4 NLIG — NLI grounding   (pkg/metrics/nlig.go, cmd/nlig)
+    SummaC-ZS construction: mean over summary sentences of
+    max over 1- and 2-sentence source windows of P(entail) − P(contradict),
+    DeBERTa-v3-large MNLI/FEVER/ANLI/LingNLI/WANLI.
+    RESULT: the best consistency signal in the whole pool — consistency
+    partial .362 full, .413 test (UniEval .289, G-Eval .398, CCM-D .237).
+    Other dimensions weak; mean partial .189. NOT NOVEL (SummaC, TACL 2022);
+    use it as a component and as the answer to "cosine is not entailment".
+
+2.5 SPL — Splice-Point Likelihood   (pkg/metrics/spl.go, cmd/spl)
+    Motivated by the fact that the MEDIAN SummEval candidate copies 92% of its
+    bigrams: score only the words where the candidate departs from a verbatim
+    source fragment (first word of each fragment + words not continuing a
+    source bigram).
+    RESULT: FAILED. raw .123, partial .139. The words INSIDE copied fragments
+    carry more signal (partial .197). Verified not to be a bug: per-word
+    log-probs sum back to CCM's sequence log-prob within 0.03 nats.
+
+2.6 LNC — Likelihood–NLI Composite   (pkg/metrics/lnc.go, cmd/lnc)  ** BEST **
+    10 features, all reference-free, from the runs above:
+      CCM:  logp_tok, logp_sum, ulogp_tok, order margin, negation margin, zmargin
+      NLIG: mean, min
+      SPL:  splice, inside-copy
+    Per-dimension ridge (α=10 fixed a priori) on standardised features, fitted
+    on dev only, frozen in ablation/lnc_calibration.json.
+    Design decision made on dev ONLY: ridge beat per-dimension single/pair
+    selection by 5-fold article-level CV inside dev (.301 vs .295).
+    A population-dependent rank feature was dropped so the score is computable
+    per sample.
+    RESULT (test half): raw .437, partial .354 (coh .375 / con .360 / flu .333
+    / rel .347). Random splits: partial .331 [.302, .356], raw .420.
+    Paired bootstrap on the test half, BH-FDR over 32 cells: 18 wins, 13 ties,
+    1 loss (UniEval on coherence). Beats UniEval on CONSISTENCY (+.104), beats
+    G-Eval on fluency and ties it elsewhere, beats CCM-D / LGS / BERTScore /
+    GPTScore / BARTScore / Lead-5 broadly.
+    Feature-group ablation (ridge refit on dev, mean over 100 random splits):
+      all features                      .331
+      without perturbation features     .278   <-- biggest single contribution
+      without NLI                       .312   (NLI buys +.019 for 469 ms)
+      without SPL                       .328   (SPL buys +.003)
+      likelihood only                   .258
+    So CCM failed as a metric but its perturbation features are the most
+    valuable ingredient of the composite. That is a usable narrative.
+
+2.7 LNC-D — debiased variant (make benchmark-lncd, no model calls)
+    Same features, ridge target = human rank with the copy-rate rank projected
+    out (copy rate used ONLY in fitting, never as a feature).
+    RESULT: same partial (.354 test) with ρ_copy .25 instead of .55; raw falls
+    to .398. Use it for the confound argument, not as the headline.
+
+2.8 LNC-fast — the headline candidate (make benchmark-lncf)
+    Identical pipeline and protocol; three cost cuts fixed a priori (NOT
+    tuned): CCM LM in bf16 (CCM_DTYPE=bfloat16), K=4 instead of 8, NLI only
+    against each summary sentence's 4 highest-overlap source windows
+    (-nli-topk 4). Calibration refitted on dev.
+    RESULT: 227 ms/sample (CCM 118 + NLI 85 + SPL 25) vs 854 for LNC.
+    Test: raw .433, partial .350. Random splits: partial .323 [.298, .347].
+    Paired bootstrap on test half (36 cells): 17 wins, 18 ties, 1 loss
+    (UniEval coherence); ties full LNC on every dimension.
+    PARETO: with same-hardware costs it is on the frontier on BOTH axes and is
+    the only reference-free metric on the frontier above .2 partial, sitting
+    between BERTScore (210 ms, .241) and UniEval (336 ms, .424).
+
+3. HOW TO RUN IT
+--------------------------------------------------------------------------------
+Environment (already set up on this machine):
+  ~/.venvs/llmbench          python venv with CUDA torch 2.14+cu130,
+                             transformers, bert-score, POT, sentencepiece
+  Ollama on :11434           qwen2.5:7b-instruct-q4_K_M (paraphraser, G-Eval),
+                             nomic-embed-text + 3 more embedders (LGS)
+  cmd/modelsrv on :9200      new endpoints added this session:
+                               /ccm            sequence log-likelihoods,
+                                               source encoded once per request
+                                               (KV cache reused), fp32 weights
+                                               with TF32 matmuls by default
+                               /tokenlogprobs  per-token log-probs + char
+                                               offsets (SPL)
+                               /nli            premise×hypothesis matrix, or
+                                               sparse {"pairs": [...]} mode
+
+Make targets added: benchmark-ccm, benchmark-psc, benchmark-nlig,
+benchmark-spl, benchmark-lnc, benchmark-lncd, benchmark-lncf,
+paper-ccmd, paper-pscd, paper-lnc, paper-lncf.
+
+Typical full reproduction of the headline metric (~25 min):
+  cd cmd/modelsrv && CCM_DTYPE=bfloat16 EAGER_LOAD=0 ~/.venvs/llmbench/bin/python app.py &
+  make benchmark-lncf
+  make paper-lncf
+
+Refit-only (seconds, no GPU): cmd/lnc -features-in ablation/lnc_features.json
+  … which is how LNC-D is produced.
+
+4. COST: MEASURED ON ONE MACHINE (gb10/)
+--------------------------------------------------------------------------------
+The baseline costs in output/*.json are the OLD Apple-CPU runs. All baselines
+were re-timed on the GB10 into gb10/*.json (scores there are ignored; only
+runtime is used). cmd/confound gained -cost-dir for this.
+
+  metric                 GB10 ms/sample   old Apple ms   partial ρ̄
+  GPTScore                     31              91          .165
+  spl                          48              --          .139
+  LGS                          93              57          .198
+  BERTScore                   210             568          .241
+  LNC-fast                    227              --          .339
+  BARTScore                   302             523          .136
+  CCM-D                       335              --          .290
+  UniEval (4 dims)            336             430          .424
+  MoverScore                  404            1277          .091
+  nlig                        467              --          .189
+  LNC                         854              --          .344
+  G-Eval (4 dims × 3 runs)  18 219          13 594          .318
+
+CONSEQUENCE FOR THE PAPER: on one machine UniEval is cheaper than full LNC AND
+better, so full LNC is not Pareto-optimal. LNC-fast is. Among reference-free
+metrics LNC-fast is ~80× cheaper than G-Eval and ties or beats it everywhere on
+the held-out half. Wherever a human reference exists, UniEval is still the
+better choice — say so.
+Not re-timed: SMART-Model, EmbedScorer (Ollama), lexical metrics (CPU). All are
+dominated on quality anyway.
+
+5. NOVELTY STATUS (checked by literature search this session)
+--------------------------------------------------------------------------------
+- Perturbation margin: DeltaScore (Findings EMNLP 2023) = same formula, stories,
+  one perturbation. DetectGPT / Fast-DetectGPT = curvature framing. CITE BOTH.
+- Likelihood signals: BARTScore s→h, GPTScore, FFLM (EMNLP 2023), HaRiM+
+  (AACL 2022), CPMI, Shannon Score. CITE; do not claim these as new.
+- NLI grounding: SummaC-ZS/Conv (TACL 2022), AlignScore, MiniCheck, QAFactEval.
+  Salience weighting: SUPERT (ACL 2020), Chen et al. (ACL 2021). LGS itself
+  must cite SummaC and Chen — that is the uncited-prior-art hole reviewers hit.
+- Learned metric combination: MetaMetrics (ICLR 2025). LNC is in this family.
+- Sentence-order contrast for coherence: DeltaScore, Laban et al. (ACL 2021);
+  Steen & Markert (COLING 2022) already showed shuffle-based measures transfer
+  poorly to SummEval coherence — a negative precedent reviewers will know.
+- Extractiveness confound: Durmus et al. (ACL 2022) for consistency only;
+  Ladhak et al. (ACL 2022); Dreyer et al. (EACL Findings 2023).
+- APPEARS UNPUBLISHED: conditioning likelihood metrics on a PARAPHRASED source,
+  and the copy-advantage diagnostic log P(y|x) − log P(y|x̃).
+Caveat: searches were engine-based, abstracts mostly; verify the few papers you
+lean on by reading them.
+
+6. OPEN ITEMS, IN PRIORITY ORDER
+--------------------------------------------------------------------------------
+6.1 SECOND CORPUS. The single biggest hole (reviewer M6) and the strongest test
+    of LNC: does the dev-fitted calibration TRANSFER? Score a second
+    human-rated corpus with the frozen ablation/lncf_calibration.json
+    (cmd/lnc -fit=false). Candidates: SEAHORSE (6 binary dimensions,
+    attribution≈consistency, main-ideas≈relevance, grammar≈fluency), FRANK /
+    SummaC benchmark (consistency only), RoSE, Newsroom human eval. Needs a
+    dataset loader in pkg/eval.
+6.2 Decide the paper's shape. Two viable stories:
+    (a) measurement paper: the extractiveness confound across all four
+        dimensions + the whole metric pool timed on one machine + the negative
+        results (CCM, SPL, PSC) as mechanism evidence; or
+    (b) metric paper around LNC-fast, with (a) as the evaluation section.
+    Either way the novelty is empirical; do not oversell a new primitive.
+6.3 Wire the new tables into paper/main.tex. paper/{ccmd,pscd,lnc,lncf}_*.gen.tex
+    exist but nothing references them, and main.tex still makes the old Pareto
+    claim that §2.3 of improvements.txt refutes.
+6.4 Cheaper NLI (biggest remaining cost item at 85 ms even after top-4): try
+    cross-encoder/nli-deberta-v3-small (already in the HF cache).
+6.5 Still-open reviewer items from comments.txt untouched by this session:
+    M4 (overstated BERTScore claims), M7 (deployment scenarios unvalidated),
+    M9/M10 (presentation, notation table, length), GPTScore model mismatch
+    (improvements.txt §4.1 — paper says GPT-2 large, code loads gpt2).
+
+7. OPS GOTCHAS (cost me time; will cost you too)
+--------------------------------------------------------------------------------
+- Background processes die between tool calls in this harness. Start the model
+  server and the benchmark in ONE backgrounded command, not two.
+- The machine had ~70 GB RAM in use by other processes; a full (batch, length,
+  vocab) logits tensor in fp32 OOM-killed the server (and probably killed two
+  sessions). /ccm now projects through the LM head CCM_HEAD_ROWS rows at a
+  time and uses logits_to_keep=1 for the prefix pass. Peak is ~9 GB, of which
+  6 GB is fp32 weights.
+- fp32 weights + TF32 matmuls: batched-and-padded scoring matches a plain full
+  forward to ~0.003 nats. Pure bf16 drifts ~0.1 nats, which is the size of
+  small margins — that is why fp32 is the default and bf16 is opt-in for
+  LNC-fast (where the ridge absorbs it; verified by the LNC-fast numbers).
+- pkill -f <pattern> matches the agent's own shell command line and kills the
+  session. Filter by /proc/<pid>/comm instead.
+- All runs are deterministic: a rerun of cmd/ccm reproduced output/ccm.json
+  exactly (max diff 0.0), and cmd/lnc -features-in reproduces LNC bit-for-bit.
+
+8. FILE MAP OF THIS SESSION (all untracked/uncommitted)
+--------------------------------------------------------------------------------
+new packages   pkg/metrics/{ccm,psc,nlig,spl,lnc}.go
+new commands   cmd/{ccm,psc,nlig,spl,lnc}
+modified       cmd/modelsrv/app.py    (+/ccm, /tokenlogprobs, /nli)
+               cmd/modelsrv/models.py (+Qwen2.5-1.5B download)
+               pkg/metrics/modelsrv.go(+postJSON)
+               cmd/compare/main.go    (+-doc-split, dimensional target)
+               cmd/confound/main.go   (+-cost-dir)
+               Makefile, README.md    (a section per metric, incl. failures)
+scores         output/{ccm,nlig,spl}.json,
+               output/{ccmd,pscd,lnc,lncd,lncf}_<dim>.json
+dumps/fits     ablation/{ccm,psc,nlig,spl}_*.json,
+               ablation/lnc_features.json, ablation/lncf_features.json,
+               ablation/{lnc,lncd,lncf}_calibration.json,
+               ablation/psc_paraphrases.json
+costs          gb10/*.json  (runtime only — do not use these scores)
+tables         paper/{ccmd,pscd,lnc,lncf}_*.gen.tex (not referenced by main.tex)
+
+================================================================================
+END
+================================================================================

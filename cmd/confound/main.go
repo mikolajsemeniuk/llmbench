@@ -51,6 +51,7 @@ import (
 )
 
 var (
+	costDir   string
 	inputDir  string
 	outputTex string
 	ngram     int
@@ -63,6 +64,7 @@ var dimensions = []string{"coherence", "consistency", "fluency", "relevance"}
 
 func main() {
 	flag.StringVar(&inputDir, "input", "output", "directory containing metric JSON reports")
+	flag.StringVar(&costDir, "cost-dir", "", "optional directory of reports re-timed on other hardware (e.g. gb10); their ms/sample replaces the runtime of the same metric")
 	flag.StringVar(&outputTex, "output", "paper/confound.gen.tex", "path to write LaTeX table (- for stdout)")
 	flag.IntVar(&ngram, "ngram", 2, "n-gram order for the copy rate (1 = unigram, 2 = bigram)")
 	flag.IntVar(&bootstrap, "bootstrap", 2000, "cluster-bootstrap resamples over articles (0 = point estimates only)")
@@ -85,6 +87,11 @@ func main() {
 	metrics, err := loadMetrics(inputDir, samples)
 	if err != nil {
 		log.Fatal(err)
+	}
+	if costDir != "" {
+		if err := overrideCosts(metrics, costDir); err != nil {
+			log.Fatal(err)
+		}
 	}
 	if len(metrics) == 0 {
 		log.Fatalf("no usable reports in %s", inputDir)
@@ -565,4 +572,38 @@ func writeFile(path, content string) error {
 	}
 	_, err := io.WriteString(w, content)
 	return err
+}
+
+// overrideCosts replaces each metric's ms/sample with the one measured in
+// dir (summed over dimension files, like loadMetrics), so that every row
+// of the table can be timed on the same hardware. Reports in dir may
+// cover only a subset of samples (e.g. G-Eval timed on 48 per
+// dimension); only their runtime is used, never their scores.
+func overrideCosts(ms []metricScores, dir string) error {
+	paths, err := filepath.Glob(filepath.Join(dir, "*.json"))
+	if err != nil {
+		return err
+	}
+	cost := map[string]float64{}
+	for _, p := range paths {
+		raw, err := os.ReadFile(p)
+		if err != nil {
+			return err
+		}
+		var r eval.Report
+		if err := json.Unmarshal(raw, &r); err != nil {
+			return fmt.Errorf("decode %s: %w", p, err)
+		}
+		if r.Samples == 0 {
+			continue
+		}
+		base, _ := splitDimensional(r.Metric)
+		cost[base] += 1000.0 * r.RuntimeSec / float64(r.Samples)
+	}
+	for i := range ms {
+		if c, ok := cost[ms[i].name]; ok {
+			ms[i].runtimeMs = c
+		}
+	}
+	return nil
 }

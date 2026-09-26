@@ -1,0 +1,103 @@
+================================================================================
+REVIEWER COMMENTS -- FILTERED TO ACTIONABLE MILESTONES
+Source: KBS decision letter, rejection, received 2026-09-18
+Filtered against: improvements.txt (full triage, 2026-09-16)
+================================================================================
+
+================================================================================
+MILESTONES -- ordered by what blocks resubmission
+================================================================================
+
+M1. [BLOCKING] Baseline comparisons are confounded, not just under-budget.
+    We independently verified this is worse than reviewers thought: a trivial
+    lead-window ROUGE-L control (no model, no reference) MATCHES OR BEATS LGS
+    on the paper's own mean-Spearman axis at ~1000x lower cost. The
+    Pareto-optimality headline claim is false once this control is included.
+    (Reviewer #3 M1, #5 #11, #4 cost-only-wall-clock point)
+    -> improvements.txt section 2.3, 2.4. Must be fixed before resubmission,
+       not just disclosed.
+
+M2. [BLOCKING] Novelty vs. closer prior art is unverified.
+    Related work skips the pre-LLM reference-free family (SUPERT, BLANC,
+    SummaQA, ESTIME) and MetaMetrics (arXiv:2410.02381), which already reports
+    runtime alongside correlation -- undercutting the "no prior meta-evaluation
+    puts these on one axis" claim.
+    (Reviewer #3 M4, Reviewer #4 related-work gap)
+    -> gates everything else; if SUPERT already does "reference-free
+       sentence-level grounding against source", LGS has no novelty
+       independent of the M1 problem.
+
+M3. [BLOCKING] lambda* (the paper's namesake contribution) is not
+    identifiable from 50 dev articles: dev-optimal (0.5) != test-optimal
+    (0.25) on the same backbone, and the cross-backbone "shift" is not
+    separable from ordinary resampling noise.
+    (Reviewer #3 M2, #4 lambda instability, #5 #7)
+    -> partially measured (improvements.txt 2.1); "some prior beats none" is
+       robust, "which exponent" is not. Needs a per-dimension decision matrix
+       or an honest statement that the value is an interval, not a point.
+
+M4. [MAJOR] "Strictly dominates BERTScore" overstates per-dimension evidence:
+    only 1 of 4 dimensions (consistency) is significant; relevance numerically
+    favors BERTScore.
+    (Reviewer #3 M3)
+    -> abstract still leads with the strong claim; needs rewording throughout,
+       not just a caveat buried in 6.3.
+
+M5. [MAJOR] Cosine similarity is conflated with factual grounding/entailment.
+    The paper's own numbers agree: consistency (the factuality dimension) is
+    LGS's worst result. This is the most promising direction for follow-up
+    work (NLI-based consistency signal), not just a wording fix.
+    (Reviewer #4, #6)
+
+M6. [MAJOR] Single corpus only (SummEval / CNN-DailyMail), so the lead-bias
+    premise itself is untested outside news, where no comparable positional
+    prior may exist.
+    (Reviewer #4, #6)
+    -> biggest open item; a second corpus (e.g. Newsroom vs. arXiv/PubMed or
+       SAMSum) is the only experiment that could rehabilitate the lead-bias
+       prior as a genuine contribution rather than a dataset artifact.
+
+M7. [MAJOR] Deployment scenarios (online model selection, release gating, RL
+    reward modeling) are described with zero supporting experiments or
+    simulations.
+    (Reviewer #4 section 8.1, #5 #8)
+
+M8. [MODERATE] Statistical rigor gaps:
+    - No correction for multiple comparisons across the baseline table.
+      (Reviewer #5 #9) -- FIXED: Benjamini-Hochberg FDR added, all 8
+      significant verdicts survive (improvements.txt 2.2).
+    - No Friedman/Nemenyi/Wilcoxon across the full metric pool.
+      (Reviewer #1 #5, echoed by #5) -- NOT YET DONE. Correct blocking
+      structure: 100 articles as blocks, metrics as treatments, per-article
+      Spearman as the response variable per dimension.
+    - Dev/test split by raw JSONL order is unjustified; no test of split
+      sensitivity. (Reviewer #3 m1) -- cheap to fix, per-sample scores are
+      already stored.
+
+M9. [MINOR, mechanical] Table 1's "Prior"/"Ref."/"Judge" columns are
+    self-referential and not self-explanatory (Reviewer #3 m2, #5 #4).
+    Add: notation table, related-work pros/cons table, updated preprint
+    citations, AI-editing-tool disclosure, recent (2025-2026) references,
+    remove em dashes, tighten length (paper grew 63->69 pages in the last
+    revision -- wrong direction), merge intro subsections, contributions as
+    3-4 bullets with no internal cross-references.
+    (Reviewer #5 #1/#3/#5/#13, folded-in generic asks from #1)
+
+M10. [MINOR] Imprecise claims to reword, no new experiments needed:
+    - "zero inference cost" for the prior -- it still costs arithmetic, just
+      no extra forward pass. (Reviewer #4)
+    - "negligible" overhead at ~57ms/sample -- not negligible at scale
+      (thousands-millions of candidates). (Reviewer #4, #5)
+    - Interpretability via argmax anchors is claimed with no human evaluation
+      or case studies of anchor quality. (Reviewer #5 #10)
+
+================================================================================
+BOTTOM LINE
+================================================================================
+M1-M3 are not fixable by rewording -- they attack the two headline claims
+(Pareto-optimality, backbone-dependent recalibration) directly and both
+currently fail under our own follow-up measurements. See improvements.txt
+section 6 for the recommended structural pivot (splitting into a
+measurement/confound paper plus a redesigned metric targeting the
+partial-correlation axis) before spending time on M4-M10 polish.
+================================================================================

@@ -9,7 +9,7 @@
 %% required by the Elsevier submission system --- they are deliberately
 %% not part of this manuscript body.
 
-\documentclass[preprint,review,12pt]{elsarticle}
+\documentclass[preprint,12pt]{elsarticle}
 
 %% The amssymb package provides various useful mathematical symbols
 \usepackage{amssymb}
@@ -185,7 +185,6 @@ structural domain regularity that a knowledge-informed system should
 encode explicitly rather than hope a learned representation will
 rediscover.
 
-\subsection{Contributions}
 This paper makes the following contributions.
 
 \begin{enumerate}
@@ -264,7 +263,7 @@ cost--quality point that none of them dominates, and it is the
 cheapest metric in the pool that ties BERTScore's confound-controlled
 correlation.
 
-\subsection{Structure of the paper}
+The remainder of the paper is organised as follows.
 Section~\ref{sec:related} surveys reference-based and reference-free
 metrics, organises them by the knowledge source they consume, and
 states the research gap. Section~\ref{sec:method} defines LGS,
@@ -313,7 +312,18 @@ consistency classification, SummaC~\cite{laban2022summac} for
 NLI-based inconsistency detection). They alleviate the paraphrase
 problem but inherit the same structural dependence on the
 reference: the score is a function of (reference, candidate)
-pairs and is undefined when no reference exists.
+pairs and is undefined when no reference exists. Two recent
+studies sharpen the case for entailment-based rather than
+similarity-based factuality scoring: Ye et al.\
+\cite{ye2025factpref} show that aggregating several imperfect
+NLI-style consistency metrics through preference learning improves
+factual-consistency judgments over any single metric, and Mujahid
+et al.\ \cite{mujahid2025stresstest} stress-test six widely used
+reference-free factuality metrics under paraphrase-preserving
+perturbations and find that similarity-based scorers, unlike
+entailment-based ones, are frequently fooled by perturbations that
+change surface form without changing meaning --- exactly the
+failure mode cosine similarity is exposed to.
 
 \subsection{Reference-free and source-based metrics}
 A smaller body of work scores candidates against the \emph{source}
@@ -2168,10 +2178,10 @@ metrics are released at
 authors~\cite{fabbri2021summeval}.
 
 \section*{Declaration of generative AI and AI-assisted technologies in the writing process}
-During the preparation of this work the authors used a
-generative AI assistant in order to improve the language and
-readability of the manuscript. After using this tool, the authors
-reviewed and edited the content as needed and take full
+During the preparation of this work the authors used Claude
+(Anthropic; Claude Sonnet 5, 2026) in order to improve the language
+and readability of the manuscript. After using this tool, the
+authors reviewed and edited the content as needed and take full
 responsibility for the content of the published article.
 
 % ------------------------------------------------------------------

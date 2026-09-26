@@ -1,5 +1,5 @@
 """
-Model Server — BERTScore, MoverScore, UniEval, GPTScore, BARTScore.
+Model Server — BERTScore, MoverScore, UniEval, GPTScore, BARTScore, CCM.
 
 All models are loaded EAGERLY at startup. The server only starts accepting
 requests after all models are in memory. Set EAGER_LOAD=0 to revert to
@@ -14,6 +14,9 @@ Endpoints:
     POST /unieval        — T5-based Boolean QA evaluator (canonical-style prompts)
     POST /gptscore       — generative log-probability scoring (GPT-2)
     POST /bartscore      — canonical BARTScore via facebook/bart-large-cnn
+    POST /ccm            — source-conditioned sequence log-likelihoods (small causal LM)
+    POST /tokenlogprobs  — per-token log-likelihoods + char offsets (SPL)
+    POST /nli            — premise x hypothesis entailment matrix (DeBERTa-v3 NLI)
     GET  /health         — health check + loaded models
 """
 
@@ -406,6 +409,277 @@ def bartscore():
     return jsonify({"score": round(score, 6)})
 
 
+# ── CCM (copy-invariant contrastive margin) ────────────────────────────
+#
+# CCM needs only raw sequence log-likelihoods from a small causal LM;
+# the perturbations and the margin itself are computed in Go
+# (pkg/metrics/ccm.go). The source is encoded ONCE per request and its
+# KV cache is reused for every continuation, so a request carrying all
+# 16 candidates x (K+1) variants of one article costs one source pass.
+
+CCM_MODEL = os.environ.get("CCM_MODEL", "Qwen/Qwen2.5-1.5B")
+CCM_BATCH = int(os.environ.get("CCM_BATCH", "48"))
+CCM_HEAD_ROWS = int(os.environ.get("CCM_HEAD_ROWS", "4"))
+CCM_MAX_SOURCE_TOKENS = int(os.environ.get("CCM_MAX_SOURCE_TOKENS", "3072"))
+# float32 weights by default: in bf16 the batched, padded continuation
+# pass drifts ~0.1 nats from a plain full forward, which is the same
+# order as small margins. Matmuls run in TF32 inside the CCM call only
+# (drift ~0.003 nats, ~3x faster on Ampere+). CCM_DTYPE=bfloat16 trades
+# precision for another ~2x.
+CCM_DTYPE = os.environ.get("CCM_DTYPE", "float32")
+CCM_PREFIX = "Article:\n{source}\n\nSummary:\n"
+CCM_UNCOND_PREFIX = "Summary:\n"
+
+
+def get_ccm_model():
+    if "ccm_model" not in _cache:
+        logger.info(f"Loading {CCM_MODEL} for CCM...")
+        from transformers import AutoModelForCausalLM, AutoTokenizer
+
+        _cache["ccm_tokenizer"] = AutoTokenizer.from_pretrained(CCM_MODEL)
+        _cache["ccm_model"] = AutoModelForCausalLM.from_pretrained(
+            CCM_MODEL, dtype=getattr(torch, CCM_DTYPE), use_safetensors=True
+        ).to(DEVICE)
+        _cache["ccm_model"].eval()
+        logger.info("CCM model loaded.")
+    return _cache["ccm_tokenizer"], _cache["ccm_model"]
+
+
+def _ccm_continuation_logprobs(prefix, continuations, tokenizer, model, per_token=False):
+    """
+    Sum of log P(continuation tokens | prefix) for every continuation.
+    The prefix is run once; its KV cache is repeated across each batch
+    of right-padded continuations. Returns (sums, token_counts), or
+    (per-token log-prob lists, token_counts) when per_token is set.
+    """
+    from transformers import DynamicCache
+
+    pre_ids = tokenizer(prefix, return_tensors="pt", add_special_tokens=False)[
+        "input_ids"
+    ]
+    if pre_ids.shape[1] > CCM_MAX_SOURCE_TOKENS:
+        pre_ids = pre_ids[:, -CCM_MAX_SOURCE_TOKENS:]
+    pre_ids = pre_ids.to(DEVICE)
+    P = pre_ids.shape[1]
+
+    with torch.no_grad():
+        pre = model(pre_ids, use_cache=True, logits_to_keep=1)
+    first_logp = torch.log_softmax(pre.logits[:, -1].float(), dim=-1)  # (1, V)
+    legacy = pre.past_key_values
+    if hasattr(legacy, "to_legacy_cache"):
+        legacy = legacy.to_legacy_cache()
+
+    pad_id = tokenizer.pad_token_id
+    if pad_id is None:
+        pad_id = tokenizer.eos_token_id
+
+    enc = [
+        tokenizer(c, add_special_tokens=False)["input_ids"] or [pad_id]
+        for c in continuations
+    ]
+    sums, counts = [], []
+    for b in range(0, len(enc), CCM_BATCH):
+        chunk = enc[b : b + CCM_BATCH]
+        B, L = len(chunk), max(len(x) for x in chunk)
+        ids = torch.full((B, L), pad_id, dtype=torch.long)
+        mask = torch.zeros((B, L), dtype=torch.long)
+        for i, x in enumerate(chunk):
+            ids[i, : len(x)] = torch.tensor(x)
+            mask[i, : len(x)] = 1
+        ids, mask = ids.to(DEVICE), mask.to(DEVICE)
+
+        cache = DynamicCache.from_legacy_cache(
+            tuple((k.expand(B, -1, -1, -1), v.expand(B, -1, -1, -1)) for k, v in legacy)
+        )
+        full_mask = torch.cat(
+            [torch.ones((B, P), dtype=torch.long, device=DEVICE), mask], dim=1
+        )
+        pos = (torch.arange(L, device=DEVICE) + P).unsqueeze(0).expand(B, -1)
+        with torch.no_grad():
+            hidden = model.model(
+                ids,
+                attention_mask=full_mask,
+                past_key_values=cache,
+                position_ids=pos,
+                use_cache=True,
+            ).last_hidden_state[:, :-1]
+            # log-softmax only at the target tokens, projecting through
+            # the LM head a few rows at a time: a full (B, L, V) logits
+            # tensor over the ~150k-token vocabulary runs to several GB.
+            tgt_ids = ids[:, 1:]
+            parts = []
+            for r in range(0, B, CCM_HEAD_ROWS):
+                logits = model.lm_head(hidden[r : r + CCM_HEAD_ROWS]).float()
+                tgt = logits.gather(2, tgt_ids[r : r + CCM_HEAD_ROWS].unsqueeze(-1))
+                parts.append(tgt.squeeze(-1) - torch.logsumexp(logits, dim=-1))
+                del logits
+            rest = torch.cat(parts) * mask[:, 1:]
+            del hidden, cache
+
+        # token 0 is predicted by the prefix's last position, token t>0
+        # by continuation position t-1.
+        tok0 = first_logp[0].gather(0, ids[:, 0])  # (B,)
+        total = tok0 + rest.sum(dim=1)
+        for i in range(B):
+            n_i = int(mask[i].sum().item())
+            if per_token:
+                row = [float(tok0[i].item())] + rest[i, : n_i - 1].tolist()
+                sums.append(row)
+            else:
+                sums.append(float(total[i].item()))
+            counts.append(n_i)
+    return sums, counts
+
+
+def _ccm_tf32(fn, *args):
+    prev = torch.backends.cuda.matmul.allow_tf32
+    torch.backends.cuda.matmul.allow_tf32 = True
+    try:
+        return fn(*args)
+    finally:
+        torch.backends.cuda.matmul.allow_tf32 = prev
+
+
+@app.route("/ccm", methods=["POST"])
+def ccm():
+    """
+    Request:  {"source": str, "candidates": [str, ...]}
+    Response: {"cond": [float], "uncond": [float], "tokens": [int]}
+
+    cond[i]   = log P(candidates[i] | "Article: source  Summary:")
+    uncond[i] = log P(candidates[i] | "Summary:")   (no source)
+    """
+    data = request.json
+    src = data.get("source", "")
+    cands = data.get("candidates") or []
+    if not src or not cands:
+        return jsonify({"error": "source and candidates required"}), 400
+
+    tokenizer, model = get_ccm_model()
+    cond, tokens = _ccm_tf32(
+        _ccm_continuation_logprobs,
+        CCM_PREFIX.format(source=src),
+        cands,
+        tokenizer,
+        model,
+    )
+    uncond, _ = _ccm_tf32(
+        _ccm_continuation_logprobs, CCM_UNCOND_PREFIX, cands, tokenizer, model
+    )
+    return jsonify({"cond": cond, "uncond": uncond, "tokens": tokens, "model": CCM_MODEL})
+
+
+@app.route("/tokenlogprobs", methods=["POST"])
+def tokenlogprobs():
+    """
+    Per-token log-likelihoods of each candidate under the CCM LM, with
+    and without the source, plus each token's character span in the
+    candidate string (used by SPL to locate copy splice points).
+
+    Request:  {"source": str, "candidates": [str]}
+    Response: {"cond": [[float]], "uncond": [[float]], "offsets": [[[s, e]]]}
+    """
+    data = request.json
+    src = data.get("source", "")
+    cands = data.get("candidates") or []
+    if not src or not cands:
+        return jsonify({"error": "source and candidates required"}), 400
+
+    tokenizer, model = get_ccm_model()
+    cond, _ = _ccm_tf32(
+        _ccm_continuation_logprobs,
+        CCM_PREFIX.format(source=src),
+        cands,
+        tokenizer,
+        model,
+        True,
+    )
+    uncond, _ = _ccm_tf32(
+        _ccm_continuation_logprobs, CCM_UNCOND_PREFIX, cands, tokenizer, model, True
+    )
+    offsets = [
+        tokenizer(c, add_special_tokens=False, return_offsets_mapping=True)[
+            "offset_mapping"
+        ]
+        for c in cands
+    ]
+    return jsonify({"cond": cond, "uncond": uncond, "offsets": offsets})
+
+
+# ── NLI grounding ──────────────────────────────────────────────────────
+#
+# Premise x hypothesis entailment matrix for one article: every source
+# window against every summary sentence of all its candidates, in one
+# request. Returns P(entailment), P(neutral), P(contradiction) per pair.
+
+NLI_MODEL = os.environ.get(
+    "NLI_MODEL", "MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli"
+)
+NLI_BATCH = int(os.environ.get("NLI_BATCH", "128"))
+
+
+def get_nli_model():
+    if "nli_model" not in _cache:
+        logger.info(f"Loading {NLI_MODEL} for NLI grounding...")
+        from transformers import AutoModelForSequenceClassification, AutoTokenizer
+
+        dtype = torch.bfloat16 if DEVICE == "cuda" else torch.float32
+        _cache["nli_tokenizer"] = AutoTokenizer.from_pretrained(NLI_MODEL)
+        _cache["nli_model"] = AutoModelForSequenceClassification.from_pretrained(
+            NLI_MODEL, dtype=dtype, use_safetensors=True
+        ).to(DEVICE)
+        _cache["nli_model"].eval()
+        labels = {v.lower(): int(k) for k, v in _cache["nli_model"].config.id2label.items()}
+        _cache["nli_labels"] = [labels["entailment"], labels["neutral"], labels["contradiction"]]
+        logger.info("NLI model loaded.")
+    return _cache["nli_tokenizer"], _cache["nli_model"], _cache["nli_labels"]
+
+
+@app.route("/nli", methods=["POST"])
+def nli():
+    """
+    Request:  {"premises": [str], "hypotheses": [str]}
+    Response: {"probs": [[[e, n, c] for each premise] for each hypothesis]}
+
+    or, sparse: {"pairs": [[premise, hypothesis], ...]} → {"flat": [[e, n, c], ...]}
+    """
+    data = request.json
+    tokenizer, model, order = get_nli_model()
+
+    # Sparse mode: explicit (premise, hypothesis) pairs, flat response.
+    if data.get("pairs"):
+        pairs = [(p, h) for p, h in data["pairs"]]
+        return jsonify({"flat": _nli_probs(pairs, tokenizer, model, order)})
+
+    prem = data.get("premises") or []
+    hyp = data.get("hypotheses") or []
+    if not prem or not hyp:
+        return jsonify({"error": "premises and hypotheses (or pairs) required"}), 400
+
+    pairs = [(p, h) for h in hyp for p in prem]
+    out = _nli_probs(pairs, tokenizer, model, order)
+    P = len(prem)
+    return jsonify({"probs": [out[i * P : (i + 1) * P] for i in range(len(hyp))]})
+
+
+def _nli_probs(pairs, tokenizer, model, order):
+    out = []
+    for b in range(0, len(pairs), NLI_BATCH):
+        chunk = pairs[b : b + NLI_BATCH]
+        enc = tokenizer(
+            [p for p, _ in chunk],
+            [h for _, h in chunk],
+            return_tensors="pt",
+            padding=True,
+            truncation="only_first",
+            max_length=320,
+        ).to(DEVICE)
+        with torch.no_grad():
+            probs = torch.softmax(model(**enc).logits.float(), dim=-1)[:, order]
+        out.extend(probs.cpu().tolist())
+    return out
+
+
 # ── Health ─────────────────────────────────────────────────────────────
 
 
@@ -425,6 +699,9 @@ def health():
                 "unieval",
                 "gptscore",
                 "bartscore",
+                "ccm",
+                "nli",
+                "tokenlogprobs",
             ],
         }
     )
@@ -449,6 +726,8 @@ def warmup():
         ("UniEval", get_unieval_model),
         ("GPTScore", get_gptscore_model),
         ("BARTScore", get_bartscore_model),
+        ("CCM", get_ccm_model),
+        ("NLI", get_nli_model),
     ]
 
     for name, fn in loaders:

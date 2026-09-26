@@ -38,34 +38,44 @@ type modelServerResponse struct {
 }
 
 func (m *ModelServer) post(ctx context.Context, endpoint string, req modelServerRequest) (modelServerResponse, error) {
-	body, err := json.Marshal(req)
-	if err != nil {
-		return modelServerResponse{}, fmt.Errorf("modelserver: marshal: %w", err)
-	}
-
-	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, m.Host+endpoint, bytes.NewReader(body))
-	if err != nil {
-		return modelServerResponse{}, fmt.Errorf("modelserver: build request: %w", err)
-	}
-	httpReq.Header.Set("Content-Type", "application/json")
-
-	res, err := http.DefaultClient.Do(httpReq)
-	if err != nil {
-		return modelServerResponse{}, fmt.Errorf("modelserver: http: %w", err)
-	}
-	defer res.Body.Close()
-
-	if res.StatusCode != http.StatusOK {
-		raw, _ := io.ReadAll(res.Body)
-		return modelServerResponse{}, fmt.Errorf("modelserver %s: status %d: %s", endpoint, res.StatusCode, string(raw))
-	}
-
 	var out modelServerResponse
-	if err := json.NewDecoder(res.Body).Decode(&out); err != nil {
-		return modelServerResponse{}, fmt.Errorf("modelserver: decode: %w", err)
+	if err := m.postJSON(ctx, endpoint, req, &out); err != nil {
+		return modelServerResponse{}, err
 	}
 	if out.Error != "" {
 		return out, fmt.Errorf("modelserver: %s", out.Error)
 	}
 	return out, nil
+}
+
+// postJSON sends req as JSON to endpoint and decodes the response into
+// out. Used directly by metrics whose wire format does not fit
+// modelServerRequest (CCM sends a batch of candidates per source).
+func (m *ModelServer) postJSON(ctx context.Context, endpoint string, req, out any) error {
+	body, err := json.Marshal(req)
+	if err != nil {
+		return fmt.Errorf("modelserver: marshal: %w", err)
+	}
+
+	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, m.Host+endpoint, bytes.NewReader(body))
+	if err != nil {
+		return fmt.Errorf("modelserver: build request: %w", err)
+	}
+	httpReq.Header.Set("Content-Type", "application/json")
+
+	res, err := http.DefaultClient.Do(httpReq)
+	if err != nil {
+		return fmt.Errorf("modelserver: http: %w", err)
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode != http.StatusOK {
+		raw, _ := io.ReadAll(res.Body)
+		return fmt.Errorf("modelserver %s: status %d: %s", endpoint, res.StatusCode, string(raw))
+	}
+
+	if err := json.NewDecoder(res.Body).Decode(out); err != nil {
+		return fmt.Errorf("modelserver: decode: %w", err)
+	}
+	return nil
 }

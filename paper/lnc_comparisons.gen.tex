@@ -1,0 +1,29 @@
+\begin{table*}[t]
+\centering
+\caption{Paired bootstrap comparison of lnc against baselines on summary-level Spearman correlations. Each cell reports $\Delta\rho$ (ours minus baseline) with 95\% CI in brackets, the raw two-sided $p$-value, and $q$, the Benjamini-Hochberg adjusted $p$-value over all 32 (baseline, dimension) cells of this table. Bold marks improvements that survive the correction ($q<0.05$ and CI excludes 0).}
+\label{tab:compare_lnc_summary}
+\small
+\linespread{1}\selectfont
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+Baseline & Coh & Con & Flu & Rel \\
+\midrule
+UniEval & \begin{tabular}[t]{@{}c@{}}-.153\\{\scriptsize [-.222, -.081]}\\{\scriptsize $p<.001$}\\{\scriptsize $q<.001$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}\textbf{+.104}\\{\scriptsize [+.061, +.149]}\\{\scriptsize $p<.001$}\\{\scriptsize $q<.001$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}-.032\\{\scriptsize [-.083, +.021]}\\{\scriptsize $p$=0.235}\\{\scriptsize $q$=0.314}\end{tabular} & \begin{tabular}[t]{@{}c@{}}-.061\\{\scriptsize [-.152, +.030]}\\{\scriptsize $p$=0.193}\\{\scriptsize $q$=0.268}\end{tabular} \\
+\addlinespace[3pt]
+G-Eval & \begin{tabular}[t]{@{}c@{}}+.068\\{\scriptsize [-.014, +.151]}\\{\scriptsize $p$=0.103}\\{\scriptsize $q$=0.164}\end{tabular} & \begin{tabular}[t]{@{}c@{}}+.012\\{\scriptsize [-.046, +.072]}\\{\scriptsize $p$=0.694}\\{\scriptsize $q$=0.765}\end{tabular} & \begin{tabular}[t]{@{}c@{}}\textbf{+.275}\\{\scriptsize [+.202, +.347]}\\{\scriptsize $p<.001$}\\{\scriptsize $q<.001$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}+.038\\{\scriptsize [-.058, +.133]}\\{\scriptsize $p$=0.434}\\{\scriptsize $q$=0.534}\end{tabular} \\
+\addlinespace[3pt]
+ccmd & \begin{tabular}[t]{@{}c@{}}\textbf{+.070}\\{\scriptsize [+.013, +.126]}\\{\scriptsize $p$=0.017}\\{\scriptsize $q$=0.030}\end{tabular} & \begin{tabular}[t]{@{}c@{}}\textbf{+.065}\\{\scriptsize [+.031, +.101]}\\{\scriptsize $p<.001$}\\{\scriptsize $q<.001$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}+.014\\{\scriptsize [-.007, +.036]}\\{\scriptsize $p$=0.179}\\{\scriptsize $q$=0.264}\end{tabular} & \begin{tabular}[t]{@{}c@{}}+.027\\{\scriptsize [-.013, +.067]}\\{\scriptsize $p$=0.182}\\{\scriptsize $q$=0.264}\end{tabular} \\
+\addlinespace[3pt]
+LGS & \begin{tabular}[t]{@{}c@{}}-.001\\{\scriptsize [-.096, +.102]}\\{\scriptsize $p$=0.961}\\{\scriptsize $q$=0.961}\end{tabular} & \begin{tabular}[t]{@{}c@{}}\textbf{+.237}\\{\scriptsize [+.177, +.298]}\\{\scriptsize $p<.001$}\\{\scriptsize $q<.001$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}\textbf{+.263}\\{\scriptsize [+.179, +.346]}\\{\scriptsize $p<.001$}\\{\scriptsize $q<.001$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}-.022\\{\scriptsize [-.122, +.074]}\\{\scriptsize $p$=0.662}\\{\scriptsize $q$=0.757}\end{tabular} \\
+\addlinespace[3pt]
+BERTScore & \begin{tabular}[t]{@{}c@{}}+.008\\{\scriptsize [-.092, +.114]}\\{\scriptsize $p$=0.919}\\{\scriptsize $q$=0.948}\end{tabular} & \begin{tabular}[t]{@{}c@{}}\textbf{+.401}\\{\scriptsize [+.316, +.491]}\\{\scriptsize $p<.001$}\\{\scriptsize $q<.001$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}\textbf{+.295}\\{\scriptsize [+.215, +.375]}\\{\scriptsize $p<.001$}\\{\scriptsize $q<.001$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}-.028\\{\scriptsize [-.140, +.087]}\\{\scriptsize $p$=0.646}\\{\scriptsize $q$=0.757}\end{tabular} \\
+\addlinespace[3pt]
+GPTScore & \begin{tabular}[t]{@{}c@{}}+.015\\{\scriptsize [-.081, +.119]}\\{\scriptsize $p$=0.790}\\{\scriptsize $q$=0.843}\end{tabular} & \begin{tabular}[t]{@{}c@{}}\textbf{+.275}\\{\scriptsize [+.211, +.340]}\\{\scriptsize $p<.001$}\\{\scriptsize $q<.001$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}\textbf{+.246}\\{\scriptsize [+.170, +.324]}\\{\scriptsize $p<.001$}\\{\scriptsize $q<.001$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}+.050\\{\scriptsize [-.052, +.148]}\\{\scriptsize $p$=0.308}\\{\scriptsize $q$=0.395}\end{tabular} \\
+\addlinespace[3pt]
+BARTScore & \begin{tabular}[t]{@{}c@{}}\textbf{+.332}\\{\scriptsize [+.225, +.436]}\\{\scriptsize $p<.001$}\\{\scriptsize $q<.001$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}\textbf{+.458}\\{\scriptsize [+.381, +.531]}\\{\scriptsize $p<.001$}\\{\scriptsize $q<.001$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}\textbf{+.301}\\{\scriptsize [+.216, +.386]}\\{\scriptsize $p<.001$}\\{\scriptsize $q<.001$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}\textbf{+.189}\\{\scriptsize [+.036, +.340]}\\{\scriptsize $p$=0.013}\\{\scriptsize $q$=0.025}\end{tabular} \\
+\addlinespace[3pt]
+lead5sent & \begin{tabular}[t]{@{}c@{}}\textbf{+.141}\\{\scriptsize [+.065, +.225]}\\{\scriptsize $p<.001$}\\{\scriptsize $q<.001$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}\textbf{+.137}\\{\scriptsize [+.092, +.183]}\\{\scriptsize $p<.001$}\\{\scriptsize $q<.001$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}\textbf{+.183}\\{\scriptsize [+.117, +.248]}\\{\scriptsize $p<.001$}\\{\scriptsize $q<.001$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}\textbf{+.120}\\{\scriptsize [+.023, +.212]}\\{\scriptsize $p$=0.018}\\{\scriptsize $q$=0.030}\end{tabular} \\
+\bottomrule
+\end{tabular}
+\end{table*}

@@ -65,11 +65,10 @@ W.~Yuan, G.~Neubig, P.~Liu,
 
 \bibitem{amplayo2022smart}
 R.~K. Amplayo, P.~J. Liu, Y.~Zhao, S.~Narayan,
-  \href{https://arxiv.org/abs/2208.01030}{{SMART}: Sentences as basic units for
-  text evaluation}, arXiv preprint arXiv:2208.01030 (2022).
-\newblock \href {https://doi.org/10.48550/arXiv.2208.01030}
-  {\path{doi:10.48550/arXiv.2208.01030}}.
-\newline\urlprefix\url{https://arxiv.org/abs/2208.01030}
+  \href{https://openreview.net/pdf?id=OIe3kpwl40D}{{SMART}: Sentences as basic
+  units for text evaluation}, in: Proceedings of the Eleventh International
+  Conference on Learning Representations (ICLR), 2023.
+\newline\urlprefix\url{https://openreview.net/pdf?id=OIe3kpwl40D}
 
 \bibitem{fabbri2021summeval}
 A.~R. Fabbri, W.~Kry{\'s}ci{\'n}ski, B.~McCann, C.~Xiong, R.~Socher, D.~Radev,
@@ -111,11 +110,9 @@ T.~Ito, K.~van Deemter, J.~Suzuki,
 \bibitem{gu2024judgesurvey}
 J.~Gu, X.~Jiang, Z.~Shi, H.~Tan, X.~Zhai, C.~Xu, W.~Li, Y.~Shen, S.~Ma, H.~Liu,
   S.~Wang, K.~Zhang, Y.~Wang, W.~Gao, L.~Ni, J.~Guo,
-  \href{https://arxiv.org/abs/2411.15594}{A survey on {LLM}-as-a-judge}, arXiv
-  preprint arXiv:2411.15594 (2024).
-\newblock \href {https://doi.org/10.48550/arXiv.2411.15594}
-  {\path{doi:10.48550/arXiv.2411.15594}}.
-\newline\urlprefix\url{https://arxiv.org/abs/2411.15594}
+  \href{https://www.the-innovation.org/article/id/697872b44f6e8d88d813340c}{A
+  survey on {LLM}-as-a-judge}, The Innovation 7~(6) (2026).
+\newline\urlprefix\url{https://www.the-innovation.org/article/id/697872b44f6e8d88d813340c}
 
 \bibitem{kedzie2018content}
 C.~Kedzie, K.~McKeown, H.~Daum{\'e}~III,
@@ -205,6 +202,22 @@ P.~Laban, T.~Schnabel, P.~N. Bennett, M.~A. Hearst,
   {\path{doi:10.1162/tacl_a_00453}}.
 \newline\urlprefix\url{https://aclanthology.org/2022.tacl-1.10/}
 
+\bibitem{ye2025factpref}
+Y.~Ye, R.~Santos-Rodriguez, E.~Simpson,
+  \href{https://aclanthology.org/2025.findings-emnlp.940/}{Optimising factual
+  consistency in summarisation via preference learning from multiple imperfect
+  metrics}, in: Findings of the Association for Computational Linguistics:
+  EMNLP 2025, Suzhou, China, 2025, pp. 17342--17355.
+\newline\urlprefix\url{https://aclanthology.org/2025.findings-emnlp.940/}
+
+\bibitem{mujahid2025stresstest}
+Z.~M. Mujahid, D.~Wright, I.~Augenstein,
+  \href{https://aclanthology.org/2026.acl-long.1472/}{Stress testing factual
+  consistency metrics for long-document summarization}, in: Proceedings of the
+  64th Annual Meeting of the Association for Computational Linguistics (Volume
+  1: Long Papers), 2026.
+\newline\urlprefix\url{https://aclanthology.org/2026.acl-long.1472/}
+
 \bibitem{brown2020gpt3}
 T.~B. Brown, B.~Mann, N.~Ryder, M.~Subbiah, J.~Kaplan, P.~Dhariwal,
   A.~Neelakantan, P.~Shyam, G.~Sastry, A.~Askell, S.~Agarwal, A.~Herbert-Voss,
@@ -240,11 +253,14 @@ C.~Raffel, N.~Shazeer, A.~Roberts, K.~Lee, S.~Narang, M.~Matena, Y.~Zhou,
 
 \bibitem{fu2023gptscore}
 J.~Fu, S.-K. Ng, Z.~Jiang, P.~Liu,
-  \href{https://arxiv.org/abs/2302.04166}{{GPTScore}: Evaluate as you desire},
-  arXiv preprint arXiv:2302.04166 (2023).
-\newblock \href {https://doi.org/10.48550/arXiv.2302.04166}
-  {\path{doi:10.48550/arXiv.2302.04166}}.
-\newline\urlprefix\url{https://arxiv.org/abs/2302.04166}
+  \href{https://aclanthology.org/2024.naacl-long.365/}{{GPTScore}: Evaluate as
+  you desire}, in: Proceedings of the 2024 Conference of the North American
+  Chapter of the Association for Computational Linguistics: Human Language
+  Technologies (Volume 1: Long Papers), Mexico City, Mexico, 2024, pp.
+  6556--6576.
+\newblock \href {https://doi.org/10.18653/v1/2024.naacl-long.365}
+  {\path{doi:10.18653/v1/2024.naacl-long.365}}.
+\newline\urlprefix\url{https://aclanthology.org/2024.naacl-long.365/}
 
 \bibitem{gao2020supert}
 Y.~Gao, W.~Zhao, S.~Eger, {SUPERT}: Towards new frontiers in unsupervised
@@ -321,9 +337,8 @@ N.~Reimers, I.~Gurevych,
 \bibitem{nussbaum2024nomic}
 Z.~Nussbaum, J.~X. Morris, B.~Duderstadt, A.~Mulyar,
   \href{https://arxiv.org/abs/2402.01613}{Nomic embed: Training a reproducible
-  long context text embedder}, arXiv preprint arXiv:2402.01613 (2024).
-\newblock \href {https://doi.org/10.48550/arXiv.2402.01613}
-  {\path{doi:10.48550/arXiv.2402.01613}}.
+  long context text embedder}, Transactions on Machine Learning Research
+  (2024).
 \newline\urlprefix\url{https://arxiv.org/abs/2402.01613}
 
 \bibitem{hermann2015cnndm}
