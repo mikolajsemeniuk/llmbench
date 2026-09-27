@@ -114,6 +114,43 @@ type PairedComparison struct {
 func PairedBootstrap(samples []Sample, scoresA, scoresB, human []float64,
 	fn CorrelationFunc, n int, seed uint64) PairedComparison {
 
+	xa := make([]float64, 0, len(samples))
+	xb := make([]float64, 0, len(samples))
+	yy := make([]float64, 0, len(samples))
+	return pairedBootstrap(samples, n, seed, func(pick []int) float64 {
+		xa, xb, yy = gather(xa, scoresA, pick), gather(xb, scoresB, pick), gather(yy, human, pick)
+		return fn(xa, yy) - fn(xb, yy)
+	})
+}
+
+// PairedBootstrapPartial is PairedBootstrap on the Spearman correlation
+// with covariate z partialled out of both sides (see PartialSpearman),
+// recomputed on every resample.
+func PairedBootstrapPartial(samples []Sample, scoresA, scoresB, human, z []float64,
+	n int, seed uint64) PairedComparison {
+
+	xa := make([]float64, 0, len(samples))
+	xb := make([]float64, 0, len(samples))
+	yy := make([]float64, 0, len(samples))
+	zz := make([]float64, 0, len(samples))
+	return pairedBootstrap(samples, n, seed, func(pick []int) float64 {
+		xa, xb = gather(xa, scoresA, pick), gather(xb, scoresB, pick)
+		yy, zz = gather(yy, human, pick), gather(zz, z, pick)
+		return PartialSpearman(xa, yy, zz) - PartialSpearman(xb, yy, zz)
+	})
+}
+
+func gather(dst, src []float64, pick []int) []float64 {
+	dst = dst[:0]
+	for _, i := range pick {
+		dst = append(dst, src[i])
+	}
+	return dst
+}
+
+// pairedBootstrap resamples documents n times and summarises the deltas
+// that delta computes on each resample's sample indices.
+func pairedBootstrap(samples []Sample, n int, seed uint64, delta func(pick []int) float64) PairedComparison {
 	if n < 2 {
 		return PairedComparison{}
 	}
@@ -129,27 +166,17 @@ func PairedBootstrap(samples []Sample, scoresA, scoresB, human []float64,
 
 	rng := rand.New(rand.NewPCG(seed, seed^0xcafebabe))
 	deltas := make([]float64, 0, n)
-
-	xa := make([]float64, 0, len(samples))
-	xb := make([]float64, 0, len(samples))
-	yy := make([]float64, 0, len(samples))
+	pick := make([]int, 0, len(samples))
 
 	for b := 0; b < n; b++ {
-		xa = xa[:0]
-		xb = xb[:0]
-		yy = yy[:0]
+		pick = pick[:0]
 		for i := 0; i < len(docIDs); i++ {
-			pickedID := docIDs[rng.IntN(len(docIDs))]
-			for _, idx := range groups[pickedID] {
-				xa = append(xa, scoresA[idx])
-				xb = append(xb, scoresB[idx])
-				yy = append(yy, human[idx])
-			}
+			pick = append(pick, groups[docIDs[rng.IntN(len(docIDs))]]...)
 		}
-		if len(xa) < 2 {
+		if len(pick) < 2 {
 			continue
 		}
-		deltas = append(deltas, fn(xa, yy)-fn(xb, yy))
+		deltas = append(deltas, delta(pick))
 	}
 
 	if len(deltas) < 2 {

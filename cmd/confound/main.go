@@ -38,6 +38,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"io/fs"
 	"log"
 	"math"
 	"math/rand/v2"
@@ -51,16 +52,21 @@ import (
 )
 
 var (
-	costDir   string
-	inputDir  string
-	outputTex string
-	ngram     int
-	bootstrap int
-	seed      uint64
-	oursLabel string
+	costDir     string
+	inputDir    string
+	outputTex   string
+	ngram       int
+	bootstrap   int
+	seed        uint64
+	oursLabel   string
+	datasetPath string
+	dimsFlag    string
 )
 
-var dimensions = []string{"coherence", "consistency", "fluency", "relevance"}
+var allDimensions = []string{"coherence", "consistency", "fluency", "relevance"}
+
+// dimensions are the ones evaluated (-dims); a transfer corpus annotates one.
+var dimensions = allDimensions
 
 func main() {
 	flag.StringVar(&inputDir, "input", "output", "directory containing metric JSON reports")
@@ -70,13 +76,20 @@ func main() {
 	flag.IntVar(&bootstrap, "bootstrap", 2000, "cluster-bootstrap resamples over articles (0 = point estimates only)")
 	flag.Uint64Var(&seed, "seed", 42, "random seed")
 	flag.StringVar(&oursLabel, "ours", "lgs", "metric base name to mark as ours")
+	flag.StringVar(&datasetPath, "dataset", "", "path to a dataset JSONL in SummEval layout (default: embedded SummEval)")
+	flag.StringVar(&dimsFlag, "dims", strings.Join(allDimensions, ","), "comma-separated dimensions to evaluate (a transfer corpus annotates only one)")
 	flag.Parse()
+	dimensions = strings.Split(dimsFlag, ",")
 
 	if ngram < 1 {
 		log.Fatalf("-ngram must be ≥ 1, got %d", ngram)
 	}
 
-	samples, err := eval.NewDataset(dataset.Summeval, dataset.SummevalDefaultPath, 0)
+	fsys, path := fs.FS(dataset.Summeval), dataset.SummevalDefaultPath
+	if datasetPath != "" {
+		fsys, path = os.DirFS(filepath.Dir(datasetPath)), filepath.Base(datasetPath)
+	}
+	samples, err := eval.NewDataset(fsys, path, 0)
 	if err != nil {
 		log.Fatalf("load dataset: %v", err)
 	}
@@ -255,7 +268,7 @@ func loadMetrics(dir string, samples []eval.Sample) ([]metricScores, error) {
 	for base, a := range groups {
 		m := metricScores{name: base, display: displayName(base), perDim: map[string][]float64{}}
 		if a.isDim {
-			if len(a.perDim) != len(dimensions) {
+			if !hasAll(a.perDim) {
 				log.Printf("skipping %s (only %d of %d dimension files)", base, len(a.perDim), len(dimensions))
 				continue
 			}
@@ -292,8 +305,17 @@ func align(r eval.Report, samples []eval.Sample) ([]float64, error) {
 	return out, nil
 }
 
-func splitDimensional(metric string) (base, dim string) {
+func hasAll(perDim map[string][]float64) bool {
 	for _, d := range dimensions {
+		if perDim[d] == nil {
+			return false
+		}
+	}
+	return true
+}
+
+func splitDimensional(metric string) (base, dim string) {
+	for _, d := range allDimensions {
 		if strings.HasSuffix(metric, "_"+d) {
 			return strings.TrimSuffix(metric, "_"+d), d
 		}
@@ -337,18 +359,6 @@ type row struct {
 	ParetoPart  bool
 }
 
-// partialSpearman is the rank partial correlation of x and y given z:
-// the correlation that survives after the component each shares with z
-// is removed. Applied to ranks, this is the standard Spearman partial.
-func partialSpearman(x, y, z []float64) float64 {
-	rxy, rxz, ryz := eval.Spearman(x, y), eval.Spearman(x, z), eval.Spearman(y, z)
-	den := math.Sqrt((1 - rxz*rxz) * (1 - ryz*ryz))
-	if den == 0 {
-		return 0
-	}
-	return (rxy - rxz*ryz) / den
-}
-
 func analyse(m metricScores, human map[string][]float64, copyRate []float64, samples []eval.Sample) row {
 	r := row{
 		Name: m.name, Display: m.display, RuntimeMs: m.runtimeMs,
@@ -357,13 +367,13 @@ func analyse(m metricScores, human map[string][]float64, copyRate []float64, sam
 	for _, d := range dimensions {
 		v := m.perDim[d]
 		raw := eval.Spearman(v, human[d])
-		par := partialSpearman(v, human[d], copyRate)
+		par := eval.PartialSpearman(v, human[d], copyRate)
 		r.RawPerDim = append(r.RawPerDim, raw)
 		r.PartPerDim = append(r.PartPerDim, par)
-		r.RawMean += raw / 4
-		r.PartialMean += par / 4
+		r.RawMean += raw / float64(len(dimensions))
+		r.PartialMean += par / float64(len(dimensions))
 	}
-	r.RhoCopy = eval.Spearman(m.perDim["consistency"], copyRate)
+	r.RhoCopy = eval.Spearman(m.perDim[dimensions[0]], copyRate)
 
 	if bootstrap > 0 {
 		r.PartialCI = bootstrapPartial(m, human, copyRate, samples)
@@ -405,9 +415,9 @@ func bootstrapPartial(m metricScores, human map[string][]float64, copyRate []flo
 				by = append(by, h[p])
 				bz = append(bz, copyRate[p])
 			}
-			total += partialSpearman(bx, by, bz)
+			total += eval.PartialSpearman(bx, by, bz)
 		}
-		vals = append(vals, total/4)
+		vals = append(vals, total/float64(len(dimensions)))
 	}
 	sort.Float64s(vals)
 	at := func(p float64) float64 {

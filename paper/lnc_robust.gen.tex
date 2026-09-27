@@ -1,0 +1,21 @@
+\begin{table}[t]
+\centering
+\caption{Held-out copy-partialled $\bar{\rho}$ of the LNC ridge recipe on \textsc{SummEval} over 200 random splits (mean and 2.5--97.5 percentiles). Controls apply the same ridge to existing signals. The system split fits on 8 of the 16 systems and 50 articles and tests on the other 50 articles; unseen systems score lower in 135 of 200 splits, while zero-shot UniEval does not change.}
+\label{tab:lnc_robust}
+\small
+\begin{tabular}{@{}lc@{}}
+\toprule
+Configuration & $\bar{\rho}_{\mathrm{part}}$ \\
+\midrule
+LNC, random article splits & .322 {\scriptsize [.295, .344]} \\
+Ridge on cheap reference-free signals & .273 {\scriptsize [.235, .305]} \\
+Ridge on existing metrics incl. reference-based & .313 {\scriptsize [.280, .346]} \\
+Ridge on UniEval's four scorers & .421 {\scriptsize [.390, .452]} \\
+\midrule
+LNC, fit on 8 systems: same systems & .316 {\scriptsize [.195, .412]} \\
+LNC, fit on 8 systems: unseen systems & .269 {\scriptsize [.153, .350]} \\
+UniEval (zero-shot): same systems & .408 {\scriptsize [.325, .480]} \\
+UniEval (zero-shot): unseen systems & .411 {\scriptsize [.329, .490]} \\
+\bottomrule
+\end{tabular}
+\end{table}

@@ -216,6 +216,22 @@ make paper-lnc                     # paired bootstrap on the held-out half + con
 - It beats BERTScore in 100% and UniEval in 0%.
 - The canonical-split test number (.354) is on the favourable side of this distribution. **.331 is the honest headline.**
 
+**Controls** (`make paper-lncrobust`, `paper/lnc_robust.gen.tex`). The numbers are copy-partialled ρ̄ on held-out articles for LNC-fast, averaged over 200 random splits.
+
+| configuration | partial ρ̄ |
+|---|---|
+| LNC-fast, random article splits | .322 [.295, .344] |
+| same ridge over cheap reference-free signals (copy rate, length, Lead-5, LGS, NLIG) | .273 |
+| same ridge over existing metrics, reference-based included (+ BERTScore, GPTScore, BARTScore) | .313 |
+| same ridge over UniEval's four scorers | .421 |
+| LNC-fast fitted on 8 systems, tested on the same 8 systems | .316 |
+| LNC-fast fitted on 8 systems, tested on the other 8 systems | .269 |
+| UniEval (zero-shot), same / other systems | .408 / .411 |
+
+- LNC's own signals add about .05 over a ridge on cheap reference-free signals.
+- A ridge that is also allowed reference-based metrics nearly closes that gap.
+- Part of the fit is specific to the systems it was fitted on. Unseen systems score lower in 135 of 200 splits, while zero-shot UniEval does not change.
+
 **LNC-D (debiased variant, `make benchmark-lncd`).** Same features and α. The ridge target is the human rank with the copy-rate rank projected out; copy rate is used only for fitting, never as a feature. The feature dump is reused, so no model calls are needed.
 
 | test half | raw ρ̄ | partial ρ̄ | ρ_copy |
@@ -269,6 +285,82 @@ Caveats:
 
 - SMART-Model and EmbedScorer (Ollama) were not re-timed. Both are dominated on quality regardless.
 - The lexical metrics keep their CPU times.
+
+## LNC-fast transfer to FRANK and RoSE
+
+Does the SummEval calibration transfer to new systems, annotators and domains? The protocol below was fixed on 2026-09-26, before any score was computed on these corpora.
+
+**Corpora** (`make transfer-data` downloads and converts them into SummEval-format JSONL under `data/`):
+
+| corpus | articles × systems | human score → LNC scorer |
+|---|---|---|
+| FRANK CNN/DM (Pagnoni et al. 2021) | 247 × 5 | Factuality → consistency |
+| FRANK XSum | 249 × 4 | Factuality → consistency |
+| RoSE CNN/DM test (Liu et al. 2023) | 495 × 11 | ACU → relevance |
+
+Preparation:
+
+- Articles that also occur in SummEval (3 in FRANK, 5 in RoSE) are dropped.
+- RoSE's `gold` system is dropped, because UniEval scores relevance against that same reference.
+- Candidates are lowercased and PTB-tokenised to match SummEval.
+- In XSum articles, a missing space after a sentence end is restored.
+
+**Metric.** LNC-fast with the frozen SummEval calibration (`ablation/lncf_calibration.json`, `-fit=false`). There is no refit and no feature change.
+
+**Axis.**
+
+- Primary: summary-level Spearman with the bigram copy rate partialled out (`cmd/confound`).
+- Secondary: raw Spearman.
+
+**Baselines.**
+
+- Cheap and reference-free: NLIG (SummaC-ZS), LGS (λ=0.5), Lead-3, Lead-5.
+- UniEval, matching dimension.
+- G-Eval, matching dimension. It gets one greedy run instead of three to fit the compute budget.
+
+**Success criterion.** LNC-fast transfers if both FRANK CNN/DM and RoSE show:
+
+- partial ρ above the best cheap reference-free baseline, significant in the paired bootstrap over articles (BH q < .05 within the corpus table);
+- no significant loss to G-Eval.
+
+FRANK XSum is reported as an out-of-domain stress test and is not part of the criterion. Its single-sentence summaries leave the order-margin feature at zero.
+
+```sh
+make transfer-data        # download + convert (stdlib Python)
+make benchmark-transfer   # needs the model server (CCM_DTYPE=bfloat16) and Ollama
+make paper-transfer       # paired bootstrap + confound table per corpus
+```
+
+**Result: the criterion is not met.** LNC-fast does not transfer as a whole.
+
+The table gives copy-partialled Spearman ρ. Frozen means the SummEval calibration was applied unchanged.
+
+| corpus | LNC-fast | AlignScore | NLIG | LGS | Lead-3 | Lead-5 | UniEval | G-Eval |
+|---|---|---|---|---|---|---|---|---|
+| FRANK CNN/DM (consistency) | **.516** | .501 | .488 | .180 | .093 | .121 | .445 | .446 |
+| FRANK XSum (consistency) | .280 | **.293** | .255 | .106 | .054 | .081 | .264 | .264 |
+| RoSE CNN/DM (ACU relevance) | .148 | .025 | .017 | .022 | .151 | .138 | **.245** | .238 |
+
+AlignScore-large (`make benchmark-alignscore`) was added after the run as the published consistency baseline, so it is not part of the criterion. The weights were converted once with `cmd/modelsrv/alignscore_convert.py`.
+
+- **Transfer corpora.** LNC-fast ties AlignScore on both FRANK subsets.
+- **SummEval test half, consistency.** LNC-fast ties AlignScore on partial ρ (.370 vs .318, q=.23) and beats it on raw ρ (.514 vs .427).
+- **Cost.** AlignScore takes 128 ms/sample on SummEval and LNC-fast 227.
+
+The paired cluster bootstrap on partial ρ uses 5,000 resamples over articles, with BH within each corpus.
+
+- **FRANK CNN/DM.** LNC-fast beats UniEval (+.071) and G-Eval (+.070) significantly. It only ties NLIG (+.028, q=.11), and NLIG is the best cheap baseline, so the criterion fails here.
+- **FRANK XSum.** LNC-fast ties NLIG, UniEval and G-Eval.
+- **RoSE.** LNC-fast ties Lead-3 and Lead-5, and loses significantly to UniEval (−.097) and G-Eval (−.090).
+
+The two halves of the composite behave differently:
+
+- **Consistency transfers.** On the second half of FRANK CNN/DM articles, the frozen calibration (.523) matches a ridge refitted on the first half (.511). Its advantage over UniEval and G-Eval comes from the NLI features: NLIG alone gets .488.
+- **Relevance does not.** On RoSE the frozen calibration reaches .117 on the second half, against .205 for a refit. With length also partialled out it falls to .094.
+
+`make paper-transfer` renders the confound tables and the paired partial-ρ tables (`cmd/compare -partial`).
+
+**No retuning on these corpora.** FRANK and RoSE have now served as the test. Any change to LNC made after seeing these results, such as new relevance weights, has to be verified on a corpus that was not used here.
 
 ## Cost on one machine (GB10)
 

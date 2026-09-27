@@ -1,0 +1,5029 @@
+{
+  "metric": "unieval_consistency",
+  "norm": "none",
+  "samples": 1235,
+  "runtime_sec": 260.810343953,
+  "timestamp": "2026-09-26T19:05:28Z",
+  "scores": [
+    {
+      "sample_id": "b71b7737562c6aa7c3ceefcbb2073a35c9854e54#0",
+      "value": 0.988667
+    },
+    {
+      "sample_id": "b71b7737562c6aa7c3ceefcbb2073a35c9854e54#1",
+      "value": 0.957443
+    },
+    {
+      "sample_id": "b71b7737562c6aa7c3ceefcbb2073a35c9854e54#2",
+      "value": 0.871362
+    },
+    {
+      "sample_id": "b71b7737562c6aa7c3ceefcbb2073a35c9854e54#3",
+      "value": 0.979136
+    },
+    {
+      "sample_id": "b71b7737562c6aa7c3ceefcbb2073a35c9854e54#4",
+      "value": 0.066026
+    },
+    {
+      "sample_id": "c7ed46b2ff217b502514ba71d63ddcbb652e44a9#0",
+      "value": 0.945854
+    },
+    {
+      "sample_id": "c7ed46b2ff217b502514ba71d63ddcbb652e44a9#1",
+      "value": 0.977688
+    },
+    {
+      "sample_id": "c7ed46b2ff217b502514ba71d63ddcbb652e44a9#2",
+      "value": 0.96853
+    },
+    {
+      "sample_id": "c7ed46b2ff217b502514ba71d63ddcbb652e44a9#3",
+      "value": 0.935758
+    },
+    {
+      "sample_id": "c7ed46b2ff217b502514ba71d63ddcbb652e44a9#4",
+      "value": 0.300117
+    },
+    {
+      "sample_id": "132e50805378d42b2996fdd648d1da78c60d235d#0",
+      "value": 0.98465
+    },
+    {
+      "sample_id": "132e50805378d42b2996fdd648d1da78c60d235d#1",
+      "value": 0.971488
+    },
+    {
+      "sample_id": "132e50805378d42b2996fdd648d1da78c60d235d#2",
+      "value": 0.85303
+    },
+    {
+      "sample_id": "132e50805378d42b2996fdd648d1da78c60d235d#3",
+      "value": 0.985263
+    },
+    {
+      "sample_id": "132e50805378d42b2996fdd648d1da78c60d235d#4",
+      "value": 0.003553
+    },
+    {
+      "sample_id": "7aa0b829c17b92ceeae58ebee1d87f7b2c962ed3#0",
+      "value": 0.978695
+    },
+    {
+      "sample_id": "7aa0b829c17b92ceeae58ebee1d87f7b2c962ed3#1",
+      "value": 0.969785
+    },
+    {
+      "sample_id": "7aa0b829c17b92ceeae58ebee1d87f7b2c962ed3#2",
+      "value": 0.203185
+    },
+    {
+      "sample_id": "7aa0b829c17b92ceeae58ebee1d87f7b2c962ed3#3",
+      "value": 0.03446
+    },
+    {
+      "sample_id": "7aa0b829c17b92ceeae58ebee1d87f7b2c962ed3#4",
+      "value": 0.037179
+    },
+    {
+      "sample_id": "f419767a484b52429e3638e674ef97178925020d#0",
+      "value": 0.941832
+    },
+    {
+      "sample_id": "f419767a484b52429e3638e674ef97178925020d#1",
+      "value": 0.734345
+    },
+    {
+      "sample_id": "f419767a484b52429e3638e674ef97178925020d#2",
+      "value": 0.787539
+    },
+    {
+      "sample_id": "f419767a484b52429e3638e674ef97178925020d#3",
+      "value": 0.944442
+    },
+    {
+      "sample_id": "f419767a484b52429e3638e674ef97178925020d#4",
+      "value": 0.089807
+    },
+    {
+      "sample_id": "e82fd60b8e06755184e0bd8add6967600b6788f1#0",
+      "value": 0.615814
+    },
+    {
+      "sample_id": "e82fd60b8e06755184e0bd8add6967600b6788f1#1",
+      "value": 0.9729
+    },
+    {
+      "sample_id": "e82fd60b8e06755184e0bd8add6967600b6788f1#2",
+      "value": 0.218553
+    },
+    {
+      "sample_id": "e82fd60b8e06755184e0bd8add6967600b6788f1#3",
+      "value": 0.857603
+    },
+    {
+      "sample_id": "e82fd60b8e06755184e0bd8add6967600b6788f1#4",
+      "value": 0.008589
+    },
+    {
+      "sample_id": "c053b3ec1ecee6e3d282936ba388753fc44aef99#0",
+      "value": 0.966846
+    },
+    {
+      "sample_id": "c053b3ec1ecee6e3d282936ba388753fc44aef99#1",
+      "value": 0.982479
+    },
+    {
+      "sample_id": "c053b3ec1ecee6e3d282936ba388753fc44aef99#2",
+      "value": 0.943544
+    },
+    {
+      "sample_id": "c053b3ec1ecee6e3d282936ba388753fc44aef99#3",
+      "value": 0.917175
+    },
+    {
+      "sample_id": "c053b3ec1ecee6e3d282936ba388753fc44aef99#4",
+      "value": 0.059043
+    },
+    {
+      "sample_id": "8f8a06aaf9f154fc7685a42c938a539d9d9f3000#0",
+      "value": 0.983132
+    },
+    {
+      "sample_id": "8f8a06aaf9f154fc7685a42c938a539d9d9f3000#1",
+      "value": 0.978061
+    },
+    {
+      "sample_id": "8f8a06aaf9f154fc7685a42c938a539d9d9f3000#2",
+      "value": 0.200312
+    },
+    {
+      "sample_id": "8f8a06aaf9f154fc7685a42c938a539d9d9f3000#3",
+      "value": 0.575751
+    },
+    {
+      "sample_id": "8f8a06aaf9f154fc7685a42c938a539d9d9f3000#4",
+      "value": 0.071624
+    },
+    {
+      "sample_id": "e3c40142ea9c8fa110577ae789f746fb485ce9f9#0",
+      "value": 0.97983
+    },
+    {
+      "sample_id": "e3c40142ea9c8fa110577ae789f746fb485ce9f9#1",
+      "value": 0.986356
+    },
+    {
+      "sample_id": "e3c40142ea9c8fa110577ae789f746fb485ce9f9#2",
+      "value": 0.903298
+    },
+    {
+      "sample_id": "e3c40142ea9c8fa110577ae789f746fb485ce9f9#3",
+      "value": 0.965971
+    },
+    {
+      "sample_id": "e3c40142ea9c8fa110577ae789f746fb485ce9f9#4",
+      "value": 0.028107
+    },
+    {
+      "sample_id": "a9df46183d0ebd5e9076f89c815f007623a12273#0",
+      "value": 0.98913
+    },
+    {
+      "sample_id": "a9df46183d0ebd5e9076f89c815f007623a12273#1",
+      "value": 0.985185
+    },
+    {
+      "sample_id": "a9df46183d0ebd5e9076f89c815f007623a12273#2",
+      "value": 0.966814
+    },
+    {
+      "sample_id": "a9df46183d0ebd5e9076f89c815f007623a12273#3",
+      "value": 0.706762
+    },
+    {
+      "sample_id": "a9df46183d0ebd5e9076f89c815f007623a12273#4",
+      "value": 0.070052
+    },
+    {
+      "sample_id": "65eab2505a62dab04413d9ee6a2d95f3a0f655a2#0",
+      "value": 0.930254
+    },
+    {
+      "sample_id": "65eab2505a62dab04413d9ee6a2d95f3a0f655a2#1",
+      "value": 0.957728
+    },
+    {
+      "sample_id": "65eab2505a62dab04413d9ee6a2d95f3a0f655a2#2",
+      "value": 0.077744
+    },
+    {
+      "sample_id": "65eab2505a62dab04413d9ee6a2d95f3a0f655a2#3",
+      "value": 0.448805
+    },
+    {
+      "sample_id": "65eab2505a62dab04413d9ee6a2d95f3a0f655a2#4",
+      "value": 0.140474
+    },
+    {
+      "sample_id": "f123ef35518ed61b2aa9e60123ef18976a93cfdd#0",
+      "value": 0.961694
+    },
+    {
+      "sample_id": "f123ef35518ed61b2aa9e60123ef18976a93cfdd#1",
+      "value": 0.635956
+    },
+    {
+      "sample_id": "f123ef35518ed61b2aa9e60123ef18976a93cfdd#2",
+      "value": 0.745104
+    },
+    {
+      "sample_id": "f123ef35518ed61b2aa9e60123ef18976a93cfdd#3",
+      "value": 0.652212
+    },
+    {
+      "sample_id": "f123ef35518ed61b2aa9e60123ef18976a93cfdd#4",
+      "value": 0.754673
+    },
+    {
+      "sample_id": "41988ddd925836d77f1c4a0ee59f2e0ff103ab90#0",
+      "value": 0.984584
+    },
+    {
+      "sample_id": "41988ddd925836d77f1c4a0ee59f2e0ff103ab90#1",
+      "value": 0.957048
+    },
+    {
+      "sample_id": "41988ddd925836d77f1c4a0ee59f2e0ff103ab90#2",
+      "value": 0.184314
+    },
+    {
+      "sample_id": "41988ddd925836d77f1c4a0ee59f2e0ff103ab90#3",
+      "value": 0.931707
+    },
+    {
+      "sample_id": "41988ddd925836d77f1c4a0ee59f2e0ff103ab90#4",
+      "value": 0.008404
+    },
+    {
+      "sample_id": "8610ead0a43054be202a1fc756620415a6d572fe#0",
+      "value": 0.981523
+    },
+    {
+      "sample_id": "8610ead0a43054be202a1fc756620415a6d572fe#1",
+      "value": 0.97512
+    },
+    {
+      "sample_id": "8610ead0a43054be202a1fc756620415a6d572fe#2",
+      "value": 0.55013
+    },
+    {
+      "sample_id": "8610ead0a43054be202a1fc756620415a6d572fe#3",
+      "value": 0.960068
+    },
+    {
+      "sample_id": "8610ead0a43054be202a1fc756620415a6d572fe#4",
+      "value": 0.018152
+    },
+    {
+      "sample_id": "41c910f580ca0ccbb96eddc85f4f8ccfcbdac0d2#0",
+      "value": 0.965187
+    },
+    {
+      "sample_id": "41c910f580ca0ccbb96eddc85f4f8ccfcbdac0d2#1",
+      "value": 0.835715
+    },
+    {
+      "sample_id": "41c910f580ca0ccbb96eddc85f4f8ccfcbdac0d2#2",
+      "value": 0.816264
+    },
+    {
+      "sample_id": "41c910f580ca0ccbb96eddc85f4f8ccfcbdac0d2#3",
+      "value": 0.967995
+    },
+    {
+      "sample_id": "41c910f580ca0ccbb96eddc85f4f8ccfcbdac0d2#4",
+      "value": 0.019411
+    },
+    {
+      "sample_id": "2d4ca8fe13f3481241a85bd750cdb7159edd097a#0",
+      "value": 0.960501
+    },
+    {
+      "sample_id": "2d4ca8fe13f3481241a85bd750cdb7159edd097a#1",
+      "value": 0.971722
+    },
+    {
+      "sample_id": "2d4ca8fe13f3481241a85bd750cdb7159edd097a#2",
+      "value": 0.563903
+    },
+    {
+      "sample_id": "2d4ca8fe13f3481241a85bd750cdb7159edd097a#3",
+      "value": 0.840242
+    },
+    {
+      "sample_id": "2d4ca8fe13f3481241a85bd750cdb7159edd097a#4",
+      "value": 0.773481
+    },
+    {
+      "sample_id": "7627d9788973785a485e9df3e59002df3a68ad48#0",
+      "value": 0.971942
+    },
+    {
+      "sample_id": "7627d9788973785a485e9df3e59002df3a68ad48#1",
+      "value": 0.956029
+    },
+    {
+      "sample_id": "7627d9788973785a485e9df3e59002df3a68ad48#2",
+      "value": 0.970117
+    },
+    {
+      "sample_id": "7627d9788973785a485e9df3e59002df3a68ad48#3",
+      "value": 0.196468
+    },
+    {
+      "sample_id": "7627d9788973785a485e9df3e59002df3a68ad48#4",
+      "value": 0.004748
+    },
+    {
+      "sample_id": "fdf367de86eacdfda6c104fba18e8af714a40e57#0",
+      "value": 0.978134
+    },
+    {
+      "sample_id": "fdf367de86eacdfda6c104fba18e8af714a40e57#1",
+      "value": 0.977956
+    },
+    {
+      "sample_id": "fdf367de86eacdfda6c104fba18e8af714a40e57#2",
+      "value": 0.978381
+    },
+    {
+      "sample_id": "fdf367de86eacdfda6c104fba18e8af714a40e57#3",
+      "value": 0.930862
+    },
+    {
+      "sample_id": "fdf367de86eacdfda6c104fba18e8af714a40e57#4",
+      "value": 0.577592
+    },
+    {
+      "sample_id": "4511bb7f000f7781a94fd4ee9acc88b65a984cd6#0",
+      "value": 0.968323
+    },
+    {
+      "sample_id": "4511bb7f000f7781a94fd4ee9acc88b65a984cd6#1",
+      "value": 0.194941
+    },
+    {
+      "sample_id": "4511bb7f000f7781a94fd4ee9acc88b65a984cd6#2",
+      "value": 0.027688
+    },
+    {
+      "sample_id": "4511bb7f000f7781a94fd4ee9acc88b65a984cd6#3",
+      "value": 0.750927
+    },
+    {
+      "sample_id": "4511bb7f000f7781a94fd4ee9acc88b65a984cd6#4",
+      "value": 0.048234
+    },
+    {
+      "sample_id": "92b97b70b55eaf31be089e0420c76a1001e2451a#0",
+      "value": 0.921355
+    },
+    {
+      "sample_id": "92b97b70b55eaf31be089e0420c76a1001e2451a#1",
+      "value": 0.957069
+    },
+    {
+      "sample_id": "92b97b70b55eaf31be089e0420c76a1001e2451a#2",
+      "value": 0.80659
+    },
+    {
+      "sample_id": "92b97b70b55eaf31be089e0420c76a1001e2451a#3",
+      "value": 0.879004
+    },
+    {
+      "sample_id": "92b97b70b55eaf31be089e0420c76a1001e2451a#4",
+      "value": 0.064013
+    },
+    {
+      "sample_id": "2f6106809de41d59f422d527900a6b344174c5b2#0",
+      "value": 0.984107
+    },
+    {
+      "sample_id": "2f6106809de41d59f422d527900a6b344174c5b2#1",
+      "value": 0.905346
+    },
+    {
+      "sample_id": "2f6106809de41d59f422d527900a6b344174c5b2#2",
+      "value": 0.043461
+    },
+    {
+      "sample_id": "2f6106809de41d59f422d527900a6b344174c5b2#3",
+      "value": 0.822106
+    },
+    {
+      "sample_id": "2f6106809de41d59f422d527900a6b344174c5b2#4",
+      "value": 0.125126
+    },
+    {
+      "sample_id": "236c65a580afbdabcd2b7ba5b779e026d698d978#0",
+      "value": 0.945891
+    },
+    {
+      "sample_id": "236c65a580afbdabcd2b7ba5b779e026d698d978#1",
+      "value": 0.936845
+    },
+    {
+      "sample_id": "236c65a580afbdabcd2b7ba5b779e026d698d978#2",
+      "value": 0.062372
+    },
+    {
+      "sample_id": "236c65a580afbdabcd2b7ba5b779e026d698d978#3",
+      "value": 0.829523
+    },
+    {
+      "sample_id": "236c65a580afbdabcd2b7ba5b779e026d698d978#4",
+      "value": 0.054387
+    },
+    {
+      "sample_id": "9c3af3b75138639ab7a0731563092296c4e565aa#0",
+      "value": 0.964344
+    },
+    {
+      "sample_id": "9c3af3b75138639ab7a0731563092296c4e565aa#1",
+      "value": 0.97794
+    },
+    {
+      "sample_id": "9c3af3b75138639ab7a0731563092296c4e565aa#2",
+      "value": 0.434026
+    },
+    {
+      "sample_id": "9c3af3b75138639ab7a0731563092296c4e565aa#3",
+      "value": 0.043419
+    },
+    {
+      "sample_id": "9c3af3b75138639ab7a0731563092296c4e565aa#4",
+      "value": 0.012617
+    },
+    {
+      "sample_id": "e17dfca32f47c9b529bef95eb457a42ca899154e#0",
+      "value": 0.904077
+    },
+    {
+      "sample_id": "e17dfca32f47c9b529bef95eb457a42ca899154e#1",
+      "value": 0.825509
+    },
+    {
+      "sample_id": "e17dfca32f47c9b529bef95eb457a42ca899154e#2",
+      "value": 0.263752
+    },
+    {
+      "sample_id": "e17dfca32f47c9b529bef95eb457a42ca899154e#3",
+      "value": 0.032187
+    },
+    {
+      "sample_id": "e17dfca32f47c9b529bef95eb457a42ca899154e#4",
+      "value": 0.028194
+    },
+    {
+      "sample_id": "30278707947e07d030751635ac82da5d32b02dc8#0",
+      "value": 0.969018
+    },
+    {
+      "sample_id": "30278707947e07d030751635ac82da5d32b02dc8#1",
+      "value": 0.971567
+    },
+    {
+      "sample_id": "30278707947e07d030751635ac82da5d32b02dc8#2",
+      "value": 0.979625
+    },
+    {
+      "sample_id": "30278707947e07d030751635ac82da5d32b02dc8#3",
+      "value": 0.944071
+    },
+    {
+      "sample_id": "30278707947e07d030751635ac82da5d32b02dc8#4",
+      "value": 0.033557
+    },
+    {
+      "sample_id": "a7c6adc05c834d6ffcf02fddfa42d0c9eb6de602#0",
+      "value": 0.982739
+    },
+    {
+      "sample_id": "a7c6adc05c834d6ffcf02fddfa42d0c9eb6de602#1",
+      "value": 0.974374
+    },
+    {
+      "sample_id": "a7c6adc05c834d6ffcf02fddfa42d0c9eb6de602#2",
+      "value": 0.966959
+    },
+    {
+      "sample_id": "a7c6adc05c834d6ffcf02fddfa42d0c9eb6de602#3",
+      "value": 0.983125
+    },
+    {
+      "sample_id": "a7c6adc05c834d6ffcf02fddfa42d0c9eb6de602#4",
+      "value": 0.516518
+    },
+    {
+      "sample_id": "ce551de8d9a69e9f2b51ccdd465c8150821936ce#0",
+      "value": 0.953945
+    },
+    {
+      "sample_id": "ce551de8d9a69e9f2b51ccdd465c8150821936ce#1",
+      "value": 0.961762
+    },
+    {
+      "sample_id": "ce551de8d9a69e9f2b51ccdd465c8150821936ce#2",
+      "value": 0.965337
+    },
+    {
+      "sample_id": "ce551de8d9a69e9f2b51ccdd465c8150821936ce#3",
+      "value": 0.992321
+    },
+    {
+      "sample_id": "ce551de8d9a69e9f2b51ccdd465c8150821936ce#4",
+      "value": 0.015474
+    },
+    {
+      "sample_id": "95c8ae4fb51cc266ac604e0f40a4ebf284ebfe93#0",
+      "value": 0.974529
+    },
+    {
+      "sample_id": "95c8ae4fb51cc266ac604e0f40a4ebf284ebfe93#1",
+      "value": 0.962159
+    },
+    {
+      "sample_id": "95c8ae4fb51cc266ac604e0f40a4ebf284ebfe93#2",
+      "value": 0.834036
+    },
+    {
+      "sample_id": "95c8ae4fb51cc266ac604e0f40a4ebf284ebfe93#3",
+      "value": 0.857207
+    },
+    {
+      "sample_id": "95c8ae4fb51cc266ac604e0f40a4ebf284ebfe93#4",
+      "value": 0.08458
+    },
+    {
+      "sample_id": "5f5a8814d8ec3c16299782db7c724cb771ea5adb#0",
+      "value": 0.975768
+    },
+    {
+      "sample_id": "5f5a8814d8ec3c16299782db7c724cb771ea5adb#1",
+      "value": 0.979407
+    },
+    {
+      "sample_id": "5f5a8814d8ec3c16299782db7c724cb771ea5adb#2",
+      "value": 0.92872
+    },
+    {
+      "sample_id": "5f5a8814d8ec3c16299782db7c724cb771ea5adb#3",
+      "value": 0.959314
+    },
+    {
+      "sample_id": "5f5a8814d8ec3c16299782db7c724cb771ea5adb#4",
+      "value": 0.26065
+    },
+    {
+      "sample_id": "e3e7212ffe9806f6e6d5ba4587c8e7613aaa4ba3#0",
+      "value": 0.974456
+    },
+    {
+      "sample_id": "e3e7212ffe9806f6e6d5ba4587c8e7613aaa4ba3#1",
+      "value": 0.990361
+    },
+    {
+      "sample_id": "e3e7212ffe9806f6e6d5ba4587c8e7613aaa4ba3#2",
+      "value": 0.646734
+    },
+    {
+      "sample_id": "e3e7212ffe9806f6e6d5ba4587c8e7613aaa4ba3#3",
+      "value": 0.97731
+    },
+    {
+      "sample_id": "e3e7212ffe9806f6e6d5ba4587c8e7613aaa4ba3#4",
+      "value": 0.186384
+    },
+    {
+      "sample_id": "d24a4e0de51b23951156877dd92f581ffff7d12c#0",
+      "value": 0.985815
+    },
+    {
+      "sample_id": "d24a4e0de51b23951156877dd92f581ffff7d12c#1",
+      "value": 0.969666
+    },
+    {
+      "sample_id": "d24a4e0de51b23951156877dd92f581ffff7d12c#2",
+      "value": 0.459798
+    },
+    {
+      "sample_id": "d24a4e0de51b23951156877dd92f581ffff7d12c#3",
+      "value": 0.967297
+    },
+    {
+      "sample_id": "d24a4e0de51b23951156877dd92f581ffff7d12c#4",
+      "value": 0.625567
+    },
+    {
+      "sample_id": "f873cc92d02cd04d1b6164fd3659b3fa247cdf56#0",
+      "value": 0.931743
+    },
+    {
+      "sample_id": "f873cc92d02cd04d1b6164fd3659b3fa247cdf56#1",
+      "value": 0.983647
+    },
+    {
+      "sample_id": "f873cc92d02cd04d1b6164fd3659b3fa247cdf56#2",
+      "value": 0.97192
+    },
+    {
+      "sample_id": "f873cc92d02cd04d1b6164fd3659b3fa247cdf56#3",
+      "value": 0.97578
+    },
+    {
+      "sample_id": "f873cc92d02cd04d1b6164fd3659b3fa247cdf56#4",
+      "value": 0.063239
+    },
+    {
+      "sample_id": "7b64ed2057255f31383bfb888bbb1284ce3b027d#0",
+      "value": 0.983608
+    },
+    {
+      "sample_id": "7b64ed2057255f31383bfb888bbb1284ce3b027d#1",
+      "value": 0.979761
+    },
+    {
+      "sample_id": "7b64ed2057255f31383bfb888bbb1284ce3b027d#2",
+      "value": 0.945755
+    },
+    {
+      "sample_id": "7b64ed2057255f31383bfb888bbb1284ce3b027d#3",
+      "value": 0.975259
+    },
+    {
+      "sample_id": "7b64ed2057255f31383bfb888bbb1284ce3b027d#4",
+      "value": 0.024279
+    },
+    {
+      "sample_id": "1d448f2090c737fbe32242eb26b57acf3ba8c08b#0",
+      "value": 0.939379
+    },
+    {
+      "sample_id": "1d448f2090c737fbe32242eb26b57acf3ba8c08b#1",
+      "value": 0.844629
+    },
+    {
+      "sample_id": "1d448f2090c737fbe32242eb26b57acf3ba8c08b#2",
+      "value": 0.828667
+    },
+    {
+      "sample_id": "1d448f2090c737fbe32242eb26b57acf3ba8c08b#3",
+      "value": 0.750196
+    },
+    {
+      "sample_id": "1d448f2090c737fbe32242eb26b57acf3ba8c08b#4",
+      "value": 0.093219
+    },
+    {
+      "sample_id": "068f529825cc39af930a462c5e9685cbd7961fa5#0",
+      "value": 0.98627
+    },
+    {
+      "sample_id": "068f529825cc39af930a462c5e9685cbd7961fa5#1",
+      "value": 0.980727
+    },
+    {
+      "sample_id": "068f529825cc39af930a462c5e9685cbd7961fa5#2",
+      "value": 0.971823
+    },
+    {
+      "sample_id": "068f529825cc39af930a462c5e9685cbd7961fa5#3",
+      "value": 0.960512
+    },
+    {
+      "sample_id": "068f529825cc39af930a462c5e9685cbd7961fa5#4",
+      "value": 0.188487
+    },
+    {
+      "sample_id": "2cbe1cf51723fd689e29b3a7e4f1e51d30fef1cd#0",
+      "value": 0.97654
+    },
+    {
+      "sample_id": "2cbe1cf51723fd689e29b3a7e4f1e51d30fef1cd#1",
+      "value": 0.898833
+    },
+    {
+      "sample_id": "2cbe1cf51723fd689e29b3a7e4f1e51d30fef1cd#2",
+      "value": 0.872239
+    },
+    {
+      "sample_id": "2cbe1cf51723fd689e29b3a7e4f1e51d30fef1cd#3",
+      "value": 0.974696
+    },
+    {
+      "sample_id": "2cbe1cf51723fd689e29b3a7e4f1e51d30fef1cd#4",
+      "value": 0.018459
+    },
+    {
+      "sample_id": "bdf2ee6d1aef4af9db69d92f5d05cd31b685e3b9#0",
+      "value": 0.987718
+    },
+    {
+      "sample_id": "bdf2ee6d1aef4af9db69d92f5d05cd31b685e3b9#1",
+      "value": 0.989132
+    },
+    {
+      "sample_id": "bdf2ee6d1aef4af9db69d92f5d05cd31b685e3b9#2",
+      "value": 0.989132
+    },
+    {
+      "sample_id": "bdf2ee6d1aef4af9db69d92f5d05cd31b685e3b9#3",
+      "value": 0.982819
+    },
+    {
+      "sample_id": "bdf2ee6d1aef4af9db69d92f5d05cd31b685e3b9#4",
+      "value": 0.004227
+    },
+    {
+      "sample_id": "008aa71f64621995d749aff42be822b1b6ca7bc9#0",
+      "value": 0.954336
+    },
+    {
+      "sample_id": "008aa71f64621995d749aff42be822b1b6ca7bc9#1",
+      "value": 0.956763
+    },
+    {
+      "sample_id": "008aa71f64621995d749aff42be822b1b6ca7bc9#2",
+      "value": 0.326875
+    },
+    {
+      "sample_id": "008aa71f64621995d749aff42be822b1b6ca7bc9#3",
+      "value": 0.212937
+    },
+    {
+      "sample_id": "008aa71f64621995d749aff42be822b1b6ca7bc9#4",
+      "value": 0.306927
+    },
+    {
+      "sample_id": "ebc726fe82bd10e6e9c6e1b71a7c1aa908f79b18#0",
+      "value": 0.977041
+    },
+    {
+      "sample_id": "ebc726fe82bd10e6e9c6e1b71a7c1aa908f79b18#1",
+      "value": 0.97537
+    },
+    {
+      "sample_id": "ebc726fe82bd10e6e9c6e1b71a7c1aa908f79b18#2",
+      "value": 0.555104
+    },
+    {
+      "sample_id": "ebc726fe82bd10e6e9c6e1b71a7c1aa908f79b18#3",
+      "value": 0.475528
+    },
+    {
+      "sample_id": "ebc726fe82bd10e6e9c6e1b71a7c1aa908f79b18#4",
+      "value": 0.076463
+    },
+    {
+      "sample_id": "9e0bc5a95b7dc5489316fe88caff673f3d2c7644#0",
+      "value": 0.985492
+    },
+    {
+      "sample_id": "9e0bc5a95b7dc5489316fe88caff673f3d2c7644#1",
+      "value": 0.989055
+    },
+    {
+      "sample_id": "9e0bc5a95b7dc5489316fe88caff673f3d2c7644#2",
+      "value": 0.367988
+    },
+    {
+      "sample_id": "9e0bc5a95b7dc5489316fe88caff673f3d2c7644#3",
+      "value": 0.026033
+    },
+    {
+      "sample_id": "9e0bc5a95b7dc5489316fe88caff673f3d2c7644#4",
+      "value": 0.507084
+    },
+    {
+      "sample_id": "72e150dabe78aa9876a4f07e8d27c3130b6d252c#0",
+      "value": 0.986951
+    },
+    {
+      "sample_id": "72e150dabe78aa9876a4f07e8d27c3130b6d252c#1",
+      "value": 0.987773
+    },
+    {
+      "sample_id": "72e150dabe78aa9876a4f07e8d27c3130b6d252c#2",
+      "value": 0.982893
+    },
+    {
+      "sample_id": "72e150dabe78aa9876a4f07e8d27c3130b6d252c#3",
+      "value": 0.984907
+    },
+    {
+      "sample_id": "72e150dabe78aa9876a4f07e8d27c3130b6d252c#4",
+      "value": 0.035732
+    },
+    {
+      "sample_id": "9a1dd9e7fc95541f3bed1db820cd44b426da5bf1#0",
+      "value": 0.979399
+    },
+    {
+      "sample_id": "9a1dd9e7fc95541f3bed1db820cd44b426da5bf1#1",
+      "value": 0.970025
+    },
+    {
+      "sample_id": "9a1dd9e7fc95541f3bed1db820cd44b426da5bf1#2",
+      "value": 0.964237
+    },
+    {
+      "sample_id": "9a1dd9e7fc95541f3bed1db820cd44b426da5bf1#3",
+      "value": 0.949175
+    },
+    {
+      "sample_id": "9a1dd9e7fc95541f3bed1db820cd44b426da5bf1#4",
+      "value": 0.039467
+    },
+    {
+      "sample_id": "1d7b60fb8f929252caf6ea56ffca0d754f4235c3#0",
+      "value": 0.958694
+    },
+    {
+      "sample_id": "1d7b60fb8f929252caf6ea56ffca0d754f4235c3#1",
+      "value": 0.873868
+    },
+    {
+      "sample_id": "1d7b60fb8f929252caf6ea56ffca0d754f4235c3#2",
+      "value": 0.613006
+    },
+    {
+      "sample_id": "1d7b60fb8f929252caf6ea56ffca0d754f4235c3#3",
+      "value": 0.954897
+    },
+    {
+      "sample_id": "1d7b60fb8f929252caf6ea56ffca0d754f4235c3#4",
+      "value": 0.044418
+    },
+    {
+      "sample_id": "59808218684d137e372eb2f2f7489ea7c16b21ad#0",
+      "value": 0.90408
+    },
+    {
+      "sample_id": "59808218684d137e372eb2f2f7489ea7c16b21ad#1",
+      "value": 0.874554
+    },
+    {
+      "sample_id": "59808218684d137e372eb2f2f7489ea7c16b21ad#2",
+      "value": 0.952902
+    },
+    {
+      "sample_id": "59808218684d137e372eb2f2f7489ea7c16b21ad#3",
+      "value": 0.987133
+    },
+    {
+      "sample_id": "59808218684d137e372eb2f2f7489ea7c16b21ad#4",
+      "value": 0.015247
+    },
+    {
+      "sample_id": "67a7a516ad08cb6b1e88c6aa59557d79f647e6e4#0",
+      "value": 0.97728
+    },
+    {
+      "sample_id": "67a7a516ad08cb6b1e88c6aa59557d79f647e6e4#1",
+      "value": 0.559371
+    },
+    {
+      "sample_id": "67a7a516ad08cb6b1e88c6aa59557d79f647e6e4#2",
+      "value": 0.098064
+    },
+    {
+      "sample_id": "67a7a516ad08cb6b1e88c6aa59557d79f647e6e4#3",
+      "value": 0.989365
+    },
+    {
+      "sample_id": "67a7a516ad08cb6b1e88c6aa59557d79f647e6e4#4",
+      "value": 0.250097
+    },
+    {
+      "sample_id": "7036146e3e87aed36a8b704b73770d3f803d2b5b#0",
+      "value": 0.983305
+    },
+    {
+      "sample_id": "7036146e3e87aed36a8b704b73770d3f803d2b5b#1",
+      "value": 0.96201
+    },
+    {
+      "sample_id": "7036146e3e87aed36a8b704b73770d3f803d2b5b#2",
+      "value": 0.956265
+    },
+    {
+      "sample_id": "7036146e3e87aed36a8b704b73770d3f803d2b5b#3",
+      "value": 0.95368
+    },
+    {
+      "sample_id": "7036146e3e87aed36a8b704b73770d3f803d2b5b#4",
+      "value": 0.642037
+    },
+    {
+      "sample_id": "4323850bb3efad1687e0af136ba0e217bf536f01#0",
+      "value": 0.978847
+    },
+    {
+      "sample_id": "4323850bb3efad1687e0af136ba0e217bf536f01#1",
+      "value": 0.930016
+    },
+    {
+      "sample_id": "4323850bb3efad1687e0af136ba0e217bf536f01#2",
+      "value": 0.595684
+    },
+    {
+      "sample_id": "4323850bb3efad1687e0af136ba0e217bf536f01#3",
+      "value": 0.734636
+    },
+    {
+      "sample_id": "4323850bb3efad1687e0af136ba0e217bf536f01#4",
+      "value": 0.885764
+    },
+    {
+      "sample_id": "d4f93ae8f0c0cc9ae690e3a2bc0d562c19625731#0",
+      "value": 0.952707
+    },
+    {
+      "sample_id": "d4f93ae8f0c0cc9ae690e3a2bc0d562c19625731#1",
+      "value": 0.985834
+    },
+    {
+      "sample_id": "d4f93ae8f0c0cc9ae690e3a2bc0d562c19625731#2",
+      "value": 0.921843
+    },
+    {
+      "sample_id": "d4f93ae8f0c0cc9ae690e3a2bc0d562c19625731#3",
+      "value": 0.971576
+    },
+    {
+      "sample_id": "d4f93ae8f0c0cc9ae690e3a2bc0d562c19625731#4",
+      "value": 0.010258
+    },
+    {
+      "sample_id": "2beb3c90dd9c2fe8288f352b6b973b5a0b5dd0dc#0",
+      "value": 0.978795
+    },
+    {
+      "sample_id": "2beb3c90dd9c2fe8288f352b6b973b5a0b5dd0dc#1",
+      "value": 0.968535
+    },
+    {
+      "sample_id": "2beb3c90dd9c2fe8288f352b6b973b5a0b5dd0dc#2",
+      "value": 0.062621
+    },
+    {
+      "sample_id": "2beb3c90dd9c2fe8288f352b6b973b5a0b5dd0dc#3",
+      "value": 0.93933
+    },
+    {
+      "sample_id": "2beb3c90dd9c2fe8288f352b6b973b5a0b5dd0dc#4",
+      "value": 0.042532
+    },
+    {
+      "sample_id": "26dff36c2bc2186229d2ad55c731fca241737a1a#0",
+      "value": 0.962986
+    },
+    {
+      "sample_id": "26dff36c2bc2186229d2ad55c731fca241737a1a#1",
+      "value": 0.865375
+    },
+    {
+      "sample_id": "26dff36c2bc2186229d2ad55c731fca241737a1a#2",
+      "value": 0.927553
+    },
+    {
+      "sample_id": "26dff36c2bc2186229d2ad55c731fca241737a1a#3",
+      "value": 0.979595
+    },
+    {
+      "sample_id": "26dff36c2bc2186229d2ad55c731fca241737a1a#4",
+      "value": 0.066335
+    },
+    {
+      "sample_id": "9789a93a0e998a80daf1b55413a36b9bcd7445fe#0",
+      "value": 0.966879
+    },
+    {
+      "sample_id": "9789a93a0e998a80daf1b55413a36b9bcd7445fe#1",
+      "value": 0.941445
+    },
+    {
+      "sample_id": "9789a93a0e998a80daf1b55413a36b9bcd7445fe#2",
+      "value": 0.85162
+    },
+    {
+      "sample_id": "9789a93a0e998a80daf1b55413a36b9bcd7445fe#3",
+      "value": 0.903913
+    },
+    {
+      "sample_id": "9789a93a0e998a80daf1b55413a36b9bcd7445fe#4",
+      "value": 0.009148
+    },
+    {
+      "sample_id": "f294356d3cca1cfeb00f9e8bea4c197e7bf32b3e#0",
+      "value": 0.955473
+    },
+    {
+      "sample_id": "f294356d3cca1cfeb00f9e8bea4c197e7bf32b3e#1",
+      "value": 0.014292
+    },
+    {
+      "sample_id": "f294356d3cca1cfeb00f9e8bea4c197e7bf32b3e#2",
+      "value": 0.07163
+    },
+    {
+      "sample_id": "f294356d3cca1cfeb00f9e8bea4c197e7bf32b3e#3",
+      "value": 0.975091
+    },
+    {
+      "sample_id": "f294356d3cca1cfeb00f9e8bea4c197e7bf32b3e#4",
+      "value": 0.340995
+    },
+    {
+      "sample_id": "e9ed941169153051c2c912f34421d340974a58e8#0",
+      "value": 0.959533
+    },
+    {
+      "sample_id": "e9ed941169153051c2c912f34421d340974a58e8#1",
+      "value": 0.967519
+    },
+    {
+      "sample_id": "e9ed941169153051c2c912f34421d340974a58e8#2",
+      "value": 0.779025
+    },
+    {
+      "sample_id": "e9ed941169153051c2c912f34421d340974a58e8#3",
+      "value": 0.852392
+    },
+    {
+      "sample_id": "e9ed941169153051c2c912f34421d340974a58e8#4",
+      "value": 0.123254
+    },
+    {
+      "sample_id": "340cf468232e0c3bb17b1ca048d319d5062a5909#0",
+      "value": 0.969363
+    },
+    {
+      "sample_id": "340cf468232e0c3bb17b1ca048d319d5062a5909#1",
+      "value": 0.974992
+    },
+    {
+      "sample_id": "340cf468232e0c3bb17b1ca048d319d5062a5909#2",
+      "value": 0.530866
+    },
+    {
+      "sample_id": "340cf468232e0c3bb17b1ca048d319d5062a5909#3",
+      "value": 0.954492
+    },
+    {
+      "sample_id": "340cf468232e0c3bb17b1ca048d319d5062a5909#4",
+      "value": 0.036167
+    },
+    {
+      "sample_id": "8ececf760ca96748a4f75d7fa7c1e13092738fbf#0",
+      "value": 0.973568
+    },
+    {
+      "sample_id": "8ececf760ca96748a4f75d7fa7c1e13092738fbf#1",
+      "value": 0.964785
+    },
+    {
+      "sample_id": "8ececf760ca96748a4f75d7fa7c1e13092738fbf#2",
+      "value": 0.946324
+    },
+    {
+      "sample_id": "8ececf760ca96748a4f75d7fa7c1e13092738fbf#3",
+      "value": 0.13769
+    },
+    {
+      "sample_id": "8ececf760ca96748a4f75d7fa7c1e13092738fbf#4",
+      "value": 0.009628
+    },
+    {
+      "sample_id": "8a498eaadb160004b2a71cab6b7c213b15281961#0",
+      "value": 0.977429
+    },
+    {
+      "sample_id": "8a498eaadb160004b2a71cab6b7c213b15281961#1",
+      "value": 0.531681
+    },
+    {
+      "sample_id": "8a498eaadb160004b2a71cab6b7c213b15281961#2",
+      "value": 0.852463
+    },
+    {
+      "sample_id": "8a498eaadb160004b2a71cab6b7c213b15281961#3",
+      "value": 0.618811
+    },
+    {
+      "sample_id": "8a498eaadb160004b2a71cab6b7c213b15281961#4",
+      "value": 0.085547
+    },
+    {
+      "sample_id": "9dbeef62a3e0fbfaf73a647dc5ec41e55c787c2c#0",
+      "value": 0.95084
+    },
+    {
+      "sample_id": "9dbeef62a3e0fbfaf73a647dc5ec41e55c787c2c#1",
+      "value": 0.954238
+    },
+    {
+      "sample_id": "9dbeef62a3e0fbfaf73a647dc5ec41e55c787c2c#2",
+      "value": 0.951324
+    },
+    {
+      "sample_id": "9dbeef62a3e0fbfaf73a647dc5ec41e55c787c2c#3",
+      "value": 0.972285
+    },
+    {
+      "sample_id": "9dbeef62a3e0fbfaf73a647dc5ec41e55c787c2c#4",
+      "value": 0.009265
+    },
+    {
+      "sample_id": "5ec241bce317fef97331e1d385b67dab05f5b1dc#0",
+      "value": 0.97134
+    },
+    {
+      "sample_id": "5ec241bce317fef97331e1d385b67dab05f5b1dc#1",
+      "value": 0.95522
+    },
+    {
+      "sample_id": "5ec241bce317fef97331e1d385b67dab05f5b1dc#2",
+      "value": 0.922861
+    },
+    {
+      "sample_id": "5ec241bce317fef97331e1d385b67dab05f5b1dc#3",
+      "value": 0.971689
+    },
+    {
+      "sample_id": "5ec241bce317fef97331e1d385b67dab05f5b1dc#4",
+      "value": 0.025777
+    },
+    {
+      "sample_id": "88b93edead8102472d922c0410269267b7673c95#0",
+      "value": 0.979895
+    },
+    {
+      "sample_id": "88b93edead8102472d922c0410269267b7673c95#1",
+      "value": 0.975534
+    },
+    {
+      "sample_id": "88b93edead8102472d922c0410269267b7673c95#2",
+      "value": 0.905174
+    },
+    {
+      "sample_id": "88b93edead8102472d922c0410269267b7673c95#3",
+      "value": 0.635261
+    },
+    {
+      "sample_id": "88b93edead8102472d922c0410269267b7673c95#4",
+      "value": 0.330471
+    },
+    {
+      "sample_id": "d3a85ca1228b8da6482f9a1bdeb8e409ede7ad1c#0",
+      "value": 0.934034
+    },
+    {
+      "sample_id": "d3a85ca1228b8da6482f9a1bdeb8e409ede7ad1c#1",
+      "value": 0.9565
+    },
+    {
+      "sample_id": "d3a85ca1228b8da6482f9a1bdeb8e409ede7ad1c#2",
+      "value": 0.937412
+    },
+    {
+      "sample_id": "d3a85ca1228b8da6482f9a1bdeb8e409ede7ad1c#3",
+      "value": 0.947623
+    },
+    {
+      "sample_id": "d3a85ca1228b8da6482f9a1bdeb8e409ede7ad1c#4",
+      "value": 0.302498
+    },
+    {
+      "sample_id": "2c05ddcc2bf50bd20dfc8c16f124d32867075b32#0",
+      "value": 0.955751
+    },
+    {
+      "sample_id": "2c05ddcc2bf50bd20dfc8c16f124d32867075b32#1",
+      "value": 0.625567
+    },
+    {
+      "sample_id": "2c05ddcc2bf50bd20dfc8c16f124d32867075b32#2",
+      "value": 0.871403
+    },
+    {
+      "sample_id": "2c05ddcc2bf50bd20dfc8c16f124d32867075b32#3",
+      "value": 0.238344
+    },
+    {
+      "sample_id": "2c05ddcc2bf50bd20dfc8c16f124d32867075b32#4",
+      "value": 0.057598
+    },
+    {
+      "sample_id": "b6f33db2b8ff0a48d8ff0e7e2aa8116be35c50e7#0",
+      "value": 0.949443
+    },
+    {
+      "sample_id": "b6f33db2b8ff0a48d8ff0e7e2aa8116be35c50e7#1",
+      "value": 0.984275
+    },
+    {
+      "sample_id": "b6f33db2b8ff0a48d8ff0e7e2aa8116be35c50e7#2",
+      "value": 0.947956
+    },
+    {
+      "sample_id": "b6f33db2b8ff0a48d8ff0e7e2aa8116be35c50e7#3",
+      "value": 0.965294
+    },
+    {
+      "sample_id": "b6f33db2b8ff0a48d8ff0e7e2aa8116be35c50e7#4",
+      "value": 0.279625
+    },
+    {
+      "sample_id": "962da1370522ccf02d3c1c0410c874c7bffd1fbb#0",
+      "value": 0.954129
+    },
+    {
+      "sample_id": "962da1370522ccf02d3c1c0410c874c7bffd1fbb#1",
+      "value": 0.92549
+    },
+    {
+      "sample_id": "962da1370522ccf02d3c1c0410c874c7bffd1fbb#2",
+      "value": 0.627336
+    },
+    {
+      "sample_id": "962da1370522ccf02d3c1c0410c874c7bffd1fbb#3",
+      "value": 0.981076
+    },
+    {
+      "sample_id": "962da1370522ccf02d3c1c0410c874c7bffd1fbb#4",
+      "value": 0.049754
+    },
+    {
+      "sample_id": "71cfa34d7c8d2acd4244817fe963343b12e51928#0",
+      "value": 0.860202
+    },
+    {
+      "sample_id": "71cfa34d7c8d2acd4244817fe963343b12e51928#1",
+      "value": 0.983387
+    },
+    {
+      "sample_id": "71cfa34d7c8d2acd4244817fe963343b12e51928#2",
+      "value": 0.154736
+    },
+    {
+      "sample_id": "71cfa34d7c8d2acd4244817fe963343b12e51928#3",
+      "value": 0.962785
+    },
+    {
+      "sample_id": "71cfa34d7c8d2acd4244817fe963343b12e51928#4",
+      "value": 0.001282
+    },
+    {
+      "sample_id": "89daa80db49b6e36c1cd0bde9b253ca7fa143811#0",
+      "value": 0.969044
+    },
+    {
+      "sample_id": "89daa80db49b6e36c1cd0bde9b253ca7fa143811#1",
+      "value": 0.969107
+    },
+    {
+      "sample_id": "89daa80db49b6e36c1cd0bde9b253ca7fa143811#2",
+      "value": 0.173798
+    },
+    {
+      "sample_id": "89daa80db49b6e36c1cd0bde9b253ca7fa143811#3",
+      "value": 0.979198
+    },
+    {
+      "sample_id": "89daa80db49b6e36c1cd0bde9b253ca7fa143811#4",
+      "value": 0.641142
+    },
+    {
+      "sample_id": "5641410eed47b14b68bc0d038cefac49eac0e5fb#0",
+      "value": 0.979904
+    },
+    {
+      "sample_id": "5641410eed47b14b68bc0d038cefac49eac0e5fb#1",
+      "value": 0.989346
+    },
+    {
+      "sample_id": "5641410eed47b14b68bc0d038cefac49eac0e5fb#2",
+      "value": 0.991186
+    },
+    {
+      "sample_id": "5641410eed47b14b68bc0d038cefac49eac0e5fb#3",
+      "value": 0.734803
+    },
+    {
+      "sample_id": "5641410eed47b14b68bc0d038cefac49eac0e5fb#4",
+      "value": 0.78172
+    },
+    {
+      "sample_id": "58a9dbc76da984afd5cbaa5c9bc9b59b36c302ab#0",
+      "value": 0.980619
+    },
+    {
+      "sample_id": "58a9dbc76da984afd5cbaa5c9bc9b59b36c302ab#1",
+      "value": 0.973378
+    },
+    {
+      "sample_id": "58a9dbc76da984afd5cbaa5c9bc9b59b36c302ab#2",
+      "value": 0.982305
+    },
+    {
+      "sample_id": "58a9dbc76da984afd5cbaa5c9bc9b59b36c302ab#3",
+      "value": 0.804548
+    },
+    {
+      "sample_id": "58a9dbc76da984afd5cbaa5c9bc9b59b36c302ab#4",
+      "value": 0.022632
+    },
+    {
+      "sample_id": "578933f933255e7e22695c68f7e544dbc749dae3#0",
+      "value": 0.984746
+    },
+    {
+      "sample_id": "578933f933255e7e22695c68f7e544dbc749dae3#1",
+      "value": 0.978365
+    },
+    {
+      "sample_id": "578933f933255e7e22695c68f7e544dbc749dae3#2",
+      "value": 0.961581
+    },
+    {
+      "sample_id": "578933f933255e7e22695c68f7e544dbc749dae3#3",
+      "value": 0.553046
+    },
+    {
+      "sample_id": "578933f933255e7e22695c68f7e544dbc749dae3#4",
+      "value": 0.014074
+    },
+    {
+      "sample_id": "0f9730751edc82180f916bacd2061f3ae70e5bf0#0",
+      "value": 0.981831
+    },
+    {
+      "sample_id": "0f9730751edc82180f916bacd2061f3ae70e5bf0#1",
+      "value": 0.984324
+    },
+    {
+      "sample_id": "0f9730751edc82180f916bacd2061f3ae70e5bf0#2",
+      "value": 0.972741
+    },
+    {
+      "sample_id": "0f9730751edc82180f916bacd2061f3ae70e5bf0#3",
+      "value": 0.917993
+    },
+    {
+      "sample_id": "0f9730751edc82180f916bacd2061f3ae70e5bf0#4",
+      "value": 0.034702
+    },
+    {
+      "sample_id": "7b27f7ffb9c90f5786516c3837fa229f1c051757#0",
+      "value": 0.92539
+    },
+    {
+      "sample_id": "7b27f7ffb9c90f5786516c3837fa229f1c051757#1",
+      "value": 0.975474
+    },
+    {
+      "sample_id": "7b27f7ffb9c90f5786516c3837fa229f1c051757#2",
+      "value": 0.961878
+    },
+    {
+      "sample_id": "7b27f7ffb9c90f5786516c3837fa229f1c051757#3",
+      "value": 0.965663
+    },
+    {
+      "sample_id": "7b27f7ffb9c90f5786516c3837fa229f1c051757#4",
+      "value": 0.002059
+    },
+    {
+      "sample_id": "e3bd5f22fedc86c37867d6d93d39517a66e19e04#0",
+      "value": 0.984315
+    },
+    {
+      "sample_id": "e3bd5f22fedc86c37867d6d93d39517a66e19e04#1",
+      "value": 0.807763
+    },
+    {
+      "sample_id": "e3bd5f22fedc86c37867d6d93d39517a66e19e04#2",
+      "value": 0.976442
+    },
+    {
+      "sample_id": "e3bd5f22fedc86c37867d6d93d39517a66e19e04#3",
+      "value": 0.421795
+    },
+    {
+      "sample_id": "e3bd5f22fedc86c37867d6d93d39517a66e19e04#4",
+      "value": 0.004328
+    },
+    {
+      "sample_id": "20931a4ab4b04c0d0eb6ca7a5044f21fb5aaa91a#0",
+      "value": 0.975361
+    },
+    {
+      "sample_id": "20931a4ab4b04c0d0eb6ca7a5044f21fb5aaa91a#1",
+      "value": 0.648314
+    },
+    {
+      "sample_id": "20931a4ab4b04c0d0eb6ca7a5044f21fb5aaa91a#2",
+      "value": 0.959184
+    },
+    {
+      "sample_id": "20931a4ab4b04c0d0eb6ca7a5044f21fb5aaa91a#3",
+      "value": 0.957301
+    },
+    {
+      "sample_id": "20931a4ab4b04c0d0eb6ca7a5044f21fb5aaa91a#4",
+      "value": 0.009719
+    },
+    {
+      "sample_id": "2b19de4fe8058015c655bd9cbeabd63ee360944e#0",
+      "value": 0.979327
+    },
+    {
+      "sample_id": "2b19de4fe8058015c655bd9cbeabd63ee360944e#1",
+      "value": 0.984289
+    },
+    {
+      "sample_id": "2b19de4fe8058015c655bd9cbeabd63ee360944e#2",
+      "value": 0.753949
+    },
+    {
+      "sample_id": "2b19de4fe8058015c655bd9cbeabd63ee360944e#3",
+      "value": 0.97754
+    },
+    {
+      "sample_id": "2b19de4fe8058015c655bd9cbeabd63ee360944e#4",
+      "value": 0.159948
+    },
+    {
+      "sample_id": "3e1334fcca9090a08d2dcb2fd56fb401c1c89911#0",
+      "value": 0.974662
+    },
+    {
+      "sample_id": "3e1334fcca9090a08d2dcb2fd56fb401c1c89911#1",
+      "value": 0.62842
+    },
+    {
+      "sample_id": "3e1334fcca9090a08d2dcb2fd56fb401c1c89911#2",
+      "value": 0.960865
+    },
+    {
+      "sample_id": "3e1334fcca9090a08d2dcb2fd56fb401c1c89911#3",
+      "value": 0.944675
+    },
+    {
+      "sample_id": "3e1334fcca9090a08d2dcb2fd56fb401c1c89911#4",
+      "value": 0.014301
+    },
+    {
+      "sample_id": "4662c4593a02d144de8a32cf1f9726a31b5b31e4#0",
+      "value": 0.948708
+    },
+    {
+      "sample_id": "4662c4593a02d144de8a32cf1f9726a31b5b31e4#1",
+      "value": 0.778449
+    },
+    {
+      "sample_id": "4662c4593a02d144de8a32cf1f9726a31b5b31e4#2",
+      "value": 0.973529
+    },
+    {
+      "sample_id": "4662c4593a02d144de8a32cf1f9726a31b5b31e4#3",
+      "value": 0.935378
+    },
+    {
+      "sample_id": "4662c4593a02d144de8a32cf1f9726a31b5b31e4#4",
+      "value": 0.163903
+    },
+    {
+      "sample_id": "123763e669329212e85239a588e980691e3c5449#0",
+      "value": 0.944505
+    },
+    {
+      "sample_id": "123763e669329212e85239a588e980691e3c5449#1",
+      "value": 0.975124
+    },
+    {
+      "sample_id": "123763e669329212e85239a588e980691e3c5449#2",
+      "value": 0.969347
+    },
+    {
+      "sample_id": "123763e669329212e85239a588e980691e3c5449#3",
+      "value": 0.969667
+    },
+    {
+      "sample_id": "123763e669329212e85239a588e980691e3c5449#4",
+      "value": 0.036055
+    },
+    {
+      "sample_id": "26c2f9864063d4ad1b2bc98203ef1a7942445ccc#0",
+      "value": 0.977545
+    },
+    {
+      "sample_id": "26c2f9864063d4ad1b2bc98203ef1a7942445ccc#1",
+      "value": 0.980689
+    },
+    {
+      "sample_id": "26c2f9864063d4ad1b2bc98203ef1a7942445ccc#2",
+      "value": 0.948304
+    },
+    {
+      "sample_id": "26c2f9864063d4ad1b2bc98203ef1a7942445ccc#3",
+      "value": 0.972394
+    },
+    {
+      "sample_id": "26c2f9864063d4ad1b2bc98203ef1a7942445ccc#4",
+      "value": 0.087288
+    },
+    {
+      "sample_id": "ba447de4b06c8615cc8c87944bb2b22f089f2842#0",
+      "value": 0.941913
+    },
+    {
+      "sample_id": "ba447de4b06c8615cc8c87944bb2b22f089f2842#1",
+      "value": 0.910478
+    },
+    {
+      "sample_id": "ba447de4b06c8615cc8c87944bb2b22f089f2842#2",
+      "value": 0.498343
+    },
+    {
+      "sample_id": "ba447de4b06c8615cc8c87944bb2b22f089f2842#3",
+      "value": 0.893161
+    },
+    {
+      "sample_id": "ba447de4b06c8615cc8c87944bb2b22f089f2842#4",
+      "value": 0.01145
+    },
+    {
+      "sample_id": "fa24723dad6104750ada05628b44decba200720b#0",
+      "value": 0.936684
+    },
+    {
+      "sample_id": "fa24723dad6104750ada05628b44decba200720b#1",
+      "value": 0.927579
+    },
+    {
+      "sample_id": "fa24723dad6104750ada05628b44decba200720b#2",
+      "value": 0.434509
+    },
+    {
+      "sample_id": "fa24723dad6104750ada05628b44decba200720b#3",
+      "value": 0.952294
+    },
+    {
+      "sample_id": "fa24723dad6104750ada05628b44decba200720b#4",
+      "value": 0.22318
+    },
+    {
+      "sample_id": "831cfc7b476dc763e510a74ec046372f8d19270d#0",
+      "value": 0.833035
+    },
+    {
+      "sample_id": "831cfc7b476dc763e510a74ec046372f8d19270d#1",
+      "value": 0.989201
+    },
+    {
+      "sample_id": "831cfc7b476dc763e510a74ec046372f8d19270d#2",
+      "value": 0.948238
+    },
+    {
+      "sample_id": "831cfc7b476dc763e510a74ec046372f8d19270d#3",
+      "value": 0.357673
+    },
+    {
+      "sample_id": "831cfc7b476dc763e510a74ec046372f8d19270d#4",
+      "value": 0.007034
+    },
+    {
+      "sample_id": "f8e569d2d6ba2128734f2aecfba17e3121149df3#0",
+      "value": 0.985759
+    },
+    {
+      "sample_id": "f8e569d2d6ba2128734f2aecfba17e3121149df3#1",
+      "value": 0.918049
+    },
+    {
+      "sample_id": "f8e569d2d6ba2128734f2aecfba17e3121149df3#2",
+      "value": 0.982822
+    },
+    {
+      "sample_id": "f8e569d2d6ba2128734f2aecfba17e3121149df3#3",
+      "value": 0.977564
+    },
+    {
+      "sample_id": "f8e569d2d6ba2128734f2aecfba17e3121149df3#4",
+      "value": 0.046955
+    },
+    {
+      "sample_id": "6e68621ad5859524581b0a9865ecc513b3ba2827#0",
+      "value": 0.968067
+    },
+    {
+      "sample_id": "6e68621ad5859524581b0a9865ecc513b3ba2827#1",
+      "value": 0.975327
+    },
+    {
+      "sample_id": "6e68621ad5859524581b0a9865ecc513b3ba2827#2",
+      "value": 0.927012
+    },
+    {
+      "sample_id": "6e68621ad5859524581b0a9865ecc513b3ba2827#3",
+      "value": 0.074774
+    },
+    {
+      "sample_id": "6e68621ad5859524581b0a9865ecc513b3ba2827#4",
+      "value": 0.083406
+    },
+    {
+      "sample_id": "646cba2e8b30945a2079ec4c671740d5db5676e2#0",
+      "value": 0.97648
+    },
+    {
+      "sample_id": "646cba2e8b30945a2079ec4c671740d5db5676e2#1",
+      "value": 0.970279
+    },
+    {
+      "sample_id": "646cba2e8b30945a2079ec4c671740d5db5676e2#2",
+      "value": 0.331706
+    },
+    {
+      "sample_id": "646cba2e8b30945a2079ec4c671740d5db5676e2#3",
+      "value": 0.967388
+    },
+    {
+      "sample_id": "646cba2e8b30945a2079ec4c671740d5db5676e2#4",
+      "value": 0.186624
+    },
+    {
+      "sample_id": "c76689456391bf2c912c64e544af6812a5dd8fb4#0",
+      "value": 0.992494
+    },
+    {
+      "sample_id": "c76689456391bf2c912c64e544af6812a5dd8fb4#1",
+      "value": 0.991619
+    },
+    {
+      "sample_id": "c76689456391bf2c912c64e544af6812a5dd8fb4#2",
+      "value": 0.991491
+    },
+    {
+      "sample_id": "c76689456391bf2c912c64e544af6812a5dd8fb4#3",
+      "value": 0.94833
+    },
+    {
+      "sample_id": "c76689456391bf2c912c64e544af6812a5dd8fb4#4",
+      "value": 0.01399
+    },
+    {
+      "sample_id": "82c6b68562a9e50218b6cd428a83fd850d0f0c17#0",
+      "value": 0.986381
+    },
+    {
+      "sample_id": "82c6b68562a9e50218b6cd428a83fd850d0f0c17#1",
+      "value": 0.963692
+    },
+    {
+      "sample_id": "82c6b68562a9e50218b6cd428a83fd850d0f0c17#2",
+      "value": 0.960109
+    },
+    {
+      "sample_id": "82c6b68562a9e50218b6cd428a83fd850d0f0c17#3",
+      "value": 0.989566
+    },
+    {
+      "sample_id": "82c6b68562a9e50218b6cd428a83fd850d0f0c17#4",
+      "value": 0.0217
+    },
+    {
+      "sample_id": "d630035ba94ce748c4870e420ea807bf3701414e#0",
+      "value": 0.978638
+    },
+    {
+      "sample_id": "d630035ba94ce748c4870e420ea807bf3701414e#1",
+      "value": 0.976344
+    },
+    {
+      "sample_id": "d630035ba94ce748c4870e420ea807bf3701414e#2",
+      "value": 0.976599
+    },
+    {
+      "sample_id": "d630035ba94ce748c4870e420ea807bf3701414e#3",
+      "value": 0.973423
+    },
+    {
+      "sample_id": "d630035ba94ce748c4870e420ea807bf3701414e#4",
+      "value": 0.861978
+    },
+    {
+      "sample_id": "eb78a53cb8d33151880618d65cfebcefd103da34#0",
+      "value": 0.981242
+    },
+    {
+      "sample_id": "eb78a53cb8d33151880618d65cfebcefd103da34#1",
+      "value": 0.979563
+    },
+    {
+      "sample_id": "eb78a53cb8d33151880618d65cfebcefd103da34#2",
+      "value": 0.970702
+    },
+    {
+      "sample_id": "eb78a53cb8d33151880618d65cfebcefd103da34#3",
+      "value": 0.968137
+    },
+    {
+      "sample_id": "eb78a53cb8d33151880618d65cfebcefd103da34#4",
+      "value": 0.941433
+    },
+    {
+      "sample_id": "a977c81aebc46b867132c2b6d594962d67522de0#0",
+      "value": 0.925507
+    },
+    {
+      "sample_id": "a977c81aebc46b867132c2b6d594962d67522de0#1",
+      "value": 0.74787
+    },
+    {
+      "sample_id": "a977c81aebc46b867132c2b6d594962d67522de0#2",
+      "value": 0.677197
+    },
+    {
+      "sample_id": "a977c81aebc46b867132c2b6d594962d67522de0#3",
+      "value": 0.92219
+    },
+    {
+      "sample_id": "a977c81aebc46b867132c2b6d594962d67522de0#4",
+      "value": 0.008425
+    },
+    {
+      "sample_id": "27c9de1f76f179099061110405ff84ca8c88dc6a#0",
+      "value": 0.972711
+    },
+    {
+      "sample_id": "27c9de1f76f179099061110405ff84ca8c88dc6a#1",
+      "value": 0.982951
+    },
+    {
+      "sample_id": "27c9de1f76f179099061110405ff84ca8c88dc6a#2",
+      "value": 0.934419
+    },
+    {
+      "sample_id": "27c9de1f76f179099061110405ff84ca8c88dc6a#3",
+      "value": 0.9728
+    },
+    {
+      "sample_id": "27c9de1f76f179099061110405ff84ca8c88dc6a#4",
+      "value": 0.005265
+    },
+    {
+      "sample_id": "99bf5fd0e1315324f2bd86dc460436144be60bde#0",
+      "value": 0.9731
+    },
+    {
+      "sample_id": "99bf5fd0e1315324f2bd86dc460436144be60bde#1",
+      "value": 0.985581
+    },
+    {
+      "sample_id": "99bf5fd0e1315324f2bd86dc460436144be60bde#2",
+      "value": 0.66203
+    },
+    {
+      "sample_id": "99bf5fd0e1315324f2bd86dc460436144be60bde#3",
+      "value": 0.97901
+    },
+    {
+      "sample_id": "99bf5fd0e1315324f2bd86dc460436144be60bde#4",
+      "value": 0.028364
+    },
+    {
+      "sample_id": "373f32bd4d4f536e54f29b2a35bc2035df40b310#0",
+      "value": 0.97425
+    },
+    {
+      "sample_id": "373f32bd4d4f536e54f29b2a35bc2035df40b310#1",
+      "value": 0.926189
+    },
+    {
+      "sample_id": "373f32bd4d4f536e54f29b2a35bc2035df40b310#2",
+      "value": 0.09282
+    },
+    {
+      "sample_id": "373f32bd4d4f536e54f29b2a35bc2035df40b310#3",
+      "value": 0.993083
+    },
+    {
+      "sample_id": "373f32bd4d4f536e54f29b2a35bc2035df40b310#4",
+      "value": 0.00229
+    },
+    {
+      "sample_id": "e87984842cccc73e1fcb5da99f27c0a0d6355796#0",
+      "value": 0.958328
+    },
+    {
+      "sample_id": "e87984842cccc73e1fcb5da99f27c0a0d6355796#1",
+      "value": 0.909699
+    },
+    {
+      "sample_id": "e87984842cccc73e1fcb5da99f27c0a0d6355796#2",
+      "value": 0.859136
+    },
+    {
+      "sample_id": "e87984842cccc73e1fcb5da99f27c0a0d6355796#3",
+      "value": 0.669233
+    },
+    {
+      "sample_id": "e87984842cccc73e1fcb5da99f27c0a0d6355796#4",
+      "value": 0.088527
+    },
+    {
+      "sample_id": "9f2dbe8953dd5b1d2b0f2f748c51bfccbe72906e#0",
+      "value": 0.97505
+    },
+    {
+      "sample_id": "9f2dbe8953dd5b1d2b0f2f748c51bfccbe72906e#1",
+      "value": 0.955453
+    },
+    {
+      "sample_id": "9f2dbe8953dd5b1d2b0f2f748c51bfccbe72906e#2",
+      "value": 0.976229
+    },
+    {
+      "sample_id": "9f2dbe8953dd5b1d2b0f2f748c51bfccbe72906e#3",
+      "value": 0.492588
+    },
+    {
+      "sample_id": "9f2dbe8953dd5b1d2b0f2f748c51bfccbe72906e#4",
+      "value": 0.013663
+    },
+    {
+      "sample_id": "59177dda40fbfb551ee80992ef020da85036e772#0",
+      "value": 0.961828
+    },
+    {
+      "sample_id": "59177dda40fbfb551ee80992ef020da85036e772#1",
+      "value": 0.810533
+    },
+    {
+      "sample_id": "59177dda40fbfb551ee80992ef020da85036e772#2",
+      "value": 0.499965
+    },
+    {
+      "sample_id": "59177dda40fbfb551ee80992ef020da85036e772#3",
+      "value": 0.806398
+    },
+    {
+      "sample_id": "59177dda40fbfb551ee80992ef020da85036e772#4",
+      "value": 0.338776
+    },
+    {
+      "sample_id": "724ae40215c8d6c527b609b1503352f9e176cf5f#0",
+      "value": 0.980916
+    },
+    {
+      "sample_id": "724ae40215c8d6c527b609b1503352f9e176cf5f#1",
+      "value": 0.99055
+    },
+    {
+      "sample_id": "724ae40215c8d6c527b609b1503352f9e176cf5f#2",
+      "value": 0.545611
+    },
+    {
+      "sample_id": "724ae40215c8d6c527b609b1503352f9e176cf5f#3",
+      "value": 0.977273
+    },
+    {
+      "sample_id": "724ae40215c8d6c527b609b1503352f9e176cf5f#4",
+      "value": 0.199755
+    },
+    {
+      "sample_id": "07955dc7323a027814bbdacf87a46e554167aac2#0",
+      "value": 0.938356
+    },
+    {
+      "sample_id": "07955dc7323a027814bbdacf87a46e554167aac2#1",
+      "value": 0.977132
+    },
+    {
+      "sample_id": "07955dc7323a027814bbdacf87a46e554167aac2#2",
+      "value": 0.267844
+    },
+    {
+      "sample_id": "07955dc7323a027814bbdacf87a46e554167aac2#3",
+      "value": 0.030559
+    },
+    {
+      "sample_id": "07955dc7323a027814bbdacf87a46e554167aac2#4",
+      "value": 0.006409
+    },
+    {
+      "sample_id": "810445408e96d6332086bce30a53f24824db1d04#0",
+      "value": 0.971757
+    },
+    {
+      "sample_id": "810445408e96d6332086bce30a53f24824db1d04#1",
+      "value": 0.979465
+    },
+    {
+      "sample_id": "810445408e96d6332086bce30a53f24824db1d04#2",
+      "value": 0.426363
+    },
+    {
+      "sample_id": "810445408e96d6332086bce30a53f24824db1d04#3",
+      "value": 0.974336
+    },
+    {
+      "sample_id": "810445408e96d6332086bce30a53f24824db1d04#4",
+      "value": 0.009568
+    },
+    {
+      "sample_id": "38052e2a4541d00f6d16945bce46ddb21284943b#0",
+      "value": 0.986017
+    },
+    {
+      "sample_id": "38052e2a4541d00f6d16945bce46ddb21284943b#1",
+      "value": 0.964595
+    },
+    {
+      "sample_id": "38052e2a4541d00f6d16945bce46ddb21284943b#2",
+      "value": 0.943278
+    },
+    {
+      "sample_id": "38052e2a4541d00f6d16945bce46ddb21284943b#3",
+      "value": 0.978529
+    },
+    {
+      "sample_id": "38052e2a4541d00f6d16945bce46ddb21284943b#4",
+      "value": 0.108874
+    },
+    {
+      "sample_id": "66fe5722d222324b82a5b1a68592e4943a6b309e#0",
+      "value": 0.947878
+    },
+    {
+      "sample_id": "66fe5722d222324b82a5b1a68592e4943a6b309e#1",
+      "value": 0.963456
+    },
+    {
+      "sample_id": "66fe5722d222324b82a5b1a68592e4943a6b309e#2",
+      "value": 0.308967
+    },
+    {
+      "sample_id": "66fe5722d222324b82a5b1a68592e4943a6b309e#3",
+      "value": 0.921964
+    },
+    {
+      "sample_id": "66fe5722d222324b82a5b1a68592e4943a6b309e#4",
+      "value": 0.041034
+    },
+    {
+      "sample_id": "b955f7a918fe446c97fd8028e4fd524172a7b5e0#0",
+      "value": 0.955146
+    },
+    {
+      "sample_id": "b955f7a918fe446c97fd8028e4fd524172a7b5e0#1",
+      "value": 0.975435
+    },
+    {
+      "sample_id": "b955f7a918fe446c97fd8028e4fd524172a7b5e0#2",
+      "value": 0.91228
+    },
+    {
+      "sample_id": "b955f7a918fe446c97fd8028e4fd524172a7b5e0#3",
+      "value": 0.954401
+    },
+    {
+      "sample_id": "b955f7a918fe446c97fd8028e4fd524172a7b5e0#4",
+      "value": 0.222197
+    },
+    {
+      "sample_id": "c9d367690daed7278ffc5da32b326e72639aa28c#0",
+      "value": 0.98526
+    },
+    {
+      "sample_id": "c9d367690daed7278ffc5da32b326e72639aa28c#1",
+      "value": 0.986212
+    },
+    {
+      "sample_id": "c9d367690daed7278ffc5da32b326e72639aa28c#2",
+      "value": 0.736449
+    },
+    {
+      "sample_id": "c9d367690daed7278ffc5da32b326e72639aa28c#3",
+      "value": 0.977611
+    },
+    {
+      "sample_id": "c9d367690daed7278ffc5da32b326e72639aa28c#4",
+      "value": 0.029939
+    },
+    {
+      "sample_id": "137ac0122ef98206953bb24be655f15307345bb7#0",
+      "value": 0.97757
+    },
+    {
+      "sample_id": "137ac0122ef98206953bb24be655f15307345bb7#1",
+      "value": 0.977562
+    },
+    {
+      "sample_id": "137ac0122ef98206953bb24be655f15307345bb7#2",
+      "value": 0.966632
+    },
+    {
+      "sample_id": "137ac0122ef98206953bb24be655f15307345bb7#3",
+      "value": 0.962948
+    },
+    {
+      "sample_id": "137ac0122ef98206953bb24be655f15307345bb7#4",
+      "value": 0.088635
+    },
+    {
+      "sample_id": "7bd0f51cb4745f01c3c69c0eead3ec9c5cdebc51#0",
+      "value": 0.954592
+    },
+    {
+      "sample_id": "7bd0f51cb4745f01c3c69c0eead3ec9c5cdebc51#1",
+      "value": 0.97373
+    },
+    {
+      "sample_id": "7bd0f51cb4745f01c3c69c0eead3ec9c5cdebc51#2",
+      "value": 0.957013
+    },
+    {
+      "sample_id": "7bd0f51cb4745f01c3c69c0eead3ec9c5cdebc51#3",
+      "value": 0.944925
+    },
+    {
+      "sample_id": "7bd0f51cb4745f01c3c69c0eead3ec9c5cdebc51#4",
+      "value": 0.016466
+    },
+    {
+      "sample_id": "f673f439c7419728d7949a5e5b36005765598158#0",
+      "value": 0.967325
+    },
+    {
+      "sample_id": "f673f439c7419728d7949a5e5b36005765598158#1",
+      "value": 0.969253
+    },
+    {
+      "sample_id": "f673f439c7419728d7949a5e5b36005765598158#2",
+      "value": 0.416308
+    },
+    {
+      "sample_id": "f673f439c7419728d7949a5e5b36005765598158#3",
+      "value": 0.323148
+    },
+    {
+      "sample_id": "f673f439c7419728d7949a5e5b36005765598158#4",
+      "value": 0.012951
+    },
+    {
+      "sample_id": "eab44594d70745db7cc2e78dbe73f0aeb4b58d96#0",
+      "value": 0.95104
+    },
+    {
+      "sample_id": "eab44594d70745db7cc2e78dbe73f0aeb4b58d96#1",
+      "value": 0.909103
+    },
+    {
+      "sample_id": "eab44594d70745db7cc2e78dbe73f0aeb4b58d96#2",
+      "value": 0.5608
+    },
+    {
+      "sample_id": "eab44594d70745db7cc2e78dbe73f0aeb4b58d96#3",
+      "value": 0.835656
+    },
+    {
+      "sample_id": "eab44594d70745db7cc2e78dbe73f0aeb4b58d96#4",
+      "value": 0.033988
+    },
+    {
+      "sample_id": "c2743d6a92cda5d790f1e6c4417c0c4f6728e5d5#0",
+      "value": 0.979363
+    },
+    {
+      "sample_id": "c2743d6a92cda5d790f1e6c4417c0c4f6728e5d5#1",
+      "value": 0.978511
+    },
+    {
+      "sample_id": "c2743d6a92cda5d790f1e6c4417c0c4f6728e5d5#2",
+      "value": 0.798333
+    },
+    {
+      "sample_id": "c2743d6a92cda5d790f1e6c4417c0c4f6728e5d5#3",
+      "value": 0.199043
+    },
+    {
+      "sample_id": "c2743d6a92cda5d790f1e6c4417c0c4f6728e5d5#4",
+      "value": 0.085343
+    },
+    {
+      "sample_id": "914e001df9f064d588f1ec6bb55b747176a7b746#0",
+      "value": 0.949254
+    },
+    {
+      "sample_id": "914e001df9f064d588f1ec6bb55b747176a7b746#1",
+      "value": 0.977352
+    },
+    {
+      "sample_id": "914e001df9f064d588f1ec6bb55b747176a7b746#2",
+      "value": 0.972463
+    },
+    {
+      "sample_id": "914e001df9f064d588f1ec6bb55b747176a7b746#3",
+      "value": 0.817386
+    },
+    {
+      "sample_id": "914e001df9f064d588f1ec6bb55b747176a7b746#4",
+      "value": 0.405827
+    },
+    {
+      "sample_id": "e5f90abe548af86bae42ca91373ddbc828ac1a9e#0",
+      "value": 0.9837
+    },
+    {
+      "sample_id": "e5f90abe548af86bae42ca91373ddbc828ac1a9e#1",
+      "value": 0.958607
+    },
+    {
+      "sample_id": "e5f90abe548af86bae42ca91373ddbc828ac1a9e#2",
+      "value": 0.900621
+    },
+    {
+      "sample_id": "e5f90abe548af86bae42ca91373ddbc828ac1a9e#3",
+      "value": 0.304277
+    },
+    {
+      "sample_id": "e5f90abe548af86bae42ca91373ddbc828ac1a9e#4",
+      "value": 0.033487
+    },
+    {
+      "sample_id": "ac21c26ebbe99747ed51f317904f4ca75873e574#0",
+      "value": 0.981881
+    },
+    {
+      "sample_id": "ac21c26ebbe99747ed51f317904f4ca75873e574#1",
+      "value": 0.94868
+    },
+    {
+      "sample_id": "ac21c26ebbe99747ed51f317904f4ca75873e574#2",
+      "value": 0.897708
+    },
+    {
+      "sample_id": "ac21c26ebbe99747ed51f317904f4ca75873e574#3",
+      "value": 0.733534
+    },
+    {
+      "sample_id": "ac21c26ebbe99747ed51f317904f4ca75873e574#4",
+      "value": 0.037969
+    },
+    {
+      "sample_id": "f364b58c01042c853a5d980e094d680304273162#0",
+      "value": 0.955994
+    },
+    {
+      "sample_id": "f364b58c01042c853a5d980e094d680304273162#1",
+      "value": 0.986792
+    },
+    {
+      "sample_id": "f364b58c01042c853a5d980e094d680304273162#2",
+      "value": 0.938658
+    },
+    {
+      "sample_id": "f364b58c01042c853a5d980e094d680304273162#3",
+      "value": 0.981981
+    },
+    {
+      "sample_id": "f364b58c01042c853a5d980e094d680304273162#4",
+      "value": 0.018655
+    },
+    {
+      "sample_id": "4227fe4ff70687412a6dcd830fb037114e8d5d99#0",
+      "value": 0.982241
+    },
+    {
+      "sample_id": "4227fe4ff70687412a6dcd830fb037114e8d5d99#1",
+      "value": 0.971792
+    },
+    {
+      "sample_id": "4227fe4ff70687412a6dcd830fb037114e8d5d99#2",
+      "value": 0.985941
+    },
+    {
+      "sample_id": "4227fe4ff70687412a6dcd830fb037114e8d5d99#3",
+      "value": 0.982811
+    },
+    {
+      "sample_id": "4227fe4ff70687412a6dcd830fb037114e8d5d99#4",
+      "value": 0.008064
+    },
+    {
+      "sample_id": "879e8cfb61b654aaff814b537fbe448fdc19c1e7#0",
+      "value": 0.933221
+    },
+    {
+      "sample_id": "879e8cfb61b654aaff814b537fbe448fdc19c1e7#1",
+      "value": 0.949588
+    },
+    {
+      "sample_id": "879e8cfb61b654aaff814b537fbe448fdc19c1e7#2",
+      "value": 0.121172
+    },
+    {
+      "sample_id": "879e8cfb61b654aaff814b537fbe448fdc19c1e7#3",
+      "value": 0.94458
+    },
+    {
+      "sample_id": "879e8cfb61b654aaff814b537fbe448fdc19c1e7#4",
+      "value": 0.594368
+    },
+    {
+      "sample_id": "425a5e56cf27b2edbd322033d6669c71b48c1633#0",
+      "value": 0.976046
+    },
+    {
+      "sample_id": "425a5e56cf27b2edbd322033d6669c71b48c1633#1",
+      "value": 0.979197
+    },
+    {
+      "sample_id": "425a5e56cf27b2edbd322033d6669c71b48c1633#2",
+      "value": 0.927193
+    },
+    {
+      "sample_id": "425a5e56cf27b2edbd322033d6669c71b48c1633#3",
+      "value": 0.680475
+    },
+    {
+      "sample_id": "425a5e56cf27b2edbd322033d6669c71b48c1633#4",
+      "value": 0.052186
+    },
+    {
+      "sample_id": "2df882286a293175a402beb4dac2e1e3725049b9#0",
+      "value": 0.961911
+    },
+    {
+      "sample_id": "2df882286a293175a402beb4dac2e1e3725049b9#1",
+      "value": 0.96935
+    },
+    {
+      "sample_id": "2df882286a293175a402beb4dac2e1e3725049b9#2",
+      "value": 0.969676
+    },
+    {
+      "sample_id": "2df882286a293175a402beb4dac2e1e3725049b9#3",
+      "value": 0.612877
+    },
+    {
+      "sample_id": "2df882286a293175a402beb4dac2e1e3725049b9#4",
+      "value": 0.306123
+    },
+    {
+      "sample_id": "775fe1080dc864c0dc4201a27522499dc015d968#0",
+      "value": 0.98808
+    },
+    {
+      "sample_id": "775fe1080dc864c0dc4201a27522499dc015d968#1",
+      "value": 0.986617
+    },
+    {
+      "sample_id": "775fe1080dc864c0dc4201a27522499dc015d968#2",
+      "value": 0.949564
+    },
+    {
+      "sample_id": "775fe1080dc864c0dc4201a27522499dc015d968#3",
+      "value": 0.983923
+    },
+    {
+      "sample_id": "775fe1080dc864c0dc4201a27522499dc015d968#4",
+      "value": 0.15866
+    },
+    {
+      "sample_id": "45a9f7a9c4cffb0a068b65b08ad091ba69c53d5c#0",
+      "value": 0.97216
+    },
+    {
+      "sample_id": "45a9f7a9c4cffb0a068b65b08ad091ba69c53d5c#1",
+      "value": 0.937718
+    },
+    {
+      "sample_id": "45a9f7a9c4cffb0a068b65b08ad091ba69c53d5c#2",
+      "value": 0.962235
+    },
+    {
+      "sample_id": "45a9f7a9c4cffb0a068b65b08ad091ba69c53d5c#3",
+      "value": 0.968789
+    },
+    {
+      "sample_id": "45a9f7a9c4cffb0a068b65b08ad091ba69c53d5c#4",
+      "value": 0.020598
+    },
+    {
+      "sample_id": "947b339a524aac1f43384a8c68e5a3a624ed309f#0",
+      "value": 0.942158
+    },
+    {
+      "sample_id": "947b339a524aac1f43384a8c68e5a3a624ed309f#1",
+      "value": 0.966183
+    },
+    {
+      "sample_id": "947b339a524aac1f43384a8c68e5a3a624ed309f#2",
+      "value": 0.487804
+    },
+    {
+      "sample_id": "947b339a524aac1f43384a8c68e5a3a624ed309f#3",
+      "value": 0.965491
+    },
+    {
+      "sample_id": "947b339a524aac1f43384a8c68e5a3a624ed309f#4",
+      "value": 0.016302
+    },
+    {
+      "sample_id": "2fe2ba4743159a93a73acf3343a026925a93073d#0",
+      "value": 0.958105
+    },
+    {
+      "sample_id": "2fe2ba4743159a93a73acf3343a026925a93073d#1",
+      "value": 0.914328
+    },
+    {
+      "sample_id": "2fe2ba4743159a93a73acf3343a026925a93073d#2",
+      "value": 0.877026
+    },
+    {
+      "sample_id": "2fe2ba4743159a93a73acf3343a026925a93073d#3",
+      "value": 0.843259
+    },
+    {
+      "sample_id": "2fe2ba4743159a93a73acf3343a026925a93073d#4",
+      "value": 0.001593
+    },
+    {
+      "sample_id": "23a0f5d45517620ea12e8af780b2fa1cd9a2373a#0",
+      "value": 0.976083
+    },
+    {
+      "sample_id": "23a0f5d45517620ea12e8af780b2fa1cd9a2373a#1",
+      "value": 0.950857
+    },
+    {
+      "sample_id": "23a0f5d45517620ea12e8af780b2fa1cd9a2373a#2",
+      "value": 0.535417
+    },
+    {
+      "sample_id": "23a0f5d45517620ea12e8af780b2fa1cd9a2373a#3",
+      "value": 0.970623
+    },
+    {
+      "sample_id": "23a0f5d45517620ea12e8af780b2fa1cd9a2373a#4",
+      "value": 0.069361
+    },
+    {
+      "sample_id": "9eb7dd37e50b863e99b554ed340e7b766c1b6329#0",
+      "value": 0.957668
+    },
+    {
+      "sample_id": "9eb7dd37e50b863e99b554ed340e7b766c1b6329#1",
+      "value": 0.961743
+    },
+    {
+      "sample_id": "9eb7dd37e50b863e99b554ed340e7b766c1b6329#2",
+      "value": 0.367417
+    },
+    {
+      "sample_id": "9eb7dd37e50b863e99b554ed340e7b766c1b6329#3",
+      "value": 0.951902
+    },
+    {
+      "sample_id": "9eb7dd37e50b863e99b554ed340e7b766c1b6329#4",
+      "value": 0.007473
+    },
+    {
+      "sample_id": "e3e179218a3d9dbfbcd86a0f1d751b8070fd1443#0",
+      "value": 0.98732
+    },
+    {
+      "sample_id": "e3e179218a3d9dbfbcd86a0f1d751b8070fd1443#1",
+      "value": 0.977619
+    },
+    {
+      "sample_id": "e3e179218a3d9dbfbcd86a0f1d751b8070fd1443#2",
+      "value": 0.981223
+    },
+    {
+      "sample_id": "e3e179218a3d9dbfbcd86a0f1d751b8070fd1443#3",
+      "value": 0.972085
+    },
+    {
+      "sample_id": "e3e179218a3d9dbfbcd86a0f1d751b8070fd1443#4",
+      "value": 0.904563
+    },
+    {
+      "sample_id": "30af4b522be73af89e56c270847eb4e02731511a#0",
+      "value": 0.97445
+    },
+    {
+      "sample_id": "30af4b522be73af89e56c270847eb4e02731511a#1",
+      "value": 0.984501
+    },
+    {
+      "sample_id": "30af4b522be73af89e56c270847eb4e02731511a#2",
+      "value": 0.944189
+    },
+    {
+      "sample_id": "30af4b522be73af89e56c270847eb4e02731511a#3",
+      "value": 0.955272
+    },
+    {
+      "sample_id": "30af4b522be73af89e56c270847eb4e02731511a#4",
+      "value": 0.0231
+    },
+    {
+      "sample_id": "a9c37d00863b1cd45b50338666bbd7b9bc750522#0",
+      "value": 0.960332
+    },
+    {
+      "sample_id": "a9c37d00863b1cd45b50338666bbd7b9bc750522#1",
+      "value": 0.930725
+    },
+    {
+      "sample_id": "a9c37d00863b1cd45b50338666bbd7b9bc750522#2",
+      "value": 0.72582
+    },
+    {
+      "sample_id": "a9c37d00863b1cd45b50338666bbd7b9bc750522#3",
+      "value": 0.972337
+    },
+    {
+      "sample_id": "a9c37d00863b1cd45b50338666bbd7b9bc750522#4",
+      "value": 0.019287
+    },
+    {
+      "sample_id": "d061579cf4bbbbf4cb5735532e54fb695a1555cb#0",
+      "value": 0.95981
+    },
+    {
+      "sample_id": "d061579cf4bbbbf4cb5735532e54fb695a1555cb#1",
+      "value": 0.975513
+    },
+    {
+      "sample_id": "d061579cf4bbbbf4cb5735532e54fb695a1555cb#2",
+      "value": 0.025271
+    },
+    {
+      "sample_id": "d061579cf4bbbbf4cb5735532e54fb695a1555cb#3",
+      "value": 0.927121
+    },
+    {
+      "sample_id": "d061579cf4bbbbf4cb5735532e54fb695a1555cb#4",
+      "value": 0.046979
+    },
+    {
+      "sample_id": "97856d25655e18bd104a1c6bdf86fa174d17dc51#0",
+      "value": 0.97744
+    },
+    {
+      "sample_id": "97856d25655e18bd104a1c6bdf86fa174d17dc51#1",
+      "value": 0.986075
+    },
+    {
+      "sample_id": "97856d25655e18bd104a1c6bdf86fa174d17dc51#2",
+      "value": 0.648309
+    },
+    {
+      "sample_id": "97856d25655e18bd104a1c6bdf86fa174d17dc51#3",
+      "value": 0.983963
+    },
+    {
+      "sample_id": "97856d25655e18bd104a1c6bdf86fa174d17dc51#4",
+      "value": 0.538718
+    },
+    {
+      "sample_id": "60e99bf7b0f7dd755ae4aab0094f2add2d4f36fd#0",
+      "value": 0.935405
+    },
+    {
+      "sample_id": "60e99bf7b0f7dd755ae4aab0094f2add2d4f36fd#1",
+      "value": 0.889918
+    },
+    {
+      "sample_id": "60e99bf7b0f7dd755ae4aab0094f2add2d4f36fd#2",
+      "value": 0.340544
+    },
+    {
+      "sample_id": "60e99bf7b0f7dd755ae4aab0094f2add2d4f36fd#3",
+      "value": 0.958409
+    },
+    {
+      "sample_id": "60e99bf7b0f7dd755ae4aab0094f2add2d4f36fd#4",
+      "value": 0.014531
+    },
+    {
+      "sample_id": "e6317700bf0035f4703ad53ccf36d8881c40829f#0",
+      "value": 0.956006
+    },
+    {
+      "sample_id": "e6317700bf0035f4703ad53ccf36d8881c40829f#1",
+      "value": 0.940772
+    },
+    {
+      "sample_id": "e6317700bf0035f4703ad53ccf36d8881c40829f#2",
+      "value": 0.97248
+    },
+    {
+      "sample_id": "e6317700bf0035f4703ad53ccf36d8881c40829f#3",
+      "value": 0.974544
+    },
+    {
+      "sample_id": "e6317700bf0035f4703ad53ccf36d8881c40829f#4",
+      "value": 0.176863
+    },
+    {
+      "sample_id": "d4bb596b9ba3439da21add9d7c8b86e026ad70d7#0",
+      "value": 0.969297
+    },
+    {
+      "sample_id": "d4bb596b9ba3439da21add9d7c8b86e026ad70d7#1",
+      "value": 0.981095
+    },
+    {
+      "sample_id": "d4bb596b9ba3439da21add9d7c8b86e026ad70d7#2",
+      "value": 0.932628
+    },
+    {
+      "sample_id": "d4bb596b9ba3439da21add9d7c8b86e026ad70d7#3",
+      "value": 0.988571
+    },
+    {
+      "sample_id": "d4bb596b9ba3439da21add9d7c8b86e026ad70d7#4",
+      "value": 0.020418
+    },
+    {
+      "sample_id": "fb1117897822bddb6586aa283e4a67d82b507f3a#0",
+      "value": 0.938069
+    },
+    {
+      "sample_id": "fb1117897822bddb6586aa283e4a67d82b507f3a#1",
+      "value": 0.891548
+    },
+    {
+      "sample_id": "fb1117897822bddb6586aa283e4a67d82b507f3a#2",
+      "value": 0.930106
+    },
+    {
+      "sample_id": "fb1117897822bddb6586aa283e4a67d82b507f3a#3",
+      "value": 0.978448
+    },
+    {
+      "sample_id": "fb1117897822bddb6586aa283e4a67d82b507f3a#4",
+      "value": 0.025921
+    },
+    {
+      "sample_id": "7cad16f3cc9061df09d36ae2d4bd412e072f0698#0",
+      "value": 0.97715
+    },
+    {
+      "sample_id": "7cad16f3cc9061df09d36ae2d4bd412e072f0698#1",
+      "value": 0.44738
+    },
+    {
+      "sample_id": "7cad16f3cc9061df09d36ae2d4bd412e072f0698#2",
+      "value": 0.885517
+    },
+    {
+      "sample_id": "7cad16f3cc9061df09d36ae2d4bd412e072f0698#3",
+      "value": 0.769246
+    },
+    {
+      "sample_id": "7cad16f3cc9061df09d36ae2d4bd412e072f0698#4",
+      "value": 0.019943
+    },
+    {
+      "sample_id": "1d7372a702e28387412146f1822625a36c8f828f#0",
+      "value": 0.904567
+    },
+    {
+      "sample_id": "1d7372a702e28387412146f1822625a36c8f828f#1",
+      "value": 0.919322
+    },
+    {
+      "sample_id": "1d7372a702e28387412146f1822625a36c8f828f#2",
+      "value": 0.885665
+    },
+    {
+      "sample_id": "1d7372a702e28387412146f1822625a36c8f828f#3",
+      "value": 0.977571
+    },
+    {
+      "sample_id": "1d7372a702e28387412146f1822625a36c8f828f#4",
+      "value": 0.013624
+    },
+    {
+      "sample_id": "06a4af524f4021ea62a16ee7778f901f3a7879b1#0",
+      "value": 0.957096
+    },
+    {
+      "sample_id": "06a4af524f4021ea62a16ee7778f901f3a7879b1#1",
+      "value": 0.972104
+    },
+    {
+      "sample_id": "06a4af524f4021ea62a16ee7778f901f3a7879b1#2",
+      "value": 0.964598
+    },
+    {
+      "sample_id": "06a4af524f4021ea62a16ee7778f901f3a7879b1#3",
+      "value": 0.065337
+    },
+    {
+      "sample_id": "06a4af524f4021ea62a16ee7778f901f3a7879b1#4",
+      "value": 0.019147
+    },
+    {
+      "sample_id": "2d2a274c9b90ba217fbaa57351914d1920b4d354#0",
+      "value": 0.970107
+    },
+    {
+      "sample_id": "2d2a274c9b90ba217fbaa57351914d1920b4d354#1",
+      "value": 0.833199
+    },
+    {
+      "sample_id": "2d2a274c9b90ba217fbaa57351914d1920b4d354#2",
+      "value": 0.898738
+    },
+    {
+      "sample_id": "2d2a274c9b90ba217fbaa57351914d1920b4d354#3",
+      "value": 0.556418
+    },
+    {
+      "sample_id": "2d2a274c9b90ba217fbaa57351914d1920b4d354#4",
+      "value": 0.022598
+    },
+    {
+      "sample_id": "bf7b70182529799f547cf260dde1a65acdecb60b#0",
+      "value": 0.905781
+    },
+    {
+      "sample_id": "bf7b70182529799f547cf260dde1a65acdecb60b#1",
+      "value": 0.985075
+    },
+    {
+      "sample_id": "bf7b70182529799f547cf260dde1a65acdecb60b#2",
+      "value": 0.954905
+    },
+    {
+      "sample_id": "bf7b70182529799f547cf260dde1a65acdecb60b#3",
+      "value": 0.980166
+    },
+    {
+      "sample_id": "bf7b70182529799f547cf260dde1a65acdecb60b#4",
+      "value": 0.004333
+    },
+    {
+      "sample_id": "008b20b1a9f3d4e35475fd50f574e8834530e620#0",
+      "value": 0.968628
+    },
+    {
+      "sample_id": "008b20b1a9f3d4e35475fd50f574e8834530e620#1",
+      "value": 0.944117
+    },
+    {
+      "sample_id": "008b20b1a9f3d4e35475fd50f574e8834530e620#2",
+      "value": 0.079783
+    },
+    {
+      "sample_id": "008b20b1a9f3d4e35475fd50f574e8834530e620#3",
+      "value": 0.986284
+    },
+    {
+      "sample_id": "008b20b1a9f3d4e35475fd50f574e8834530e620#4",
+      "value": 0.133966
+    },
+    {
+      "sample_id": "ee0304146d291374878c7605d90f9451aefe48b7#0",
+      "value": 0.982
+    },
+    {
+      "sample_id": "ee0304146d291374878c7605d90f9451aefe48b7#1",
+      "value": 0.967803
+    },
+    {
+      "sample_id": "ee0304146d291374878c7605d90f9451aefe48b7#2",
+      "value": 0.948641
+    },
+    {
+      "sample_id": "ee0304146d291374878c7605d90f9451aefe48b7#3",
+      "value": 0.976244
+    },
+    {
+      "sample_id": "ee0304146d291374878c7605d90f9451aefe48b7#4",
+      "value": 0.038097
+    },
+    {
+      "sample_id": "9ffbe8f666095283a421e3f34c91f68bd6f028f3#0",
+      "value": 0.980338
+    },
+    {
+      "sample_id": "9ffbe8f666095283a421e3f34c91f68bd6f028f3#1",
+      "value": 0.973885
+    },
+    {
+      "sample_id": "9ffbe8f666095283a421e3f34c91f68bd6f028f3#2",
+      "value": 0.966417
+    },
+    {
+      "sample_id": "9ffbe8f666095283a421e3f34c91f68bd6f028f3#3",
+      "value": 0.971574
+    },
+    {
+      "sample_id": "9ffbe8f666095283a421e3f34c91f68bd6f028f3#4",
+      "value": 0.055488
+    },
+    {
+      "sample_id": "7447c4b76699b362889acda7ca184f1099401fc9#0",
+      "value": 0.935881
+    },
+    {
+      "sample_id": "7447c4b76699b362889acda7ca184f1099401fc9#1",
+      "value": 0.614491
+    },
+    {
+      "sample_id": "7447c4b76699b362889acda7ca184f1099401fc9#2",
+      "value": 0.271965
+    },
+    {
+      "sample_id": "7447c4b76699b362889acda7ca184f1099401fc9#3",
+      "value": 0.967326
+    },
+    {
+      "sample_id": "7447c4b76699b362889acda7ca184f1099401fc9#4",
+      "value": 0.056357
+    },
+    {
+      "sample_id": "9bcd754fc8a0c2bb75e15f6934c377086d94c198#0",
+      "value": 0.981677
+    },
+    {
+      "sample_id": "9bcd754fc8a0c2bb75e15f6934c377086d94c198#1",
+      "value": 0.983478
+    },
+    {
+      "sample_id": "9bcd754fc8a0c2bb75e15f6934c377086d94c198#2",
+      "value": 0.971142
+    },
+    {
+      "sample_id": "9bcd754fc8a0c2bb75e15f6934c377086d94c198#3",
+      "value": 0.988647
+    },
+    {
+      "sample_id": "9bcd754fc8a0c2bb75e15f6934c377086d94c198#4",
+      "value": 0.979305
+    },
+    {
+      "sample_id": "1d965b7ef3e3aa66f4b55ca424496c3ff7307dcf#0",
+      "value": 0.988131
+    },
+    {
+      "sample_id": "1d965b7ef3e3aa66f4b55ca424496c3ff7307dcf#1",
+      "value": 0.980189
+    },
+    {
+      "sample_id": "1d965b7ef3e3aa66f4b55ca424496c3ff7307dcf#2",
+      "value": 0.944564
+    },
+    {
+      "sample_id": "1d965b7ef3e3aa66f4b55ca424496c3ff7307dcf#3",
+      "value": 0.804258
+    },
+    {
+      "sample_id": "1d965b7ef3e3aa66f4b55ca424496c3ff7307dcf#4",
+      "value": 0.010827
+    },
+    {
+      "sample_id": "5a4b090df051a1f966ff574d5bd8509d95a9587b#0",
+      "value": 0.962069
+    },
+    {
+      "sample_id": "5a4b090df051a1f966ff574d5bd8509d95a9587b#1",
+      "value": 0.966398
+    },
+    {
+      "sample_id": "5a4b090df051a1f966ff574d5bd8509d95a9587b#2",
+      "value": 0.860417
+    },
+    {
+      "sample_id": "5a4b090df051a1f966ff574d5bd8509d95a9587b#3",
+      "value": 0.79989
+    },
+    {
+      "sample_id": "5a4b090df051a1f966ff574d5bd8509d95a9587b#4",
+      "value": 0.07702
+    },
+    {
+      "sample_id": "691bac0b53a908837ea2ef0d2d7c5c4e5c3a43d2#0",
+      "value": 0.952506
+    },
+    {
+      "sample_id": "691bac0b53a908837ea2ef0d2d7c5c4e5c3a43d2#1",
+      "value": 0.954091
+    },
+    {
+      "sample_id": "691bac0b53a908837ea2ef0d2d7c5c4e5c3a43d2#2",
+      "value": 0.960895
+    },
+    {
+      "sample_id": "691bac0b53a908837ea2ef0d2d7c5c4e5c3a43d2#3",
+      "value": 0.848297
+    },
+    {
+      "sample_id": "691bac0b53a908837ea2ef0d2d7c5c4e5c3a43d2#4",
+      "value": 0.159833
+    },
+    {
+      "sample_id": "71530c72c132ba3c2ebc4376ec1b2cda77ef75cd#0",
+      "value": 0.969023
+    },
+    {
+      "sample_id": "71530c72c132ba3c2ebc4376ec1b2cda77ef75cd#1",
+      "value": 0.969677
+    },
+    {
+      "sample_id": "71530c72c132ba3c2ebc4376ec1b2cda77ef75cd#2",
+      "value": 0.048761
+    },
+    {
+      "sample_id": "71530c72c132ba3c2ebc4376ec1b2cda77ef75cd#3",
+      "value": 0.951367
+    },
+    {
+      "sample_id": "71530c72c132ba3c2ebc4376ec1b2cda77ef75cd#4",
+      "value": 0.015644
+    },
+    {
+      "sample_id": "43b82870a85c31a9dccd43574fb6276516c82325#0",
+      "value": 0.859128
+    },
+    {
+      "sample_id": "43b82870a85c31a9dccd43574fb6276516c82325#1",
+      "value": 0.796678
+    },
+    {
+      "sample_id": "43b82870a85c31a9dccd43574fb6276516c82325#2",
+      "value": 0.750144
+    },
+    {
+      "sample_id": "43b82870a85c31a9dccd43574fb6276516c82325#3",
+      "value": 0.954512
+    },
+    {
+      "sample_id": "43b82870a85c31a9dccd43574fb6276516c82325#4",
+      "value": 0.030798
+    },
+    {
+      "sample_id": "d75a950d495bad51ac7c8657871328b8732f44c7#0",
+      "value": 0.914018
+    },
+    {
+      "sample_id": "d75a950d495bad51ac7c8657871328b8732f44c7#1",
+      "value": 0.966903
+    },
+    {
+      "sample_id": "d75a950d495bad51ac7c8657871328b8732f44c7#2",
+      "value": 0.416124
+    },
+    {
+      "sample_id": "d75a950d495bad51ac7c8657871328b8732f44c7#3",
+      "value": 0.850444
+    },
+    {
+      "sample_id": "d75a950d495bad51ac7c8657871328b8732f44c7#4",
+      "value": 0.272542
+    },
+    {
+      "sample_id": "272cd78ced8fe137028e76ac8fdc7bda226a4986#0",
+      "value": 0.980504
+    },
+    {
+      "sample_id": "272cd78ced8fe137028e76ac8fdc7bda226a4986#1",
+      "value": 0.972393
+    },
+    {
+      "sample_id": "272cd78ced8fe137028e76ac8fdc7bda226a4986#2",
+      "value": 0.938999
+    },
+    {
+      "sample_id": "272cd78ced8fe137028e76ac8fdc7bda226a4986#3",
+      "value": 0.960888
+    },
+    {
+      "sample_id": "272cd78ced8fe137028e76ac8fdc7bda226a4986#4",
+      "value": 0.015111
+    },
+    {
+      "sample_id": "996940764a066a9c16f622c873ad041ac5521fa3#0",
+      "value": 0.968865
+    },
+    {
+      "sample_id": "996940764a066a9c16f622c873ad041ac5521fa3#1",
+      "value": 0.967462
+    },
+    {
+      "sample_id": "996940764a066a9c16f622c873ad041ac5521fa3#2",
+      "value": 0.979914
+    },
+    {
+      "sample_id": "996940764a066a9c16f622c873ad041ac5521fa3#3",
+      "value": 0.969094
+    },
+    {
+      "sample_id": "996940764a066a9c16f622c873ad041ac5521fa3#4",
+      "value": 0.007471
+    },
+    {
+      "sample_id": "f512695a290521cc82eac319a9c7232c45190d9d#0",
+      "value": 0.986104
+    },
+    {
+      "sample_id": "f512695a290521cc82eac319a9c7232c45190d9d#1",
+      "value": 0.985984
+    },
+    {
+      "sample_id": "f512695a290521cc82eac319a9c7232c45190d9d#2",
+      "value": 0.054586
+    },
+    {
+      "sample_id": "f512695a290521cc82eac319a9c7232c45190d9d#3",
+      "value": 0.951625
+    },
+    {
+      "sample_id": "f512695a290521cc82eac319a9c7232c45190d9d#4",
+      "value": 0.025195
+    },
+    {
+      "sample_id": "ec374b769e8112884310bb3b4a7d261ab4625490#0",
+      "value": 0.978441
+    },
+    {
+      "sample_id": "ec374b769e8112884310bb3b4a7d261ab4625490#1",
+      "value": 0.953271
+    },
+    {
+      "sample_id": "ec374b769e8112884310bb3b4a7d261ab4625490#2",
+      "value": 0.959095
+    },
+    {
+      "sample_id": "ec374b769e8112884310bb3b4a7d261ab4625490#3",
+      "value": 0.868776
+    },
+    {
+      "sample_id": "ec374b769e8112884310bb3b4a7d261ab4625490#4",
+      "value": 0.035164
+    },
+    {
+      "sample_id": "34c643a2b86b20a0319d57a17e603752afadb410#0",
+      "value": 0.959475
+    },
+    {
+      "sample_id": "34c643a2b86b20a0319d57a17e603752afadb410#1",
+      "value": 0.975684
+    },
+    {
+      "sample_id": "34c643a2b86b20a0319d57a17e603752afadb410#2",
+      "value": 0.935608
+    },
+    {
+      "sample_id": "34c643a2b86b20a0319d57a17e603752afadb410#3",
+      "value": 0.705902
+    },
+    {
+      "sample_id": "34c643a2b86b20a0319d57a17e603752afadb410#4",
+      "value": 0.030906
+    },
+    {
+      "sample_id": "9056f691c18f7f0fd4658011b5c5376905c761ad#0",
+      "value": 0.948661
+    },
+    {
+      "sample_id": "9056f691c18f7f0fd4658011b5c5376905c761ad#1",
+      "value": 0.983476
+    },
+    {
+      "sample_id": "9056f691c18f7f0fd4658011b5c5376905c761ad#2",
+      "value": 0.836074
+    },
+    {
+      "sample_id": "9056f691c18f7f0fd4658011b5c5376905c761ad#3",
+      "value": 0.661459
+    },
+    {
+      "sample_id": "9056f691c18f7f0fd4658011b5c5376905c761ad#4",
+      "value": 0.04755
+    },
+    {
+      "sample_id": "8bb6ee1e1bcf32886f7de25876d962442ebc7cb7#0",
+      "value": 0.928497
+    },
+    {
+      "sample_id": "8bb6ee1e1bcf32886f7de25876d962442ebc7cb7#1",
+      "value": 0.897501
+    },
+    {
+      "sample_id": "8bb6ee1e1bcf32886f7de25876d962442ebc7cb7#2",
+      "value": 0.783987
+    },
+    {
+      "sample_id": "8bb6ee1e1bcf32886f7de25876d962442ebc7cb7#3",
+      "value": 0.903275
+    },
+    {
+      "sample_id": "8bb6ee1e1bcf32886f7de25876d962442ebc7cb7#4",
+      "value": 0.796524
+    },
+    {
+      "sample_id": "3c2040c68ca45c78b440e299b72956907b2f9390#0",
+      "value": 0.668016
+    },
+    {
+      "sample_id": "3c2040c68ca45c78b440e299b72956907b2f9390#1",
+      "value": 0.832326
+    },
+    {
+      "sample_id": "3c2040c68ca45c78b440e299b72956907b2f9390#2",
+      "value": 0.165121
+    },
+    {
+      "sample_id": "3c2040c68ca45c78b440e299b72956907b2f9390#3",
+      "value": 0.882807
+    },
+    {
+      "sample_id": "3c2040c68ca45c78b440e299b72956907b2f9390#4",
+      "value": 0.040948
+    },
+    {
+      "sample_id": "9fbe37310952a1601f36004806879e7bb8e70e38#0",
+      "value": 0.953287
+    },
+    {
+      "sample_id": "9fbe37310952a1601f36004806879e7bb8e70e38#1",
+      "value": 0.935747
+    },
+    {
+      "sample_id": "9fbe37310952a1601f36004806879e7bb8e70e38#2",
+      "value": 0.934968
+    },
+    {
+      "sample_id": "9fbe37310952a1601f36004806879e7bb8e70e38#3",
+      "value": 0.529529
+    },
+    {
+      "sample_id": "9fbe37310952a1601f36004806879e7bb8e70e38#4",
+      "value": 0.045604
+    },
+    {
+      "sample_id": "5fdd0e36b6c9197e92e17f86ae05092b6fcd0882#0",
+      "value": 0.984447
+    },
+    {
+      "sample_id": "5fdd0e36b6c9197e92e17f86ae05092b6fcd0882#1",
+      "value": 0.98198
+    },
+    {
+      "sample_id": "5fdd0e36b6c9197e92e17f86ae05092b6fcd0882#2",
+      "value": 0.976712
+    },
+    {
+      "sample_id": "5fdd0e36b6c9197e92e17f86ae05092b6fcd0882#3",
+      "value": 0.980295
+    },
+    {
+      "sample_id": "5fdd0e36b6c9197e92e17f86ae05092b6fcd0882#4",
+      "value": 0.052116
+    },
+    {
+      "sample_id": "8a065645e5745a8842f62c9c6d718e8624ad7825#0",
+      "value": 0.983287
+    },
+    {
+      "sample_id": "8a065645e5745a8842f62c9c6d718e8624ad7825#1",
+      "value": 0.976612
+    },
+    {
+      "sample_id": "8a065645e5745a8842f62c9c6d718e8624ad7825#2",
+      "value": 0.315417
+    },
+    {
+      "sample_id": "8a065645e5745a8842f62c9c6d718e8624ad7825#3",
+      "value": 0.883659
+    },
+    {
+      "sample_id": "8a065645e5745a8842f62c9c6d718e8624ad7825#4",
+      "value": 0.19155
+    },
+    {
+      "sample_id": "d5a6a1859a3bb1fa76d95b1fa56114816299448e#0",
+      "value": 0.941967
+    },
+    {
+      "sample_id": "d5a6a1859a3bb1fa76d95b1fa56114816299448e#1",
+      "value": 0.979696
+    },
+    {
+      "sample_id": "d5a6a1859a3bb1fa76d95b1fa56114816299448e#2",
+      "value": 0.878509
+    },
+    {
+      "sample_id": "d5a6a1859a3bb1fa76d95b1fa56114816299448e#3",
+      "value": 0.972682
+    },
+    {
+      "sample_id": "d5a6a1859a3bb1fa76d95b1fa56114816299448e#4",
+      "value": 0.019493
+    },
+    {
+      "sample_id": "2c5c7981506ca3d0b86baa2f339ac7aa121fbec1#0",
+      "value": 0.981534
+    },
+    {
+      "sample_id": "2c5c7981506ca3d0b86baa2f339ac7aa121fbec1#1",
+      "value": 0.584035
+    },
+    {
+      "sample_id": "2c5c7981506ca3d0b86baa2f339ac7aa121fbec1#2",
+      "value": 0.873316
+    },
+    {
+      "sample_id": "2c5c7981506ca3d0b86baa2f339ac7aa121fbec1#3",
+      "value": 0.635717
+    },
+    {
+      "sample_id": "2c5c7981506ca3d0b86baa2f339ac7aa121fbec1#4",
+      "value": 0.05304
+    },
+    {
+      "sample_id": "b93353a4ea2c5e16d06107c42ad4b2ef152a5ff9#0",
+      "value": 0.939697
+    },
+    {
+      "sample_id": "b93353a4ea2c5e16d06107c42ad4b2ef152a5ff9#1",
+      "value": 0.665682
+    },
+    {
+      "sample_id": "b93353a4ea2c5e16d06107c42ad4b2ef152a5ff9#2",
+      "value": 0.969724
+    },
+    {
+      "sample_id": "b93353a4ea2c5e16d06107c42ad4b2ef152a5ff9#3",
+      "value": 0.982036
+    },
+    {
+      "sample_id": "b93353a4ea2c5e16d06107c42ad4b2ef152a5ff9#4",
+      "value": 0.003988
+    },
+    {
+      "sample_id": "97e4f1992149f5fb5919a3ad0e8adfb17b65cdc5#0",
+      "value": 0.978388
+    },
+    {
+      "sample_id": "97e4f1992149f5fb5919a3ad0e8adfb17b65cdc5#1",
+      "value": 0.983087
+    },
+    {
+      "sample_id": "97e4f1992149f5fb5919a3ad0e8adfb17b65cdc5#2",
+      "value": 0.95202
+    },
+    {
+      "sample_id": "97e4f1992149f5fb5919a3ad0e8adfb17b65cdc5#3",
+      "value": 0.975938
+    },
+    {
+      "sample_id": "97e4f1992149f5fb5919a3ad0e8adfb17b65cdc5#4",
+      "value": 0.218676
+    },
+    {
+      "sample_id": "7344a9b120b339c394c3f905cbc1097096de9b2e#0",
+      "value": 0.865287
+    },
+    {
+      "sample_id": "7344a9b120b339c394c3f905cbc1097096de9b2e#1",
+      "value": 0.942604
+    },
+    {
+      "sample_id": "7344a9b120b339c394c3f905cbc1097096de9b2e#2",
+      "value": 0.016783
+    },
+    {
+      "sample_id": "7344a9b120b339c394c3f905cbc1097096de9b2e#3",
+      "value": 0.120615
+    },
+    {
+      "sample_id": "7344a9b120b339c394c3f905cbc1097096de9b2e#4",
+      "value": 0.058124
+    },
+    {
+      "sample_id": "8b59ee002241e9d71ee828201f6daac93a7b9e5b#0",
+      "value": 0.983633
+    },
+    {
+      "sample_id": "8b59ee002241e9d71ee828201f6daac93a7b9e5b#1",
+      "value": 0.981131
+    },
+    {
+      "sample_id": "8b59ee002241e9d71ee828201f6daac93a7b9e5b#2",
+      "value": 0.951324
+    },
+    {
+      "sample_id": "8b59ee002241e9d71ee828201f6daac93a7b9e5b#3",
+      "value": 0.978405
+    },
+    {
+      "sample_id": "8b59ee002241e9d71ee828201f6daac93a7b9e5b#4",
+      "value": 0.029056
+    },
+    {
+      "sample_id": "56fbcd0758c6b657fd8d1efcd9054650ec762c93#0",
+      "value": 0.835681
+    },
+    {
+      "sample_id": "56fbcd0758c6b657fd8d1efcd9054650ec762c93#1",
+      "value": 0.776538
+    },
+    {
+      "sample_id": "56fbcd0758c6b657fd8d1efcd9054650ec762c93#2",
+      "value": 0.213164
+    },
+    {
+      "sample_id": "56fbcd0758c6b657fd8d1efcd9054650ec762c93#3",
+      "value": 0.747764
+    },
+    {
+      "sample_id": "56fbcd0758c6b657fd8d1efcd9054650ec762c93#4",
+      "value": 0.269071
+    },
+    {
+      "sample_id": "599041852b35a3ec1b3a9423b319045655ca2bc9#0",
+      "value": 0.976181
+    },
+    {
+      "sample_id": "599041852b35a3ec1b3a9423b319045655ca2bc9#1",
+      "value": 0.97544
+    },
+    {
+      "sample_id": "599041852b35a3ec1b3a9423b319045655ca2bc9#2",
+      "value": 0.201282
+    },
+    {
+      "sample_id": "599041852b35a3ec1b3a9423b319045655ca2bc9#3",
+      "value": 0.8095
+    },
+    {
+      "sample_id": "599041852b35a3ec1b3a9423b319045655ca2bc9#4",
+      "value": 0.016305
+    },
+    {
+      "sample_id": "583e3c096f0078560659ab4c833d247ebbf786a4#0",
+      "value": 0.830803
+    },
+    {
+      "sample_id": "583e3c096f0078560659ab4c833d247ebbf786a4#1",
+      "value": 0.956239
+    },
+    {
+      "sample_id": "583e3c096f0078560659ab4c833d247ebbf786a4#2",
+      "value": 0.848848
+    },
+    {
+      "sample_id": "583e3c096f0078560659ab4c833d247ebbf786a4#3",
+      "value": 0.82401
+    },
+    {
+      "sample_id": "583e3c096f0078560659ab4c833d247ebbf786a4#4",
+      "value": 0.029951
+    },
+    {
+      "sample_id": "0fa083cb7da10f1f697e7dab6210397f00c0a4cf#0",
+      "value": 0.983332
+    },
+    {
+      "sample_id": "0fa083cb7da10f1f697e7dab6210397f00c0a4cf#1",
+      "value": 0.979556
+    },
+    {
+      "sample_id": "0fa083cb7da10f1f697e7dab6210397f00c0a4cf#2",
+      "value": 0.974013
+    },
+    {
+      "sample_id": "0fa083cb7da10f1f697e7dab6210397f00c0a4cf#3",
+      "value": 0.983576
+    },
+    {
+      "sample_id": "0fa083cb7da10f1f697e7dab6210397f00c0a4cf#4",
+      "value": 0.016709
+    },
+    {
+      "sample_id": "7c6d51e3ed1e902fff6716aead093b8ffeb9521c#0",
+      "value": 0.904819
+    },
+    {
+      "sample_id": "7c6d51e3ed1e902fff6716aead093b8ffeb9521c#1",
+      "value": 0.965935
+    },
+    {
+      "sample_id": "7c6d51e3ed1e902fff6716aead093b8ffeb9521c#2",
+      "value": 0.426121
+    },
+    {
+      "sample_id": "7c6d51e3ed1e902fff6716aead093b8ffeb9521c#3",
+      "value": 0.949152
+    },
+    {
+      "sample_id": "7c6d51e3ed1e902fff6716aead093b8ffeb9521c#4",
+      "value": 0.013101
+    },
+    {
+      "sample_id": "e5e86a98dc14976da5c6d367ec41f56117a56ee8#0",
+      "value": 0.986944
+    },
+    {
+      "sample_id": "e5e86a98dc14976da5c6d367ec41f56117a56ee8#1",
+      "value": 0.987657
+    },
+    {
+      "sample_id": "e5e86a98dc14976da5c6d367ec41f56117a56ee8#2",
+      "value": 0.929977
+    },
+    {
+      "sample_id": "e5e86a98dc14976da5c6d367ec41f56117a56ee8#3",
+      "value": 0.981362
+    },
+    {
+      "sample_id": "e5e86a98dc14976da5c6d367ec41f56117a56ee8#4",
+      "value": 0.019156
+    },
+    {
+      "sample_id": "20b231e56a0a2104a96e167659222986fbcaeddd#0",
+      "value": 0.812767
+    },
+    {
+      "sample_id": "20b231e56a0a2104a96e167659222986fbcaeddd#1",
+      "value": 0.973557
+    },
+    {
+      "sample_id": "20b231e56a0a2104a96e167659222986fbcaeddd#2",
+      "value": 0.234268
+    },
+    {
+      "sample_id": "20b231e56a0a2104a96e167659222986fbcaeddd#3",
+      "value": 0.975778
+    },
+    {
+      "sample_id": "20b231e56a0a2104a96e167659222986fbcaeddd#4",
+      "value": 0.020997
+    },
+    {
+      "sample_id": "2b8334fdfea3cc340e5e29b768a26033164ab134#0",
+      "value": 0.977317
+    },
+    {
+      "sample_id": "2b8334fdfea3cc340e5e29b768a26033164ab134#1",
+      "value": 0.972727
+    },
+    {
+      "sample_id": "2b8334fdfea3cc340e5e29b768a26033164ab134#2",
+      "value": 0.969459
+    },
+    {
+      "sample_id": "2b8334fdfea3cc340e5e29b768a26033164ab134#3",
+      "value": 0.847453
+    },
+    {
+      "sample_id": "2b8334fdfea3cc340e5e29b768a26033164ab134#4",
+      "value": 0.010263
+    },
+    {
+      "sample_id": "3e89db8d2a51ba72e9c0ac344fafa756e438cbde#0",
+      "value": 0.974678
+    },
+    {
+      "sample_id": "3e89db8d2a51ba72e9c0ac344fafa756e438cbde#1",
+      "value": 0.947333
+    },
+    {
+      "sample_id": "3e89db8d2a51ba72e9c0ac344fafa756e438cbde#2",
+      "value": 0.962679
+    },
+    {
+      "sample_id": "3e89db8d2a51ba72e9c0ac344fafa756e438cbde#3",
+      "value": 0.961073
+    },
+    {
+      "sample_id": "3e89db8d2a51ba72e9c0ac344fafa756e438cbde#4",
+      "value": 0.196706
+    },
+    {
+      "sample_id": "47681f33b383d3000a13cff5c5429771204619ed#0",
+      "value": 0.757361
+    },
+    {
+      "sample_id": "47681f33b383d3000a13cff5c5429771204619ed#1",
+      "value": 0.172969
+    },
+    {
+      "sample_id": "47681f33b383d3000a13cff5c5429771204619ed#2",
+      "value": 0.833478
+    },
+    {
+      "sample_id": "47681f33b383d3000a13cff5c5429771204619ed#3",
+      "value": 0.261054
+    },
+    {
+      "sample_id": "47681f33b383d3000a13cff5c5429771204619ed#4",
+      "value": 0.029338
+    },
+    {
+      "sample_id": "12893950047350a275fdee5ce4f9a8610e9236bb#0",
+      "value": 0.955879
+    },
+    {
+      "sample_id": "12893950047350a275fdee5ce4f9a8610e9236bb#1",
+      "value": 0.954582
+    },
+    {
+      "sample_id": "12893950047350a275fdee5ce4f9a8610e9236bb#2",
+      "value": 0.584764
+    },
+    {
+      "sample_id": "12893950047350a275fdee5ce4f9a8610e9236bb#3",
+      "value": 0.92505
+    },
+    {
+      "sample_id": "12893950047350a275fdee5ce4f9a8610e9236bb#4",
+      "value": 0.246839
+    },
+    {
+      "sample_id": "270fdae145aa5ae3ae73adcf44be72cec339dbbe#0",
+      "value": 0.979179
+    },
+    {
+      "sample_id": "270fdae145aa5ae3ae73adcf44be72cec339dbbe#1",
+      "value": 0.958301
+    },
+    {
+      "sample_id": "270fdae145aa5ae3ae73adcf44be72cec339dbbe#2",
+      "value": 0.954437
+    },
+    {
+      "sample_id": "270fdae145aa5ae3ae73adcf44be72cec339dbbe#3",
+      "value": 0.921781
+    },
+    {
+      "sample_id": "270fdae145aa5ae3ae73adcf44be72cec339dbbe#4",
+      "value": 0.39664
+    },
+    {
+      "sample_id": "bc721db319cbdd6924537aeba7efd61619422d49#0",
+      "value": 0.981741
+    },
+    {
+      "sample_id": "bc721db319cbdd6924537aeba7efd61619422d49#1",
+      "value": 0.936302
+    },
+    {
+      "sample_id": "bc721db319cbdd6924537aeba7efd61619422d49#2",
+      "value": 0.201945
+    },
+    {
+      "sample_id": "bc721db319cbdd6924537aeba7efd61619422d49#3",
+      "value": 0.973593
+    },
+    {
+      "sample_id": "bc721db319cbdd6924537aeba7efd61619422d49#4",
+      "value": 0.14943
+    },
+    {
+      "sample_id": "fcbb911ad422af9da30cd8c28c25769c06df45e6#0",
+      "value": 0.988039
+    },
+    {
+      "sample_id": "fcbb911ad422af9da30cd8c28c25769c06df45e6#1",
+      "value": 0.972685
+    },
+    {
+      "sample_id": "fcbb911ad422af9da30cd8c28c25769c06df45e6#2",
+      "value": 0.977695
+    },
+    {
+      "sample_id": "fcbb911ad422af9da30cd8c28c25769c06df45e6#3",
+      "value": 0.988842
+    },
+    {
+      "sample_id": "fcbb911ad422af9da30cd8c28c25769c06df45e6#4",
+      "value": 0.004421
+    },
+    {
+      "sample_id": "8451dc5b5c84ba7314d424135bdce1543d0cbccd#0",
+      "value": 0.986769
+    },
+    {
+      "sample_id": "8451dc5b5c84ba7314d424135bdce1543d0cbccd#1",
+      "value": 0.981079
+    },
+    {
+      "sample_id": "8451dc5b5c84ba7314d424135bdce1543d0cbccd#2",
+      "value": 0.988786
+    },
+    {
+      "sample_id": "8451dc5b5c84ba7314d424135bdce1543d0cbccd#3",
+      "value": 0.988093
+    },
+    {
+      "sample_id": "8451dc5b5c84ba7314d424135bdce1543d0cbccd#4",
+      "value": 0.944027
+    },
+    {
+      "sample_id": "fb431a618ef4dedb6896a4051cc2c2dff8e6751a#0",
+      "value": 0.970877
+    },
+    {
+      "sample_id": "fb431a618ef4dedb6896a4051cc2c2dff8e6751a#1",
+      "value": 0.981567
+    },
+    {
+      "sample_id": "fb431a618ef4dedb6896a4051cc2c2dff8e6751a#2",
+      "value": 0.528352
+    },
+    {
+      "sample_id": "fb431a618ef4dedb6896a4051cc2c2dff8e6751a#3",
+      "value": 0.981789
+    },
+    {
+      "sample_id": "fb431a618ef4dedb6896a4051cc2c2dff8e6751a#4",
+      "value": 0.057503
+    },
+    {
+      "sample_id": "6fc09e0dedb137271336f0b4030bbe7f023582f0#0",
+      "value": 0.983343
+    },
+    {
+      "sample_id": "6fc09e0dedb137271336f0b4030bbe7f023582f0#1",
+      "value": 0.575282
+    },
+    {
+      "sample_id": "6fc09e0dedb137271336f0b4030bbe7f023582f0#2",
+      "value": 0.782658
+    },
+    {
+      "sample_id": "6fc09e0dedb137271336f0b4030bbe7f023582f0#3",
+      "value": 0.319759
+    },
+    {
+      "sample_id": "6fc09e0dedb137271336f0b4030bbe7f023582f0#4",
+      "value": 0.0038
+    },
+    {
+      "sample_id": "6555c15003defec00c965b3851e4da818264afe7#0",
+      "value": 0.978249
+    },
+    {
+      "sample_id": "6555c15003defec00c965b3851e4da818264afe7#1",
+      "value": 0.95417
+    },
+    {
+      "sample_id": "6555c15003defec00c965b3851e4da818264afe7#2",
+      "value": 0.766226
+    },
+    {
+      "sample_id": "6555c15003defec00c965b3851e4da818264afe7#3",
+      "value": 0.94112
+    },
+    {
+      "sample_id": "6555c15003defec00c965b3851e4da818264afe7#4",
+      "value": 0.109088
+    },
+    {
+      "sample_id": "c98105513bdb47a836f8d30dab3fd1fd725015ad#0",
+      "value": 0.976376
+    },
+    {
+      "sample_id": "c98105513bdb47a836f8d30dab3fd1fd725015ad#1",
+      "value": 0.980668
+    },
+    {
+      "sample_id": "c98105513bdb47a836f8d30dab3fd1fd725015ad#2",
+      "value": 0.830038
+    },
+    {
+      "sample_id": "c98105513bdb47a836f8d30dab3fd1fd725015ad#3",
+      "value": 0.157735
+    },
+    {
+      "sample_id": "c98105513bdb47a836f8d30dab3fd1fd725015ad#4",
+      "value": 0.034511
+    },
+    {
+      "sample_id": "843f85685d2ca5bab950e30d6cd89e91bc539018#0",
+      "value": 0.977325
+    },
+    {
+      "sample_id": "843f85685d2ca5bab950e30d6cd89e91bc539018#1",
+      "value": 0.935116
+    },
+    {
+      "sample_id": "843f85685d2ca5bab950e30d6cd89e91bc539018#2",
+      "value": 0.027958
+    },
+    {
+      "sample_id": "843f85685d2ca5bab950e30d6cd89e91bc539018#3",
+      "value": 0.624931
+    },
+    {
+      "sample_id": "843f85685d2ca5bab950e30d6cd89e91bc539018#4",
+      "value": 0.015832
+    },
+    {
+      "sample_id": "d8de9e0854b100887953d6de7945a55cc6f7777f#0",
+      "value": 0.968354
+    },
+    {
+      "sample_id": "d8de9e0854b100887953d6de7945a55cc6f7777f#1",
+      "value": 0.96506
+    },
+    {
+      "sample_id": "d8de9e0854b100887953d6de7945a55cc6f7777f#2",
+      "value": 0.869879
+    },
+    {
+      "sample_id": "d8de9e0854b100887953d6de7945a55cc6f7777f#3",
+      "value": 0.851545
+    },
+    {
+      "sample_id": "d8de9e0854b100887953d6de7945a55cc6f7777f#4",
+      "value": 0.036549
+    },
+    {
+      "sample_id": "ed8674cc15b29a87d8df8de1efee353d71122272#0",
+      "value": 0.990037
+    },
+    {
+      "sample_id": "ed8674cc15b29a87d8df8de1efee353d71122272#1",
+      "value": 0.988604
+    },
+    {
+      "sample_id": "ed8674cc15b29a87d8df8de1efee353d71122272#2",
+      "value": 0.50898
+    },
+    {
+      "sample_id": "ed8674cc15b29a87d8df8de1efee353d71122272#3",
+      "value": 0.98146
+    },
+    {
+      "sample_id": "ed8674cc15b29a87d8df8de1efee353d71122272#4",
+      "value": 0.657821
+    },
+    {
+      "sample_id": "abd69dcc1c91c304762d59d93b87bdd6af794b6c#0",
+      "value": 0.812085
+    },
+    {
+      "sample_id": "abd69dcc1c91c304762d59d93b87bdd6af794b6c#1",
+      "value": 0.928998
+    },
+    {
+      "sample_id": "abd69dcc1c91c304762d59d93b87bdd6af794b6c#2",
+      "value": 0.717742
+    },
+    {
+      "sample_id": "abd69dcc1c91c304762d59d93b87bdd6af794b6c#3",
+      "value": 0.905813
+    },
+    {
+      "sample_id": "abd69dcc1c91c304762d59d93b87bdd6af794b6c#4",
+      "value": 0.623941
+    },
+    {
+      "sample_id": "281d340a0b9ba6fa2f5526ecd59db7cdcc1de4cc#0",
+      "value": 0.979961
+    },
+    {
+      "sample_id": "281d340a0b9ba6fa2f5526ecd59db7cdcc1de4cc#1",
+      "value": 0.977433
+    },
+    {
+      "sample_id": "281d340a0b9ba6fa2f5526ecd59db7cdcc1de4cc#2",
+      "value": 0.972075
+    },
+    {
+      "sample_id": "281d340a0b9ba6fa2f5526ecd59db7cdcc1de4cc#3",
+      "value": 0.631908
+    },
+    {
+      "sample_id": "281d340a0b9ba6fa2f5526ecd59db7cdcc1de4cc#4",
+      "value": 0.804505
+    },
+    {
+      "sample_id": "9b5117ce299e1ae21141809563adcfb5308a0c97#0",
+      "value": 0.927421
+    },
+    {
+      "sample_id": "9b5117ce299e1ae21141809563adcfb5308a0c97#1",
+      "value": 0.929638
+    },
+    {
+      "sample_id": "9b5117ce299e1ae21141809563adcfb5308a0c97#2",
+      "value": 0.473489
+    },
+    {
+      "sample_id": "9b5117ce299e1ae21141809563adcfb5308a0c97#3",
+      "value": 0.706003
+    },
+    {
+      "sample_id": "9b5117ce299e1ae21141809563adcfb5308a0c97#4",
+      "value": 0.009648
+    },
+    {
+      "sample_id": "37c6e6095b2283af35145f46f1c71068699ad7fb#0",
+      "value": 0.974997
+    },
+    {
+      "sample_id": "37c6e6095b2283af35145f46f1c71068699ad7fb#1",
+      "value": 0.959636
+    },
+    {
+      "sample_id": "37c6e6095b2283af35145f46f1c71068699ad7fb#2",
+      "value": 0.421413
+    },
+    {
+      "sample_id": "37c6e6095b2283af35145f46f1c71068699ad7fb#3",
+      "value": 0.977549
+    },
+    {
+      "sample_id": "37c6e6095b2283af35145f46f1c71068699ad7fb#4",
+      "value": 0.397002
+    },
+    {
+      "sample_id": "eafe2c8df2fb9221daf4e3868cfc1d7b27c1e02c#0",
+      "value": 0.973673
+    },
+    {
+      "sample_id": "eafe2c8df2fb9221daf4e3868cfc1d7b27c1e02c#1",
+      "value": 0.979755
+    },
+    {
+      "sample_id": "eafe2c8df2fb9221daf4e3868cfc1d7b27c1e02c#2",
+      "value": 0.950126
+    },
+    {
+      "sample_id": "eafe2c8df2fb9221daf4e3868cfc1d7b27c1e02c#3",
+      "value": 0.983544
+    },
+    {
+      "sample_id": "eafe2c8df2fb9221daf4e3868cfc1d7b27c1e02c#4",
+      "value": 0.010414
+    },
+    {
+      "sample_id": "a1082205036968a415aa0bca8d41e362469ede84#0",
+      "value": 0.982647
+    },
+    {
+      "sample_id": "a1082205036968a415aa0bca8d41e362469ede84#1",
+      "value": 0.984284
+    },
+    {
+      "sample_id": "a1082205036968a415aa0bca8d41e362469ede84#2",
+      "value": 0.096488
+    },
+    {
+      "sample_id": "a1082205036968a415aa0bca8d41e362469ede84#3",
+      "value": 0.991128
+    },
+    {
+      "sample_id": "a1082205036968a415aa0bca8d41e362469ede84#4",
+      "value": 0.134629
+    },
+    {
+      "sample_id": "5a0fc5446164c69f250c817608999785dbfd635c#0",
+      "value": 0.945981
+    },
+    {
+      "sample_id": "5a0fc5446164c69f250c817608999785dbfd635c#1",
+      "value": 0.914046
+    },
+    {
+      "sample_id": "5a0fc5446164c69f250c817608999785dbfd635c#2",
+      "value": 0.854122
+    },
+    {
+      "sample_id": "5a0fc5446164c69f250c817608999785dbfd635c#3",
+      "value": 0.346671
+    },
+    {
+      "sample_id": "5a0fc5446164c69f250c817608999785dbfd635c#4",
+      "value": 0.78446
+    },
+    {
+      "sample_id": "73d480fb4ac1f27ccbd502cfeb1d3c9f6fcda745#0",
+      "value": 0.968775
+    },
+    {
+      "sample_id": "73d480fb4ac1f27ccbd502cfeb1d3c9f6fcda745#1",
+      "value": 0.979043
+    },
+    {
+      "sample_id": "73d480fb4ac1f27ccbd502cfeb1d3c9f6fcda745#2",
+      "value": 0.968242
+    },
+    {
+      "sample_id": "73d480fb4ac1f27ccbd502cfeb1d3c9f6fcda745#3",
+      "value": 0.984207
+    },
+    {
+      "sample_id": "73d480fb4ac1f27ccbd502cfeb1d3c9f6fcda745#4",
+      "value": 0.97476
+    },
+    {
+      "sample_id": "07d6ceff2988640eaa91355d6612f15e0e03eb2d#0",
+      "value": 0.977049
+    },
+    {
+      "sample_id": "07d6ceff2988640eaa91355d6612f15e0e03eb2d#1",
+      "value": 0.92143
+    },
+    {
+      "sample_id": "07d6ceff2988640eaa91355d6612f15e0e03eb2d#2",
+      "value": 0.736056
+    },
+    {
+      "sample_id": "07d6ceff2988640eaa91355d6612f15e0e03eb2d#3",
+      "value": 0.971824
+    },
+    {
+      "sample_id": "07d6ceff2988640eaa91355d6612f15e0e03eb2d#4",
+      "value": 0.063918
+    },
+    {
+      "sample_id": "822f4d3e5389cc01c392d0a2e4bbffd013fb2cf0#0",
+      "value": 0.970748
+    },
+    {
+      "sample_id": "822f4d3e5389cc01c392d0a2e4bbffd013fb2cf0#1",
+      "value": 0.901316
+    },
+    {
+      "sample_id": "822f4d3e5389cc01c392d0a2e4bbffd013fb2cf0#2",
+      "value": 0.921296
+    },
+    {
+      "sample_id": "822f4d3e5389cc01c392d0a2e4bbffd013fb2cf0#3",
+      "value": 0.711366
+    },
+    {
+      "sample_id": "822f4d3e5389cc01c392d0a2e4bbffd013fb2cf0#4",
+      "value": 0.753176
+    },
+    {
+      "sample_id": "388e3456094f0e0e09b1f74d859a550ec3631b2d#0",
+      "value": 0.969968
+    },
+    {
+      "sample_id": "388e3456094f0e0e09b1f74d859a550ec3631b2d#1",
+      "value": 0.974158
+    },
+    {
+      "sample_id": "388e3456094f0e0e09b1f74d859a550ec3631b2d#2",
+      "value": 0.94457
+    },
+    {
+      "sample_id": "388e3456094f0e0e09b1f74d859a550ec3631b2d#3",
+      "value": 0.062885
+    },
+    {
+      "sample_id": "388e3456094f0e0e09b1f74d859a550ec3631b2d#4",
+      "value": 0.025509
+    },
+    {
+      "sample_id": "6842432c58ad5ed8f2310a0f1931fece52a96fab#0",
+      "value": 0.978624
+    },
+    {
+      "sample_id": "6842432c58ad5ed8f2310a0f1931fece52a96fab#1",
+      "value": 0.944439
+    },
+    {
+      "sample_id": "6842432c58ad5ed8f2310a0f1931fece52a96fab#2",
+      "value": 0.921564
+    },
+    {
+      "sample_id": "6842432c58ad5ed8f2310a0f1931fece52a96fab#3",
+      "value": 0.098534
+    },
+    {
+      "sample_id": "6842432c58ad5ed8f2310a0f1931fece52a96fab#4",
+      "value": 0.658533
+    },
+    {
+      "sample_id": "b2cb5f0ff341db640a7f7c41ecd1b56650dbff84#0",
+      "value": 0.952866
+    },
+    {
+      "sample_id": "b2cb5f0ff341db640a7f7c41ecd1b56650dbff84#1",
+      "value": 0.920624
+    },
+    {
+      "sample_id": "b2cb5f0ff341db640a7f7c41ecd1b56650dbff84#2",
+      "value": 0.985771
+    },
+    {
+      "sample_id": "b2cb5f0ff341db640a7f7c41ecd1b56650dbff84#3",
+      "value": 0.984312
+    },
+    {
+      "sample_id": "b2cb5f0ff341db640a7f7c41ecd1b56650dbff84#4",
+      "value": 0.112661
+    },
+    {
+      "sample_id": "50f3f06b88fef68e3219e358c254e2e6860f9196#0",
+      "value": 0.981383
+    },
+    {
+      "sample_id": "50f3f06b88fef68e3219e358c254e2e6860f9196#1",
+      "value": 0.979465
+    },
+    {
+      "sample_id": "50f3f06b88fef68e3219e358c254e2e6860f9196#2",
+      "value": 0.939384
+    },
+    {
+      "sample_id": "50f3f06b88fef68e3219e358c254e2e6860f9196#3",
+      "value": 0.877168
+    },
+    {
+      "sample_id": "50f3f06b88fef68e3219e358c254e2e6860f9196#4",
+      "value": 0.088504
+    },
+    {
+      "sample_id": "9fa944ff682d06dbca7c66e4badea3697cd9dbdd#0",
+      "value": 0.95511
+    },
+    {
+      "sample_id": "9fa944ff682d06dbca7c66e4badea3697cd9dbdd#1",
+      "value": 0.935836
+    },
+    {
+      "sample_id": "9fa944ff682d06dbca7c66e4badea3697cd9dbdd#2",
+      "value": 0.904118
+    },
+    {
+      "sample_id": "9fa944ff682d06dbca7c66e4badea3697cd9dbdd#3",
+      "value": 0.98376
+    },
+    {
+      "sample_id": "9fa944ff682d06dbca7c66e4badea3697cd9dbdd#4",
+      "value": 0.078628
+    },
+    {
+      "sample_id": "cc86a588b4e4e038e2591c363b4b895e46edbeda#0",
+      "value": 0.972573
+    },
+    {
+      "sample_id": "cc86a588b4e4e038e2591c363b4b895e46edbeda#1",
+      "value": 0.943611
+    },
+    {
+      "sample_id": "cc86a588b4e4e038e2591c363b4b895e46edbeda#2",
+      "value": 0.888394
+    },
+    {
+      "sample_id": "cc86a588b4e4e038e2591c363b4b895e46edbeda#3",
+      "value": 0.973625
+    },
+    {
+      "sample_id": "cc86a588b4e4e038e2591c363b4b895e46edbeda#4",
+      "value": 0.890647
+    },
+    {
+      "sample_id": "1d63a36398eb7b212c830f453470570597903774#0",
+      "value": 0.940135
+    },
+    {
+      "sample_id": "1d63a36398eb7b212c830f453470570597903774#1",
+      "value": 0.155395
+    },
+    {
+      "sample_id": "1d63a36398eb7b212c830f453470570597903774#2",
+      "value": 0.923715
+    },
+    {
+      "sample_id": "1d63a36398eb7b212c830f453470570597903774#3",
+      "value": 0.981768
+    },
+    {
+      "sample_id": "1d63a36398eb7b212c830f453470570597903774#4",
+      "value": 0.665164
+    },
+    {
+      "sample_id": "30a965dfc60f77f99203474c0330df9c94932107#0",
+      "value": 0.978142
+    },
+    {
+      "sample_id": "30a965dfc60f77f99203474c0330df9c94932107#1",
+      "value": 0.965761
+    },
+    {
+      "sample_id": "30a965dfc60f77f99203474c0330df9c94932107#2",
+      "value": 0.979332
+    },
+    {
+      "sample_id": "30a965dfc60f77f99203474c0330df9c94932107#3",
+      "value": 0.95771
+    },
+    {
+      "sample_id": "30a965dfc60f77f99203474c0330df9c94932107#4",
+      "value": 0.023793
+    },
+    {
+      "sample_id": "456721af78bb6da0bf90c8a420ce3ca63d0d4001#0",
+      "value": 0.937263
+    },
+    {
+      "sample_id": "456721af78bb6da0bf90c8a420ce3ca63d0d4001#1",
+      "value": 0.932151
+    },
+    {
+      "sample_id": "456721af78bb6da0bf90c8a420ce3ca63d0d4001#2",
+      "value": 0.131505
+    },
+    {
+      "sample_id": "456721af78bb6da0bf90c8a420ce3ca63d0d4001#3",
+      "value": 0.760146
+    },
+    {
+      "sample_id": "456721af78bb6da0bf90c8a420ce3ca63d0d4001#4",
+      "value": 0.247044
+    },
+    {
+      "sample_id": "67527b729a0ef3052c64f68a7abfe4761c20171c#0",
+      "value": 0.979017
+    },
+    {
+      "sample_id": "67527b729a0ef3052c64f68a7abfe4761c20171c#1",
+      "value": 0.978906
+    },
+    {
+      "sample_id": "67527b729a0ef3052c64f68a7abfe4761c20171c#2",
+      "value": 0.23912
+    },
+    {
+      "sample_id": "67527b729a0ef3052c64f68a7abfe4761c20171c#3",
+      "value": 0.686079
+    },
+    {
+      "sample_id": "67527b729a0ef3052c64f68a7abfe4761c20171c#4",
+      "value": 0.013569
+    },
+    {
+      "sample_id": "159d71b012792c2948c8159fa46a5b1f959fdba2#0",
+      "value": 0.929513
+    },
+    {
+      "sample_id": "159d71b012792c2948c8159fa46a5b1f959fdba2#1",
+      "value": 0.970834
+    },
+    {
+      "sample_id": "159d71b012792c2948c8159fa46a5b1f959fdba2#2",
+      "value": 0.082872
+    },
+    {
+      "sample_id": "159d71b012792c2948c8159fa46a5b1f959fdba2#3",
+      "value": 0.315707
+    },
+    {
+      "sample_id": "159d71b012792c2948c8159fa46a5b1f959fdba2#4",
+      "value": 0.085456
+    },
+    {
+      "sample_id": "23c3719e463500fa5c98de1e7fc61438e7f2d30a#0",
+      "value": 0.932508
+    },
+    {
+      "sample_id": "23c3719e463500fa5c98de1e7fc61438e7f2d30a#1",
+      "value": 0.948952
+    },
+    {
+      "sample_id": "23c3719e463500fa5c98de1e7fc61438e7f2d30a#2",
+      "value": 0.749544
+    },
+    {
+      "sample_id": "23c3719e463500fa5c98de1e7fc61438e7f2d30a#3",
+      "value": 0.954693
+    },
+    {
+      "sample_id": "23c3719e463500fa5c98de1e7fc61438e7f2d30a#4",
+      "value": 0.175155
+    },
+    {
+      "sample_id": "0ccc7d7223489e89d2b91271d2a0b1c4ac9c20e2#0",
+      "value": 0.953277
+    },
+    {
+      "sample_id": "0ccc7d7223489e89d2b91271d2a0b1c4ac9c20e2#1",
+      "value": 0.951796
+    },
+    {
+      "sample_id": "0ccc7d7223489e89d2b91271d2a0b1c4ac9c20e2#2",
+      "value": 0.850086
+    },
+    {
+      "sample_id": "0ccc7d7223489e89d2b91271d2a0b1c4ac9c20e2#3",
+      "value": 0.983337
+    },
+    {
+      "sample_id": "0ccc7d7223489e89d2b91271d2a0b1c4ac9c20e2#4",
+      "value": 0.078177
+    },
+    {
+      "sample_id": "3bfe07e0cc57d601ab333fe30327ba0dc036298e#0",
+      "value": 0.978536
+    },
+    {
+      "sample_id": "3bfe07e0cc57d601ab333fe30327ba0dc036298e#1",
+      "value": 0.976662
+    },
+    {
+      "sample_id": "3bfe07e0cc57d601ab333fe30327ba0dc036298e#2",
+      "value": 0.634141
+    },
+    {
+      "sample_id": "3bfe07e0cc57d601ab333fe30327ba0dc036298e#3",
+      "value": 0.978169
+    },
+    {
+      "sample_id": "3bfe07e0cc57d601ab333fe30327ba0dc036298e#4",
+      "value": 0.019292
+    },
+    {
+      "sample_id": "590c5673c81c52e21e30be7ab885d7e9f0048d99#0",
+      "value": 0.779055
+    },
+    {
+      "sample_id": "590c5673c81c52e21e30be7ab885d7e9f0048d99#1",
+      "value": 0.751503
+    },
+    {
+      "sample_id": "590c5673c81c52e21e30be7ab885d7e9f0048d99#2",
+      "value": 0.357538
+    },
+    {
+      "sample_id": "590c5673c81c52e21e30be7ab885d7e9f0048d99#3",
+      "value": 0.96507
+    },
+    {
+      "sample_id": "590c5673c81c52e21e30be7ab885d7e9f0048d99#4",
+      "value": 0.021242
+    },
+    {
+      "sample_id": "39ef944b587714485bb10f2b84068db216b39bb2#0",
+      "value": 0.988762
+    },
+    {
+      "sample_id": "39ef944b587714485bb10f2b84068db216b39bb2#1",
+      "value": 0.985806
+    },
+    {
+      "sample_id": "39ef944b587714485bb10f2b84068db216b39bb2#2",
+      "value": 0.973477
+    },
+    {
+      "sample_id": "39ef944b587714485bb10f2b84068db216b39bb2#3",
+      "value": 0.987222
+    },
+    {
+      "sample_id": "39ef944b587714485bb10f2b84068db216b39bb2#4",
+      "value": 0.141096
+    },
+    {
+      "sample_id": "bc57e520b34b77aa4c199d10bf64b58767b588ea#0",
+      "value": 0.980073
+    },
+    {
+      "sample_id": "bc57e520b34b77aa4c199d10bf64b58767b588ea#1",
+      "value": 0.9642
+    },
+    {
+      "sample_id": "bc57e520b34b77aa4c199d10bf64b58767b588ea#2",
+      "value": 0.87209
+    },
+    {
+      "sample_id": "bc57e520b34b77aa4c199d10bf64b58767b588ea#3",
+      "value": 0.968094
+    },
+    {
+      "sample_id": "bc57e520b34b77aa4c199d10bf64b58767b588ea#4",
+      "value": 0.00954
+    },
+    {
+      "sample_id": "2c517137535313d59466c7cc6c94cd46e98030e5#0",
+      "value": 0.980705
+    },
+    {
+      "sample_id": "2c517137535313d59466c7cc6c94cd46e98030e5#1",
+      "value": 0.980561
+    },
+    {
+      "sample_id": "2c517137535313d59466c7cc6c94cd46e98030e5#2",
+      "value": 0.95362
+    },
+    {
+      "sample_id": "2c517137535313d59466c7cc6c94cd46e98030e5#3",
+      "value": 0.974814
+    },
+    {
+      "sample_id": "2c517137535313d59466c7cc6c94cd46e98030e5#4",
+      "value": 0.026838
+    },
+    {
+      "sample_id": "b1f23bd961484edaa46eafe48b1fcc3f4bf02a4e#0",
+      "value": 0.969326
+    },
+    {
+      "sample_id": "b1f23bd961484edaa46eafe48b1fcc3f4bf02a4e#1",
+      "value": 0.969827
+    },
+    {
+      "sample_id": "b1f23bd961484edaa46eafe48b1fcc3f4bf02a4e#2",
+      "value": 0.048246
+    },
+    {
+      "sample_id": "b1f23bd961484edaa46eafe48b1fcc3f4bf02a4e#3",
+      "value": 0.048969
+    },
+    {
+      "sample_id": "b1f23bd961484edaa46eafe48b1fcc3f4bf02a4e#4",
+      "value": 0.027055
+    },
+    {
+      "sample_id": "38259b1f5093cad2bce8d5be557b74a5b8deccd2#0",
+      "value": 0.968651
+    },
+    {
+      "sample_id": "38259b1f5093cad2bce8d5be557b74a5b8deccd2#1",
+      "value": 0.976133
+    },
+    {
+      "sample_id": "38259b1f5093cad2bce8d5be557b74a5b8deccd2#2",
+      "value": 0.190045
+    },
+    {
+      "sample_id": "38259b1f5093cad2bce8d5be557b74a5b8deccd2#3",
+      "value": 0.962132
+    },
+    {
+      "sample_id": "38259b1f5093cad2bce8d5be557b74a5b8deccd2#4",
+      "value": 0.012366
+    },
+    {
+      "sample_id": "113e651a0a484955a0596662185587e648e5ee55#0",
+      "value": 0.693381
+    },
+    {
+      "sample_id": "113e651a0a484955a0596662185587e648e5ee55#1",
+      "value": 0.771704
+    },
+    {
+      "sample_id": "113e651a0a484955a0596662185587e648e5ee55#2",
+      "value": 0.719379
+    },
+    {
+      "sample_id": "113e651a0a484955a0596662185587e648e5ee55#3",
+      "value": 0.812478
+    },
+    {
+      "sample_id": "113e651a0a484955a0596662185587e648e5ee55#4",
+      "value": 0.010861
+    },
+    {
+      "sample_id": "0a4e91187bf6e400437642aba244d0d755a449a6#0",
+      "value": 0.972557
+    },
+    {
+      "sample_id": "0a4e91187bf6e400437642aba244d0d755a449a6#1",
+      "value": 0.940179
+    },
+    {
+      "sample_id": "0a4e91187bf6e400437642aba244d0d755a449a6#2",
+      "value": 0.958846
+    },
+    {
+      "sample_id": "0a4e91187bf6e400437642aba244d0d755a449a6#3",
+      "value": 0.99008
+    },
+    {
+      "sample_id": "0a4e91187bf6e400437642aba244d0d755a449a6#4",
+      "value": 0.016131
+    },
+    {
+      "sample_id": "5bc6298ee39eebe5d8f19e5f015c1180535b6100#0",
+      "value": 0.862422
+    },
+    {
+      "sample_id": "5bc6298ee39eebe5d8f19e5f015c1180535b6100#1",
+      "value": 0.162077
+    },
+    {
+      "sample_id": "5bc6298ee39eebe5d8f19e5f015c1180535b6100#2",
+      "value": 0.940474
+    },
+    {
+      "sample_id": "5bc6298ee39eebe5d8f19e5f015c1180535b6100#3",
+      "value": 0.124475
+    },
+    {
+      "sample_id": "5bc6298ee39eebe5d8f19e5f015c1180535b6100#4",
+      "value": 0.019584
+    },
+    {
+      "sample_id": "578677b3280b0f5ab8b45fdd948707262c9ffed3#0",
+      "value": 0.960144
+    },
+    {
+      "sample_id": "578677b3280b0f5ab8b45fdd948707262c9ffed3#1",
+      "value": 0.827728
+    },
+    {
+      "sample_id": "578677b3280b0f5ab8b45fdd948707262c9ffed3#2",
+      "value": 0.147526
+    },
+    {
+      "sample_id": "578677b3280b0f5ab8b45fdd948707262c9ffed3#3",
+      "value": 0.975185
+    },
+    {
+      "sample_id": "578677b3280b0f5ab8b45fdd948707262c9ffed3#4",
+      "value": 0.810841
+    },
+    {
+      "sample_id": "3bc86ab4ce451b700d60660b1f35da8c0b61ba1e#0",
+      "value": 0.875922
+    },
+    {
+      "sample_id": "3bc86ab4ce451b700d60660b1f35da8c0b61ba1e#1",
+      "value": 0.848006
+    },
+    {
+      "sample_id": "3bc86ab4ce451b700d60660b1f35da8c0b61ba1e#2",
+      "value": 0.484576
+    },
+    {
+      "sample_id": "3bc86ab4ce451b700d60660b1f35da8c0b61ba1e#3",
+      "value": 0.96377
+    },
+    {
+      "sample_id": "3bc86ab4ce451b700d60660b1f35da8c0b61ba1e#4",
+      "value": 0.024585
+    },
+    {
+      "sample_id": "e75d20a454261ca9b2acd2bc128fa3f71261b91e#0",
+      "value": 0.964903
+    },
+    {
+      "sample_id": "e75d20a454261ca9b2acd2bc128fa3f71261b91e#1",
+      "value": 0.975429
+    },
+    {
+      "sample_id": "e75d20a454261ca9b2acd2bc128fa3f71261b91e#2",
+      "value": 0.927785
+    },
+    {
+      "sample_id": "e75d20a454261ca9b2acd2bc128fa3f71261b91e#3",
+      "value": 0.973383
+    },
+    {
+      "sample_id": "e75d20a454261ca9b2acd2bc128fa3f71261b91e#4",
+      "value": 0.023044
+    },
+    {
+      "sample_id": "6376b5504e830e72c0ac87b0bce76dc12261a3a1#0",
+      "value": 0.672887
+    },
+    {
+      "sample_id": "6376b5504e830e72c0ac87b0bce76dc12261a3a1#1",
+      "value": 0.919261
+    },
+    {
+      "sample_id": "6376b5504e830e72c0ac87b0bce76dc12261a3a1#2",
+      "value": 0.750982
+    },
+    {
+      "sample_id": "6376b5504e830e72c0ac87b0bce76dc12261a3a1#3",
+      "value": 0.982946
+    },
+    {
+      "sample_id": "6376b5504e830e72c0ac87b0bce76dc12261a3a1#4",
+      "value": 0.011984
+    },
+    {
+      "sample_id": "1ce80a53eb6aa6bebd05399899d19e79bfd48f90#0",
+      "value": 0.940467
+    },
+    {
+      "sample_id": "1ce80a53eb6aa6bebd05399899d19e79bfd48f90#1",
+      "value": 0.958032
+    },
+    {
+      "sample_id": "1ce80a53eb6aa6bebd05399899d19e79bfd48f90#2",
+      "value": 0.307758
+    },
+    {
+      "sample_id": "1ce80a53eb6aa6bebd05399899d19e79bfd48f90#3",
+      "value": 0.445992
+    },
+    {
+      "sample_id": "1ce80a53eb6aa6bebd05399899d19e79bfd48f90#4",
+      "value": 0.769522
+    },
+    {
+      "sample_id": "0acf50911732154986d754da646757b7c42508cc#0",
+      "value": 0.933114
+    },
+    {
+      "sample_id": "0acf50911732154986d754da646757b7c42508cc#1",
+      "value": 0.922824
+    },
+    {
+      "sample_id": "0acf50911732154986d754da646757b7c42508cc#2",
+      "value": 0.888137
+    },
+    {
+      "sample_id": "0acf50911732154986d754da646757b7c42508cc#3",
+      "value": 0.911366
+    },
+    {
+      "sample_id": "0acf50911732154986d754da646757b7c42508cc#4",
+      "value": 0.019057
+    },
+    {
+      "sample_id": "cc4729e54f5f080dddbeccfb9399c94db4462a95#0",
+      "value": 0.987223
+    },
+    {
+      "sample_id": "cc4729e54f5f080dddbeccfb9399c94db4462a95#1",
+      "value": 0.915733
+    },
+    {
+      "sample_id": "cc4729e54f5f080dddbeccfb9399c94db4462a95#2",
+      "value": 0.673119
+    },
+    {
+      "sample_id": "cc4729e54f5f080dddbeccfb9399c94db4462a95#3",
+      "value": 0.060975
+    },
+    {
+      "sample_id": "cc4729e54f5f080dddbeccfb9399c94db4462a95#4",
+      "value": 0.022237
+    },
+    {
+      "sample_id": "30fe317731be70bc2e1bac6ce4ed9bec162dbc98#0",
+      "value": 0.98206
+    },
+    {
+      "sample_id": "30fe317731be70bc2e1bac6ce4ed9bec162dbc98#1",
+      "value": 0.982222
+    },
+    {
+      "sample_id": "30fe317731be70bc2e1bac6ce4ed9bec162dbc98#2",
+      "value": 0.892068
+    },
+    {
+      "sample_id": "30fe317731be70bc2e1bac6ce4ed9bec162dbc98#3",
+      "value": 0.947639
+    },
+    {
+      "sample_id": "30fe317731be70bc2e1bac6ce4ed9bec162dbc98#4",
+      "value": 0.021825
+    },
+    {
+      "sample_id": "7c56bf8b00e4be69033cdc6a8f3e2c8e825d81f2#0",
+      "value": 0.97125
+    },
+    {
+      "sample_id": "7c56bf8b00e4be69033cdc6a8f3e2c8e825d81f2#1",
+      "value": 0.979736
+    },
+    {
+      "sample_id": "7c56bf8b00e4be69033cdc6a8f3e2c8e825d81f2#2",
+      "value": 0.110612
+    },
+    {
+      "sample_id": "7c56bf8b00e4be69033cdc6a8f3e2c8e825d81f2#3",
+      "value": 0.969736
+    },
+    {
+      "sample_id": "7c56bf8b00e4be69033cdc6a8f3e2c8e825d81f2#4",
+      "value": 0.065026
+    },
+    {
+      "sample_id": "2152ec2ab9cf028cb39a07396a63efb48fb298dd#0",
+      "value": 0.980415
+    },
+    {
+      "sample_id": "2152ec2ab9cf028cb39a07396a63efb48fb298dd#1",
+      "value": 0.978693
+    },
+    {
+      "sample_id": "2152ec2ab9cf028cb39a07396a63efb48fb298dd#2",
+      "value": 0.625853
+    },
+    {
+      "sample_id": "2152ec2ab9cf028cb39a07396a63efb48fb298dd#3",
+      "value": 0.91497
+    },
+    {
+      "sample_id": "2152ec2ab9cf028cb39a07396a63efb48fb298dd#4",
+      "value": 0.013682
+    },
+    {
+      "sample_id": "68883239a433eae74fcb1ecc747d6a14b78fff32#0",
+      "value": 0.970872
+    },
+    {
+      "sample_id": "68883239a433eae74fcb1ecc747d6a14b78fff32#1",
+      "value": 0.966311
+    },
+    {
+      "sample_id": "68883239a433eae74fcb1ecc747d6a14b78fff32#2",
+      "value": 0.9496
+    },
+    {
+      "sample_id": "68883239a433eae74fcb1ecc747d6a14b78fff32#3",
+      "value": 0.976566
+    },
+    {
+      "sample_id": "68883239a433eae74fcb1ecc747d6a14b78fff32#4",
+      "value": 0.047356
+    },
+    {
+      "sample_id": "22e16fad8cfe6ec16e33eec847aaf92935271b41#0",
+      "value": 0.978577
+    },
+    {
+      "sample_id": "22e16fad8cfe6ec16e33eec847aaf92935271b41#1",
+      "value": 0.822323
+    },
+    {
+      "sample_id": "22e16fad8cfe6ec16e33eec847aaf92935271b41#2",
+      "value": 0.535397
+    },
+    {
+      "sample_id": "22e16fad8cfe6ec16e33eec847aaf92935271b41#3",
+      "value": 0.97691
+    },
+    {
+      "sample_id": "22e16fad8cfe6ec16e33eec847aaf92935271b41#4",
+      "value": 0.610418
+    },
+    {
+      "sample_id": "90498052cdb06f288fc43db786343b3a028598e0#0",
+      "value": 0.94464
+    },
+    {
+      "sample_id": "90498052cdb06f288fc43db786343b3a028598e0#1",
+      "value": 0.985352
+    },
+    {
+      "sample_id": "90498052cdb06f288fc43db786343b3a028598e0#2",
+      "value": 0.744597
+    },
+    {
+      "sample_id": "90498052cdb06f288fc43db786343b3a028598e0#3",
+      "value": 0.983054
+    },
+    {
+      "sample_id": "90498052cdb06f288fc43db786343b3a028598e0#4",
+      "value": 0.038056
+    },
+    {
+      "sample_id": "a7f5bd2e1a31cc5b453f5a383b04e309a648f2df#0",
+      "value": 0.977677
+    },
+    {
+      "sample_id": "a7f5bd2e1a31cc5b453f5a383b04e309a648f2df#1",
+      "value": 0.97744
+    },
+    {
+      "sample_id": "a7f5bd2e1a31cc5b453f5a383b04e309a648f2df#2",
+      "value": 0.958497
+    },
+    {
+      "sample_id": "a7f5bd2e1a31cc5b453f5a383b04e309a648f2df#3",
+      "value": 0.989206
+    },
+    {
+      "sample_id": "a7f5bd2e1a31cc5b453f5a383b04e309a648f2df#4",
+      "value": 0.013051
+    },
+    {
+      "sample_id": "d13f1821323a1229f780b2cf8c5659b2c995a34a#0",
+      "value": 0.966598
+    },
+    {
+      "sample_id": "d13f1821323a1229f780b2cf8c5659b2c995a34a#1",
+      "value": 0.946183
+    },
+    {
+      "sample_id": "d13f1821323a1229f780b2cf8c5659b2c995a34a#2",
+      "value": 0.361681
+    },
+    {
+      "sample_id": "d13f1821323a1229f780b2cf8c5659b2c995a34a#3",
+      "value": 0.684628
+    },
+    {
+      "sample_id": "d13f1821323a1229f780b2cf8c5659b2c995a34a#4",
+      "value": 0.100054
+    },
+    {
+      "sample_id": "5588d9eecfe630bbe8ac41600cd377c0bc810670#0",
+      "value": 0.912846
+    },
+    {
+      "sample_id": "5588d9eecfe630bbe8ac41600cd377c0bc810670#1",
+      "value": 0.934326
+    },
+    {
+      "sample_id": "5588d9eecfe630bbe8ac41600cd377c0bc810670#2",
+      "value": 0.123044
+    },
+    {
+      "sample_id": "5588d9eecfe630bbe8ac41600cd377c0bc810670#3",
+      "value": 0.957023
+    },
+    {
+      "sample_id": "5588d9eecfe630bbe8ac41600cd377c0bc810670#4",
+      "value": 0.017201
+    },
+    {
+      "sample_id": "f2fc9b0cdf763a3762e3580214ffbdd9c2c15895#0",
+      "value": 0.922253
+    },
+    {
+      "sample_id": "f2fc9b0cdf763a3762e3580214ffbdd9c2c15895#1",
+      "value": 0.959278
+    },
+    {
+      "sample_id": "f2fc9b0cdf763a3762e3580214ffbdd9c2c15895#2",
+      "value": 0.928163
+    },
+    {
+      "sample_id": "f2fc9b0cdf763a3762e3580214ffbdd9c2c15895#3",
+      "value": 0.854632
+    },
+    {
+      "sample_id": "f2fc9b0cdf763a3762e3580214ffbdd9c2c15895#4",
+      "value": 0.027786
+    },
+    {
+      "sample_id": "e1532b5d4b83d557c234758ba657ac9458b91d0b#0",
+      "value": 0.959426
+    },
+    {
+      "sample_id": "e1532b5d4b83d557c234758ba657ac9458b91d0b#1",
+      "value": 0.966356
+    },
+    {
+      "sample_id": "e1532b5d4b83d557c234758ba657ac9458b91d0b#2",
+      "value": 0.09547
+    },
+    {
+      "sample_id": "e1532b5d4b83d557c234758ba657ac9458b91d0b#3",
+      "value": 0.965126
+    },
+    {
+      "sample_id": "e1532b5d4b83d557c234758ba657ac9458b91d0b#4",
+      "value": 0.098407
+    },
+    {
+      "sample_id": "12c2634bbf927f28fcb4208cb01455d32a6c5d70#0",
+      "value": 0.920444
+    },
+    {
+      "sample_id": "12c2634bbf927f28fcb4208cb01455d32a6c5d70#1",
+      "value": 0.936431
+    },
+    {
+      "sample_id": "12c2634bbf927f28fcb4208cb01455d32a6c5d70#2",
+      "value": 0.029825
+    },
+    {
+      "sample_id": "12c2634bbf927f28fcb4208cb01455d32a6c5d70#3",
+      "value": 0.494686
+    },
+    {
+      "sample_id": "12c2634bbf927f28fcb4208cb01455d32a6c5d70#4",
+      "value": 0.447872
+    },
+    {
+      "sample_id": "30d6fa71c77ac790d814357addb45a31c27ee2a7#0",
+      "value": 0.974377
+    },
+    {
+      "sample_id": "30d6fa71c77ac790d814357addb45a31c27ee2a7#1",
+      "value": 0.968427
+    },
+    {
+      "sample_id": "30d6fa71c77ac790d814357addb45a31c27ee2a7#2",
+      "value": 0.13667
+    },
+    {
+      "sample_id": "30d6fa71c77ac790d814357addb45a31c27ee2a7#3",
+      "value": 0.499036
+    },
+    {
+      "sample_id": "30d6fa71c77ac790d814357addb45a31c27ee2a7#4",
+      "value": 0.01437
+    },
+    {
+      "sample_id": "5db0808085f7b1621f490b2bc4bf856aae310e6c#0",
+      "value": 0.982271
+    },
+    {
+      "sample_id": "5db0808085f7b1621f490b2bc4bf856aae310e6c#1",
+      "value": 0.973916
+    },
+    {
+      "sample_id": "5db0808085f7b1621f490b2bc4bf856aae310e6c#2",
+      "value": 0.870677
+    },
+    {
+      "sample_id": "5db0808085f7b1621f490b2bc4bf856aae310e6c#3",
+      "value": 0.971257
+    },
+    {
+      "sample_id": "5db0808085f7b1621f490b2bc4bf856aae310e6c#4",
+      "value": 0.031513
+    },
+    {
+      "sample_id": "7c9201a07ffd4647e3c37af77b69571e0fad1c45#0",
+      "value": 0.965796
+    },
+    {
+      "sample_id": "7c9201a07ffd4647e3c37af77b69571e0fad1c45#1",
+      "value": 0.94647
+    },
+    {
+      "sample_id": "7c9201a07ffd4647e3c37af77b69571e0fad1c45#2",
+      "value": 0.499031
+    },
+    {
+      "sample_id": "7c9201a07ffd4647e3c37af77b69571e0fad1c45#3",
+      "value": 0.024871
+    },
+    {
+      "sample_id": "7c9201a07ffd4647e3c37af77b69571e0fad1c45#4",
+      "value": 0.100471
+    },
+    {
+      "sample_id": "ac45385d07d6a241c11b45cfaa2bb5daea79ad7c#0",
+      "value": 0.937841
+    },
+    {
+      "sample_id": "ac45385d07d6a241c11b45cfaa2bb5daea79ad7c#1",
+      "value": 0.965157
+    },
+    {
+      "sample_id": "ac45385d07d6a241c11b45cfaa2bb5daea79ad7c#2",
+      "value": 0.703132
+    },
+    {
+      "sample_id": "ac45385d07d6a241c11b45cfaa2bb5daea79ad7c#3",
+      "value": 0.808395
+    },
+    {
+      "sample_id": "ac45385d07d6a241c11b45cfaa2bb5daea79ad7c#4",
+      "value": 0.017796
+    },
+    {
+      "sample_id": "e2ad106b9af692af7243687450f9aa2000cc2b65#0",
+      "value": 0.988202
+    },
+    {
+      "sample_id": "e2ad106b9af692af7243687450f9aa2000cc2b65#1",
+      "value": 0.056704
+    },
+    {
+      "sample_id": "e2ad106b9af692af7243687450f9aa2000cc2b65#2",
+      "value": 0.815294
+    },
+    {
+      "sample_id": "e2ad106b9af692af7243687450f9aa2000cc2b65#3",
+      "value": 0.031077
+    },
+    {
+      "sample_id": "e2ad106b9af692af7243687450f9aa2000cc2b65#4",
+      "value": 0.007912
+    },
+    {
+      "sample_id": "5098ad46a747258d1ff1d2d976929b3c01bcb5ab#0",
+      "value": 0.980401
+    },
+    {
+      "sample_id": "5098ad46a747258d1ff1d2d976929b3c01bcb5ab#1",
+      "value": 0.976317
+    },
+    {
+      "sample_id": "5098ad46a747258d1ff1d2d976929b3c01bcb5ab#2",
+      "value": 0.542537
+    },
+    {
+      "sample_id": "5098ad46a747258d1ff1d2d976929b3c01bcb5ab#3",
+      "value": 0.964667
+    },
+    {
+      "sample_id": "5098ad46a747258d1ff1d2d976929b3c01bcb5ab#4",
+      "value": 0.477775
+    },
+    {
+      "sample_id": "6009e3e47232dca9ecaf3b88c4a55897695d1781#0",
+      "value": 0.969295
+    },
+    {
+      "sample_id": "6009e3e47232dca9ecaf3b88c4a55897695d1781#1",
+      "value": 0.967976
+    },
+    {
+      "sample_id": "6009e3e47232dca9ecaf3b88c4a55897695d1781#2",
+      "value": 0.838876
+    },
+    {
+      "sample_id": "6009e3e47232dca9ecaf3b88c4a55897695d1781#3",
+      "value": 0.952668
+    },
+    {
+      "sample_id": "6009e3e47232dca9ecaf3b88c4a55897695d1781#4",
+      "value": 0.642846
+    },
+    {
+      "sample_id": "1b884cf6cb5180ea2143142d0a0b30f352865bd9#0",
+      "value": 0.901772
+    },
+    {
+      "sample_id": "1b884cf6cb5180ea2143142d0a0b30f352865bd9#1",
+      "value": 0.559317
+    },
+    {
+      "sample_id": "1b884cf6cb5180ea2143142d0a0b30f352865bd9#2",
+      "value": 0.591286
+    },
+    {
+      "sample_id": "1b884cf6cb5180ea2143142d0a0b30f352865bd9#3",
+      "value": 0.951815
+    },
+    {
+      "sample_id": "1b884cf6cb5180ea2143142d0a0b30f352865bd9#4",
+      "value": 0.013751
+    },
+    {
+      "sample_id": "4b6fac08220c82c5e6889491c5bc3c1e6bc2e365#0",
+      "value": 0.983707
+    },
+    {
+      "sample_id": "4b6fac08220c82c5e6889491c5bc3c1e6bc2e365#1",
+      "value": 0.978517
+    },
+    {
+      "sample_id": "4b6fac08220c82c5e6889491c5bc3c1e6bc2e365#2",
+      "value": 0.978743
+    },
+    {
+      "sample_id": "4b6fac08220c82c5e6889491c5bc3c1e6bc2e365#3",
+      "value": 0.970507
+    },
+    {
+      "sample_id": "4b6fac08220c82c5e6889491c5bc3c1e6bc2e365#4",
+      "value": 0.103735
+    },
+    {
+      "sample_id": "4cf2516658bb8e0a9006d900fe328f2ee06ad731#0",
+      "value": 0.972434
+    },
+    {
+      "sample_id": "4cf2516658bb8e0a9006d900fe328f2ee06ad731#1",
+      "value": 0.968905
+    },
+    {
+      "sample_id": "4cf2516658bb8e0a9006d900fe328f2ee06ad731#2",
+      "value": 0.014811
+    },
+    {
+      "sample_id": "4cf2516658bb8e0a9006d900fe328f2ee06ad731#3",
+      "value": 0.980101
+    },
+    {
+      "sample_id": "4cf2516658bb8e0a9006d900fe328f2ee06ad731#4",
+      "value": 0.982295
+    },
+    {
+      "sample_id": "a46999dfdea9a9ceec5229b1931f14e19297ec86#0",
+      "value": 0.988029
+    },
+    {
+      "sample_id": "a46999dfdea9a9ceec5229b1931f14e19297ec86#1",
+      "value": 0.989704
+    },
+    {
+      "sample_id": "a46999dfdea9a9ceec5229b1931f14e19297ec86#2",
+      "value": 0.979353
+    },
+    {
+      "sample_id": "a46999dfdea9a9ceec5229b1931f14e19297ec86#3",
+      "value": 0.986167
+    },
+    {
+      "sample_id": "a46999dfdea9a9ceec5229b1931f14e19297ec86#4",
+      "value": 0.013359
+    }
+  ],
+  "summary_level": {
+    "dimensions": [
+      {
+        "name": "coherence",
+        "spearman": 0,
+        "pearson": 0,
+        "kendall_tau": 0
+      },
+      {
+        "name": "consistency",
+        "spearman": 0.5452595530884918,
+        "pearson": 0.5599359389024009,
+        "kendall_tau": 0.42334759193530813,
+        "spearman_ci": {
+          "low": 0.5078129435440387,
+          "high": 0.5855065623459821
+        },
+        "pearson_ci": {
+          "low": 0.5131338731560856,
+          "high": 0.6038195474416614
+        },
+        "kendall_tau_ci": {
+          "low": 0.3924789812672919,
+          "high": 0.4564568353030057
+        }
+      },
+      {
+        "name": "fluency",
+        "spearman": 0,
+        "pearson": 0,
+        "kendall_tau": 0
+      },
+      {
+        "name": "relevance",
+        "spearman": 0,
+        "pearson": 0,
+        "kendall_tau": 0
+      }
+    ]
+  },
+  "system_level": {
+    "dimensions": [
+      {
+        "name": "coherence",
+        "spearman": 0,
+        "pearson": 0,
+        "kendall_tau": 0
+      },
+      {
+        "name": "consistency",
+        "spearman": 0.9,
+        "pearson": 0.9691159666265822,
+        "kendall_tau": 0.8,
+        "spearman_ci": {
+          "low": 0.1111111111111111,
+          "high": 1
+        },
+        "pearson_ci": {
+          "low": 0.5244262411895457,
+          "high": 0.9999999999999996
+        },
+        "kendall_tau_ci": {
+          "low": 0,
+          "high": 1
+        }
+      },
+      {
+        "name": "fluency",
+        "spearman": 0,
+        "pearson": 0,
+        "kendall_tau": 0
+      },
+      {
+        "name": "relevance",
+        "spearman": 0,
+        "pearson": 0,
+        "kendall_tau": 0
+      }
+    ]
+  }
+}

@@ -15,6 +15,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"io/fs"
 	"log"
 	"os"
 	"path/filepath"
@@ -23,20 +24,24 @@ import (
 
 	"github.com/mikolajsemeniuk/llmbench/pkg/dataset"
 	"github.com/mikolajsemeniuk/llmbench/pkg/eval"
+	"github.com/mikolajsemeniuk/llmbench/pkg/metrics"
 )
 
 // ── Configuration ──────────────────────────────────────────────────────
 
 var (
-	inputDir  string
-	output    string
-	target    string
-	baselines string
-	bootstrap int
-	level     string
-	seed      uint64
-	fdrAlpha  float64
-	docSplit  string
+	inputDir    string
+	output      string
+	target      string
+	baselines   string
+	bootstrap   int
+	level       string
+	seed        uint64
+	fdrAlpha    float64
+	docSplit    string
+	datasetPath string
+	dimsFlag    string
+	partial     bool
 )
 
 var dimensions = []string{"coherence", "consistency", "fluency", "relevance"}
@@ -109,7 +114,11 @@ func main() {
 		"Benjamini-Hochberg false-discovery rate for the family of (baseline, dimension) tests")
 	flag.StringVar(&docSplit, "doc-split", "all",
 		"compare on all|first50|last50 articles (dataset order); use last50 for a metric calibrated on first50")
+	flag.StringVar(&datasetPath, "dataset", "", "path to a dataset JSONL in SummEval layout (default: embedded SummEval)")
+	flag.StringVar(&dimsFlag, "dims", strings.Join(dimensions, ","), "comma-separated dimensions to evaluate (a transfer corpus annotates only one)")
+	flag.BoolVar(&partial, "partial", false, "compare copy-partialled Spearman (bigram copy rate, as in cmd/confound) instead of raw")
 	flag.Parse()
+	dimensions = splitCSV(dimsFlag)
 
 	if target == "" {
 		log.Fatal("--metric is required (e.g. -metric mymetric)")
@@ -126,7 +135,11 @@ func main() {
 		log.Fatal("no baselines specified")
 	}
 
-	samples, err := eval.NewDataset(dataset.Summeval, dataset.SummevalDefaultPath, 0)
+	fsys, path := fs.FS(dataset.Summeval), dataset.SummevalDefaultPath
+	if datasetPath != "" {
+		fsys, path = os.DirFS(filepath.Dir(datasetPath)), filepath.Base(datasetPath)
+	}
+	samples, err := eval.NewDataset(fsys, path, 0)
 	if err != nil {
 		log.Fatalf("load dataset: %v", err)
 	}
@@ -148,6 +161,18 @@ func main() {
 		baselineEntries = append(baselineEntries, baselineEntry{key: name, scoresByDim: bl})
 	}
 
+	// With -partial every correlation is the Spearman correlation with the
+	// bigram copy rate partialled out (the cmd/confound axis).
+	var copyRate []float64
+	if partial {
+		if level != "summary" {
+			log.Fatal("-partial needs -level summary")
+		}
+		for _, s := range samples {
+			copyRate = append(copyRate, metrics.CopyRate(s.Document, s.Candidate))
+		}
+	}
+
 	cells := make([]comparisonCell, 0, len(baselineEntries)*len(dimensions))
 	for _, b := range baselineEntries {
 		for _, dim := range dimensions {
@@ -159,7 +184,12 @@ func main() {
 			var comp eval.PairedComparison
 			var targetRho, baseRho float64
 
-			if level == "summary" {
+			if partial {
+				comp = eval.PairedBootstrapPartial(samples, targetScores, baseScores, human,
+					copyRate, bootstrap, seed)
+				targetRho = eval.PartialSpearman(targetScores, human, copyRate)
+				baseRho = eval.PartialSpearman(baseScores, human, copyRate)
+			} else if level == "summary" {
 				comp = eval.PairedBootstrap(samples, targetScores, baseScores, human,
 					fn, bootstrap, seed)
 				targetRho = fn(targetScores, human)
@@ -434,6 +464,9 @@ func renderLatex(target string, baselines []baselineEntry, cells []comparisonCel
 	fmt.Fprintln(&b, `\centering`)
 
 	levelLabel := "summary-level"
+	if partial {
+		levelLabel = "copy-partialled summary-level"
+	}
 	if level == "system" {
 		levelLabel = "system-level"
 	}

@@ -16,6 +16,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"io/fs"
 	"log"
 	"os"
 	"os/signal"
@@ -29,6 +30,7 @@ import (
 )
 
 var (
+	input       string
 	output      string
 	ablationDir string
 	host        string
@@ -38,6 +40,7 @@ var (
 )
 
 func main() {
+	flag.StringVar(&input, "input", "", "path to a dataset JSONL in SummEval layout (default: embedded SummEval)")
 	flag.StringVar(&output, "output", "output/nlig.json", "canonical report")
 	flag.StringVar(&ablationDir, "ablation-dir", "ablation", "directory for ablation variants and the raw dump (empty = skip)")
 	flag.StringVar(&host, "host", "http://localhost:9200", "model server host")
@@ -49,7 +52,11 @@ func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
 
-	samples, err := eval.NewDataset(dataset.Summeval, dataset.SummevalDefaultPath, n)
+	fsys, path := fs.FS(dataset.Summeval), dataset.SummevalDefaultPath
+	if input != "" {
+		fsys, path = os.DirFS(filepath.Dir(input)), filepath.Base(input)
+	}
+	samples, err := eval.NewDataset(fsys, path, n)
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -158,6 +158,18 @@ func Spearman(x, y []float64) float64 {
 	return Pearson(ranks(x), ranks(y))
 }
 
+// PartialSpearman is the rank partial correlation of x and y given z:
+// the Spearman correlation that survives after the component each shares
+// with z is removed.
+func PartialSpearman(x, y, z []float64) float64 {
+	rxy, rxz, ryz := Spearman(x, y), Spearman(x, z), Spearman(y, z)
+	den := math.Sqrt((1 - rxz*rxz) * (1 - ryz*ryz))
+	if den == 0 {
+		return 0
+	}
+	return (rxy - rxz*ryz) / den
+}
+
 func KendallTau(x, y []float64) float64 {
 	n := len(x)
 	if n != len(y) || n < 2 {

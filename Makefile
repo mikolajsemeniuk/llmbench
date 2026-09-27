@@ -370,5 +370,53 @@ benchmark-lncf:
 # Pareto table with every GPU metric timed on the same machine (gb10/).
 .PHONY: paper-lncf
 paper-lncf:
-	go run ./cmd/compare -metric lncf -doc-split last50 -baselines unieval,geval,lnc,ccmd,lgs,bertscore,gptscore,bartscore,lead5sent -bootstrap 5000 -output paper/lncf_comparisons.gen.tex
+	go run ./cmd/compare -metric lncf -doc-split last50 -baselines unieval,geval,alignscore,lnc,ccmd,lgs,bertscore,gptscore,bartscore,lead5sent -bootstrap 5000 -output paper/lncf_comparisons.gen.tex
 	go run ./cmd/confound -input output -cost-dir gb10 -bootstrap 2000 -ours lncf -output paper/lncf_confound_gb10.gen.tex
+
+# Transfer of LNC-fast to FRANK and RoSE with the frozen SummEval
+# calibration (protocol and success criterion fixed in README before any
+# run). transfer-data writes data/<corpus>.jsonl in SummEval layout;
+# benchmark-transfer scores each corpus into output/<corpus>/. Start the
+# model server with CCM_DTYPE=bfloat16, as for benchmark-lncf.
+TRANSFER = frank_cnndm:consistency frank_xsum:consistency rose_cnndm:relevance
+
+.PHONY: transfer-data
+transfer-data:
+	python3 data/prepare.py
+
+.PHONY: benchmark-transfer
+benchmark-transfer:
+	for t in $(TRANSFER); do $(MAKE) transfer-one CORPUS=$${t%:*} DIM=$${t#*:} || exit 1; done
+
+.PHONY: transfer-one
+transfer-one:
+	go run ./cmd/lnc -input data/$(CORPUS).jsonl -fit=false -k 4 -nli-topk 4 -name lncf -calibration ablation/lncf_calibration.json -output-dim-dir output/$(CORPUS) -ablation-dir ablation/$(CORPUS)
+	go run ./cmd/nlig -input data/$(CORPUS).jsonl -output output/$(CORPUS)/nlig.json -ablation-dir ""
+	go run ./cmd/lgs -input data/$(CORPUS).jsonl -lead-bias-lambda $(LGS_LAMBDA) -output output/$(CORPUS)/lgs.json
+	go run ./cmd/leadbaseline -input data/$(CORPUS).jsonl -lead-k 3 -output output/$(CORPUS)/lead3sent.json
+	go run ./cmd/leadbaseline -input data/$(CORPUS).jsonl -lead-k 5 -output output/$(CORPUS)/lead5sent.json
+	go run ./cmd/unieval -input data/$(CORPUS).jsonl -dimension $(DIM) -output output/$(CORPUS)/unieval_$(DIM).json
+	go run ./cmd/geval -input data/$(CORPUS).jsonl -dimension $(DIM) -runs 1 -temperature 0 -output output/$(CORPUS)/geval_$(DIM).json
+
+# AlignScore-large, the published reference-free consistency baseline, on
+# SummEval and every transfer corpus. Needs the weights converted once by
+# cmd/modelsrv/alignscore_convert.py (safetensors, never unpickled).
+.PHONY: benchmark-alignscore
+benchmark-alignscore:
+	go run ./cmd/alignscore -output output/alignscore.json
+	for t in $(TRANSFER); do c=$${t%:*}; go run ./cmd/alignscore -input data/$$c.jsonl -output output/$$c/alignscore.json || exit 1; done
+
+.PHONY: paper-transfer
+paper-transfer:
+	for t in $(TRANSFER); do c=$${t%:*}; d=$${t#*:}; \
+		go run ./cmd/compare -dataset data/$$c.jsonl -input output/$$c -dims $$d -partial -metric lncf -baselines alignscore,nlig,lgs,lead3sent,lead5sent,unieval,geval -bootstrap 5000 -output paper/transfer_$${c}_comparisons.gen.tex || exit 1; \
+		go run ./cmd/confound -input output/$$c -dataset data/$$c.jsonl -dims $$d -bootstrap 2000 -ours lncf -output paper/transfer_$${c}_confound.gen.tex || exit 1; \
+	done
+
+# How much of LNC's held-out SummEval result is the canonical split, the
+# systems it was fitted on, and the ridge protocol itself (random article
+# splits, system-disjoint splits, the same ridge over existing metrics).
+# Reads the feature dump and output/*.json only.
+.PHONY: paper-lncrobust
+paper-lncrobust:
+	go run ./cmd/lncrobust -features ablation/lncf_features.json -output paper/lnc_robust.gen.tex

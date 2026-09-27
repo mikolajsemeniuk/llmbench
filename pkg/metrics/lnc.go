@@ -99,9 +99,14 @@ func FitLNC(X [][]float64, human map[string][]float64, copyRate []float64, alpha
 	}
 	p := len(X[0])
 	cal := &LNCCalibration{
-		Features: LNCFeatures, Mu: make([]float64, p), Sigma: make([]float64, p),
+		Mu: make([]float64, p), Sigma: make([]float64, p),
 		Alpha: alpha, Weights: map[string][]float64{}, FitOn: fitOn,
 		Debiased: copyRate != nil,
+	}
+	// FitLNC also fits control composites over other signals
+	// (cmd/lncrobust); only an LNC fit carries the LNC feature names.
+	if p == len(LNCFeatures) {
+		cal.Features = LNCFeatures
 	}
 	var q []float64
 	if copyRate != nil {
@@ -118,7 +123,7 @@ func FitLNC(X [][]float64, human map[string][]float64, copyRate []float64, alpha
 		}
 		cal.Sigma[j] = math.Sqrt(cal.Sigma[j] / n)
 		if cal.Sigma[j] == 0 {
-			return nil, fmt.Errorf("lnc: feature %s is constant on the fit split", LNCFeatures[j])
+			return nil, fmt.Errorf("lnc: feature %d is constant on the fit split", j)
 		}
 	}
 	Z := make([][]float64, len(X))

@@ -1,0 +1,27 @@
+\begin{table*}[t]
+\centering
+\caption{Paired bootstrap comparison of lncf against baselines on copy-partialled summary-level Spearman correlations. Each cell reports $\Delta\rho$ (ours minus baseline) with 95\% CI in brackets, the raw two-sided $p$-value, and $q$, the Benjamini-Hochberg adjusted $p$-value over all 7 (baseline, dimension) cells of this table. Bold marks improvements that survive the correction ($q<0.05$ and CI excludes 0).}
+\label{tab:compare_lncf_summary}
+\small
+\linespread{1}\selectfont
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lc@{}}
+\toprule
+Baseline & Con \\
+\midrule
+alignscore & \begin{tabular}[t]{@{}c@{}}-.013\\{\scriptsize [-.061, +.034]}\\{\scriptsize $p$=0.605}\\{\scriptsize $q$=0.605}\end{tabular} \\
+\addlinespace[3pt]
+nlig & \begin{tabular}[t]{@{}c@{}}+.025\\{\scriptsize [-.019, +.070]}\\{\scriptsize $p$=0.267}\\{\scriptsize $q$=0.468}\end{tabular} \\
+\addlinespace[3pt]
+LGS & \begin{tabular}[t]{@{}c@{}}\textbf{+.174}\\{\scriptsize [+.090, +.255]}\\{\scriptsize $p<.001$}\\{\scriptsize $q<.001$}\end{tabular} \\
+\addlinespace[3pt]
+lead3sent & \begin{tabular}[t]{@{}c@{}}\textbf{+.226}\\{\scriptsize [+.152, +.298]}\\{\scriptsize $p<.001$}\\{\scriptsize $q<.001$}\end{tabular} \\
+\addlinespace[3pt]
+lead5sent & \begin{tabular}[t]{@{}c@{}}\textbf{+.198}\\{\scriptsize [+.121, +.272]}\\{\scriptsize $p<.001$}\\{\scriptsize $q<.001$}\end{tabular} \\
+\addlinespace[3pt]
+UniEval & \begin{tabular}[t]{@{}c@{}}+.017\\{\scriptsize [-.042, +.071]}\\{\scriptsize $p$=0.550}\\{\scriptsize $q$=0.605}\end{tabular} \\
+\addlinespace[3pt]
+G-Eval & \begin{tabular}[t]{@{}c@{}}+.016\\{\scriptsize [-.047, +.076]}\\{\scriptsize $p$=0.594}\\{\scriptsize $q$=0.605}\end{tabular} \\
+\bottomrule
+\end{tabular}
+\end{table*}

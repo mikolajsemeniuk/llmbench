@@ -17,6 +17,7 @@ Endpoints:
     POST /ccm            — source-conditioned sequence log-likelihoods (small causal LM)
     POST /tokenlogprobs  — per-token log-likelihoods + char offsets (SPL)
     POST /nli            — premise x hypothesis entailment matrix (DeBERTa-v3 NLI)
+    POST /alignscore     — AlignScore-large, nli_sp mode (weights from alignscore_convert.py)
     GET  /health         — health check + loaded models
 """
 
@@ -678,6 +679,90 @@ def _nli_probs(pairs, tokenizer, model, order):
             probs = torch.softmax(model(**enc).logits.float(), dim=-1)[:, order]
         out.extend(probs.cpu().tolist())
     return out
+
+
+# ── AlignScore ─────────────────────────────────────────────────────────
+#
+# AlignScore-large (Zha et al., ACL 2023), "nli_sp" mode as in the
+# official inference code: the source is cut into chunks of ~350 words
+# (whole sentences), every summary sentence is scored against every
+# chunk with the 3-way head, P(aligned) is maxed over chunks and averaged
+# over summary sentences. Sentence splitting is done by the caller
+# (pkg/metrics SplitSentences) instead of NLTK. Weights come from
+# alignscore_convert.py (safetensors, never unpickled).
+
+ALIGNSCORE_WEIGHTS = os.environ.get(
+    "ALIGNSCORE_WEIGHTS",
+    os.path.expanduser("~/.cache/llmbench/alignscore-large.safetensors"),
+)
+ALIGNSCORE_BATCH = int(os.environ.get("ALIGNSCORE_BATCH", "32"))
+
+
+def get_alignscore_model():
+    if "alignscore_model" not in _cache:
+        logger.info("Loading AlignScore-large...")
+        from safetensors.torch import load_file
+        from transformers import AutoTokenizer, RobertaConfig, RobertaModel
+
+        state = load_file(ALIGNSCORE_WEIGHTS)
+        enc = RobertaModel(RobertaConfig.from_pretrained("roberta-large"))
+        missing, unexpected = enc.load_state_dict(
+            {k[len("base_model.") :]: v for k, v in state.items() if k.startswith("base_model.")},
+            strict=False,
+        )
+        # position_ids is a non-persistent buffer in current transformers.
+        unexpected = [k for k in unexpected if not k.endswith("position_ids")]
+        if missing or unexpected:
+            raise RuntimeError(f"AlignScore weights: missing {missing}, unexpected {unexpected}")
+        head = torch.nn.Linear(enc.config.hidden_size, 3)
+        head.load_state_dict({"weight": state["tri_layer.weight"], "bias": state["tri_layer.bias"]})
+        _cache["alignscore_tokenizer"] = AutoTokenizer.from_pretrained("roberta-large")
+        _cache["alignscore_model"] = (enc.to(DEVICE).eval(), head.to(DEVICE).eval())
+        logger.info("AlignScore loaded.")
+    return _cache["alignscore_tokenizer"], _cache["alignscore_model"]
+
+
+@app.route("/alignscore", methods=["POST"])
+def alignscore():
+    """
+    Request:  {"source_sents": [str], "candidates": [[str, ...], ...]}
+              (source and every candidate already split into sentences)
+    Response: {"scores": [float]}   one AlignScore per candidate
+    """
+    data = request.json
+    src = data.get("source_sents") or []
+    cands = data.get("candidates") or []
+    if not src or not cands:
+        return jsonify({"error": "source_sents and candidates required"}), 400
+
+    tokenizer, (enc, head) = get_alignscore_model()
+    n_chunk = len(" ".join(src).split()) // 350 + 1
+    per = max(len(src) // n_chunk, 1)
+    chunks = [" ".join(src[i : i + per]) for i in range(0, len(src), per)]
+
+    pairs = [(c, h) for sents in cands for h in (sents or [""]) for c in chunks]
+    probs = []
+    with torch.no_grad():
+        for b in range(0, len(pairs), ALIGNSCORE_BATCH):
+            chunk = pairs[b : b + ALIGNSCORE_BATCH]
+            x = tokenizer(
+                [p for p, _ in chunk],
+                [h for _, h in chunk],
+                return_tensors="pt",
+                padding=True,
+                truncation="only_first",
+                max_length=512,
+            ).to(DEVICE)
+            logits = head(enc(**x).pooler_output)
+            probs.extend(torch.softmax(logits.float(), dim=-1)[:, 0].cpu().tolist())
+
+    scores, j = [], 0
+    for sents in cands:
+        n = max(len(sents), 1)
+        m = np.array(probs[j : j + n * len(chunks)]).reshape(n, len(chunks))
+        scores.append(float(m.max(axis=1).mean()))
+        j += n * len(chunks)
+    return jsonify({"scores": scores})
 
 
 # ── Health ─────────────────────────────────────────────────────────────

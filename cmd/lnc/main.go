@@ -43,6 +43,7 @@ import (
 )
 
 var (
+	input        string
 	outputDimDir string
 	ablationDir  string
 	calPath      string
@@ -61,6 +62,7 @@ var (
 var dims = []string{"coherence", "consistency", "fluency", "relevance"}
 
 func main() {
+	flag.StringVar(&input, "input", "", "path to a dataset JSONL in SummEval layout (default: embedded SummEval)")
 	flag.StringVar(&outputDimDir, "output-dim-dir", "output", "directory for lnc_<dim>.json")
 	flag.StringVar(&ablationDir, "ablation-dir", "ablation", "directory for the feature dump")
 	flag.StringVar(&calPath, "calibration", "ablation/lnc_calibration.json", "calibration file (written with -fit, read without)")
@@ -79,7 +81,11 @@ func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
 
-	samples, err := eval.NewDataset(dataset.Summeval, dataset.SummevalDefaultPath, 0)
+	fsys, path := fs.FS(dataset.Summeval), dataset.SummevalDefaultPath
+	if input != "" {
+		fsys, path = os.DirFS(filepath.Dir(input)), filepath.Base(input)
+	}
+	samples, err := eval.NewDataset(fsys, path, 0)
 	if err != nil {
 		log.Fatal(err)
 	}
