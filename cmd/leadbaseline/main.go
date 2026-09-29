@@ -34,7 +34,6 @@ import (
 	"flag"
 	"fmt"
 	"log"
-	"os"
 	"path/filepath"
 	"time"
 
@@ -44,19 +43,19 @@ import (
 )
 
 var (
-	input      string
-	output     string
-	leadK      int
-	mode       string
-	minSentLen int
-	docSplit   string
-	n          int
-	bootstrap  int
+	datasetName string
+	output      string
+	leadK       int
+	mode        string
+	minSentLen  int
+	docSplit    string
+	n           int
+	bootstrap   int
 )
 
 func main() {
-	flag.StringVar(&input, "input", "", "path to dataset JSON/JSONL file")
-	flag.StringVar(&output, "output", "", "write results to file (default: output/lead<k><mode>.json)")
+	flag.StringVar(&datasetName, "dataset", dataset.Default, "embedded corpus in pkg/dataset: summeval|frank_cnndm|frank_xsum|rose_cnndm")
+	flag.StringVar(&output, "output", "", "write results to file (default: output/<dataset>/lead<k><mode>.json)")
 	flag.IntVar(&leadK, "lead-k", 3, "number of leading source sentences to keep")
 	flag.StringVar(&mode, "mode", "sent", "matching mode: sent (mean-of-max over sentences) | whole (single block)")
 	flag.IntVar(&minSentLen, "min-sent-len", 4, "drop sentences shorter than this many runes (matches cmd/lgs)")
@@ -77,17 +76,10 @@ func main() {
 		log.Fatalf("-doc-split must be all|first50|last50, got %q", docSplit)
 	}
 	if output == "" {
-		output = fmt.Sprintf("output/lead%d%s.json", leadK, mode)
+		output = filepath.Join(eval.OutputDir(datasetName), fmt.Sprintf("lead%d%s.json", leadK, mode))
 	}
 
-	fsys := os.DirFS(filepath.Dir(input))
-	path := filepath.Base(input)
-	if input == "" {
-		fsys = dataset.Summeval
-		path = dataset.SummevalDefaultPath
-	}
-
-	samples, err := eval.NewDataset(fsys, path, n)
+	samples, err := eval.LoadDataset(datasetName, n)
 	if err != nil {
 		log.Fatal(err)
 	}

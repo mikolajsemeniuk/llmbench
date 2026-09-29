@@ -422,12 +422,12 @@ CCM_MODEL = os.environ.get("CCM_MODEL", "Qwen/Qwen2.5-1.5B")
 CCM_BATCH = int(os.environ.get("CCM_BATCH", "48"))
 CCM_HEAD_ROWS = int(os.environ.get("CCM_HEAD_ROWS", "4"))
 CCM_MAX_SOURCE_TOKENS = int(os.environ.get("CCM_MAX_SOURCE_TOKENS", "3072"))
-# float32 weights by default: in bf16 the batched, padded continuation
-# pass drifts ~0.1 nats from a plain full forward, which is the same
-# order as small margins. Matmuls run in TF32 inside the CCM call only
-# (drift ~0.003 nats, ~3x faster on Ampere+). CCM_DTYPE=bfloat16 trades
-# precision for another ~2x.
-CCM_DTYPE = os.environ.get("CCM_DTYPE", "float32")
+# bfloat16 weights by default, the LNC configuration, so every LM signal
+# (CCM, PSC, SPL, LNC) comes from the same model. In bf16 the batched,
+# padded continuation pass drifts ~0.1 nats from a plain full forward;
+# the LNC ridge absorbs that. CCM_DTYPE=float32 (with TF32 matmuls,
+# ~0.003 nats) is ~2x slower and matters only for single small margins.
+CCM_DTYPE = os.environ.get("CCM_DTYPE", "bfloat16")
 CCM_PREFIX = "Article:\n{source}\n\nSummary:\n"
 CCM_UNCOND_PREFIX = "Summary:\n"
 
@@ -773,11 +773,15 @@ def health():
     loaded = sorted(
         set(k.replace("_tokenizer", "").replace("_model", "") for k in _cache.keys())
     )
+    # Every model warmup() loads; status is "ok" only once all of them are in.
+    expected = ["alignscore", "bartscore", "bertscore", "ccm", "gptscore", "mover", "nli", "unieval"]
+    missing = [m for m in expected if m not in loaded]
     return jsonify(
         {
-            "status": "ok",
+            "status": "ok" if not missing else "incomplete",
             "device": DEVICE,
             "loaded_models": loaded,
+            "missing_models": missing,
             "available": [
                 "bertscore",
                 "moverscore",
@@ -785,8 +789,9 @@ def health():
                 "gptscore",
                 "bartscore",
                 "ccm",
-                "nli",
                 "tokenlogprobs",
+                "nli",
+                "alignscore",
             ],
         }
     )
@@ -813,6 +818,7 @@ def warmup():
         ("BARTScore", get_bartscore_model),
         ("CCM", get_ccm_model),
         ("NLI", get_nli_model),
+        ("AlignScore", get_alignscore_model),
     ]
 
     for name, fn in loaders:

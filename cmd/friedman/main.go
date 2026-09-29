@@ -57,7 +57,7 @@ var metricDisplayName = map[string]string{
 
 func main() {
 	var inputDir, output, metricsCSV, target string
-	flag.StringVar(&inputDir, "input", "output", "directory containing metric JSON reports")
+	flag.StringVar(&inputDir, "input", "output/summeval", "directory containing metric JSON reports")
 	flag.StringVar(&output, "output", "paper/friedman.gen.tex", "path to write LaTeX table (- for stdout)")
 	flag.StringVar(&metricsCSV, "metrics", "bleu,rouge,chrf,meteor,smartstring,embedscorer,bertscore,moverscore,smartmodel,bartscore,gptscore,unieval,geval,lgs",
 		"comma-separated metric keys (file basenames, or prefix for dimensional files like unieval/geval)")
@@ -69,7 +69,7 @@ func main() {
 		log.Fatal("need at least 3 metrics for a Friedman test")
 	}
 
-	samples, err := eval.NewDataset(dataset.Summeval, dataset.SummevalDefaultPath, 0)
+	samples, err := eval.LoadDataset(dataset.Default, 0)
 	if err != nil {
 		log.Fatalf("load dataset: %v", err)
 	}

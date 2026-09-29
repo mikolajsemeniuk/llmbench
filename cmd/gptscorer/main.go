@@ -16,33 +16,29 @@ import (
 )
 
 var (
-	input     string
-	output    string
-	server    string
-	n         int
-	bootstrap int
+	datasetName string
+	output      string
+	server      string
+	n           int
+	bootstrap   int
 )
 
 func main() {
-	flag.StringVar(&input, "input", "", "path to dataset JSON/JSONL file")
-	flag.StringVar(&output, "output", "output/gptscore.json", "write results to file instead of stdout")
+	flag.StringVar(&datasetName, "dataset", dataset.Default, "embedded corpus in pkg/dataset: summeval|frank_cnndm|frank_xsum|rose_cnndm")
+	flag.StringVar(&output, "output", "", "report path (default: output/<dataset>/gptscore.json)")
 	flag.StringVar(&server, "server", "http://localhost:9200", "model server URL (port 9200)")
 	flag.IntVar(&n, "n", 0, "entries limit (0 = all)")
 	flag.IntVar(&bootstrap, "bootstrap", 1000, "bootstrap resamples for 95% CI (0 = disabled)")
 	flag.Parse()
+	if output == "" {
+		output = filepath.Join(eval.OutputDir(datasetName), "gptscore.json")
+	}
 
 	ctx := context.Background()
 	ctx, cancel := signal.NotifyContext(ctx, os.Interrupt)
 	defer cancel()
 
-	fsys := os.DirFS(filepath.Dir(input))
-	path := filepath.Base(input)
-	if input == "" {
-		fsys = dataset.Summeval
-		path = dataset.SummevalDefaultPath
-	}
-
-	samples, err := eval.NewDataset(fsys, path, n)
+	samples, err := eval.LoadDataset(datasetName, n)
 	if err != nil {
 		log.Fatal(err)
 	}

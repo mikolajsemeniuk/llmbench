@@ -37,7 +37,8 @@ var metricOrder = []string{
 	"embedscorer",
 	"bertscore", "moverscore", "smartmodel",
 	"bartscore", "gptscore", "unieval", "geval",
-	"lgs",
+	"alignscore", "nlig", "lead3sent", "lead5sent",
+	"lgs", "ccm", "psc", "spl", "lnc",
 }
 
 var metricDisplayName = map[string]string{
@@ -55,6 +56,14 @@ var metricDisplayName = map[string]string{
 	"unieval":     "UniEval",
 	"geval":       "G-Eval",
 	"lgs":         "LGS",
+	"alignscore":  "AlignScore",
+	"nlig":        "NLIG",
+	"lead3sent":   "Lead-3",
+	"lead5sent":   "Lead-5",
+	"ccm":         "CCM",
+	"psc":         "PSC",
+	"spl":         "SPL",
+	"lnc":         "LNC",
 }
 
 var dimensionalMetrics = []struct {
@@ -63,6 +72,7 @@ var dimensionalMetrics = []struct {
 }{
 	{"geval_", "G-Eval"},
 	{"unieval_", "UniEval"},
+	{"lnc_", "LNC"},
 }
 
 // coefficient describes one correlation column: its display symbol and how
@@ -93,7 +103,7 @@ var allCoefficients = map[string]coefficient{
 }
 
 func main() {
-	flag.StringVar(&input, "input", "output", "directory containing metric JSON reports")
+	flag.StringVar(&input, "input", "output/summeval", "directory containing metric JSON reports")
 	flag.StringVar(&output, "output", "paper/correlations.gen.tex", "path to write LaTeX table (- for stdout)")
 	flag.StringVar(&level, "level", "summary", "correlation level: summary|system")
 	flag.BoolVar(&withCI, "ci", false, "include 95%% CI in each cell (requires bootstrap data)")

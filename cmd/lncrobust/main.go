@@ -51,15 +51,15 @@ var controls = []struct{ name, signals string }{
 }
 
 func main() {
-	flag.StringVar(&featuresPath, "features", "ablation/lncf_features.json", "LNC feature dump written by cmd/lnc")
-	flag.StringVar(&inputDir, "input", "output", "directory with the metric reports used by the controls")
+	flag.StringVar(&featuresPath, "features", "ablation/summeval/lnc_features.json", "LNC feature dump written by cmd/lnc")
+	flag.StringVar(&inputDir, "input", "output/summeval", "directory with the metric reports used by the controls")
 	flag.StringVar(&output, "output", "paper/lnc_robust.gen.tex", "LaTeX table (- for stdout)")
 	flag.IntVar(&splits, "splits", 200, "random splits per experiment")
 	flag.Float64Var(&alpha, "alpha", 10, "ridge penalty (as in cmd/lnc)")
 	flag.Uint64Var(&seed, "seed", 42, "random seed")
 	flag.Parse()
 
-	samples, err := eval.NewDataset(dataset.Summeval, dataset.SummevalDefaultPath, 0)
+	samples, err := eval.LoadDataset(dataset.Default, 0)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -105,7 +105,7 @@ func main() {
 		for _, d := range dims {
 			h[d] = pickF(human[d], train)
 		}
-		cal, err := metrics.FitLNC(Xt, h, nil, alpha, "")
+		cal, err := metrics.FitLNC(Xt, h, alpha, "")
 		if err != nil {
 			log.Fatal(err)
 		}

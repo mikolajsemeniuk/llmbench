@@ -4,10 +4,9 @@
 //	w(i)  = exp(−λ · i / n)
 //	score = mean over c_j of  max_i  w(i) · cos(emb(c_j), emb(s_i))
 //
-// where λ is selected on a held-out development split (-doc-split first50)
-// and the chosen value is then evaluated on the test split
-// (-doc-split last50) or on the full set (-doc-split all). λ=0 disables
-// the lead-bias prior and reproduces position-agnostic mean-of-max recall.
+// with λ = 0.5, the value selected on the SummEval development half in
+// the earlier LGS study. λ=0 disables the lead-bias prior and reproduces
+// position-agnostic mean-of-max recall.
 //
 // Per-document caching: SummEval has 16 candidates per article. We embed
 // the source's sentences ONCE per DocumentID and reuse them across the
@@ -16,7 +15,6 @@
 // Flags:
 //
 //	-lead-bias-lambda   λ in w(i)=exp(−λ·i/n); 0 disables, λ*=0.5 is canonical
-//	-doc-split          first50 (dev) | last50 (test) | all (full SummEval)
 //	-min-sent-len       drop sentences shorter than this many runes
 //	-bootstrap          bootstrap resamples for 95% CI
 package main
@@ -38,60 +36,48 @@ import (
 )
 
 var (
-	input          string
+	datasetName    string
 	output         string
 	embedHost      string
 	embedModel     string
 	leadBiasLambda float64
 	minSentLen     int
-	docSplit       string
 	n              int
 	bootstrap      int
 )
 
 func main() {
-	flag.StringVar(&input, "input", "", "path to dataset JSON/JSONL file")
-	flag.StringVar(&output, "output", "output/lgs.json", "write results to file")
+	flag.StringVar(&datasetName, "dataset", dataset.Default, "embedded corpus in pkg/dataset: summeval|frank_cnndm|frank_xsum|rose_cnndm")
+	flag.StringVar(&output, "output", "", "report path (default: output/<dataset>/lgs.json)")
 	flag.StringVar(&embedHost, "embed-host", "http://localhost:11434", "Ollama host (sentence embeddings)")
 	flag.StringVar(&embedModel, "embed-model", "nomic-embed-text", "Ollama embedding model")
 	flag.Float64Var(&leadBiasLambda, "lead-bias-lambda", 0.5, "λ in source weight w(i)=exp(−λ·i/n); 0 disables the prior")
 	flag.IntVar(&minSentLen, "min-sent-len", 4, "drop sentences shorter than this many runes")
-	flag.StringVar(&docSplit, "doc-split", "all", "article-level split: all|first50|last50 (held-out hyperparameter selection)")
 	flag.IntVar(&n, "n", 0, "entries limit (0 = all)")
 	flag.IntVar(&bootstrap, "bootstrap", 1000, "bootstrap resamples for 95%% CI (0 = disabled)")
 	flag.Parse()
+	if output == "" {
+		output = filepath.Join(eval.OutputDir(datasetName), "lgs.json")
+	}
 
 	if leadBiasLambda < 0 {
 		log.Fatalf("-lead-bias-lambda must be ≥ 0, got %v", leadBiasLambda)
-	}
-	switch docSplit {
-	case "all", "first50", "last50":
-	default:
-		log.Fatalf("-doc-split must be all|first50|last50, got %q", docSplit)
 	}
 
 	ctx := context.Background()
 	ctx, cancel := signal.NotifyContext(ctx, os.Interrupt)
 	defer cancel()
 
-	fsys := os.DirFS(filepath.Dir(input))
-	path := filepath.Base(input)
-	if input == "" {
-		fsys = dataset.Summeval
-		path = dataset.SummevalDefaultPath
-	}
-
-	samples, err := eval.NewDataset(fsys, path, n)
+	samples, err := eval.LoadDataset(datasetName, n)
 	if err != nil {
 		log.Fatal(err)
 	}
-	samples = applyDocSplit(samples, docSplit)
 
 	scorer := metrics.NewLGS(embedHost, embedModel)
 	scorer.MinSentenceLen = minSentLen
 	scorer.LeadBiasLambda = leadBiasLambda
 
-	log.Printf("LGS: λ=%.3f lead-bias, split=%s, %d samples", leadBiasLambda, docSplit, len(samples))
+	log.Printf("LGS: λ=%.3f lead-bias, %s, %d samples", leadBiasLambda, datasetName, len(samples))
 
 	type cached struct {
 		sents []string
@@ -152,7 +138,7 @@ func main() {
 	log.Printf("LGS: %d samples in %.1fs — mean score=%.3f",
 		len(samples), elapsed.Seconds(), sumScore/N)
 
-	norm := fmt.Sprintf("lead_lambda=%.3f,split=%s,embed_model=%s", leadBiasLambda, docSplit, embedModel)
+	norm := fmt.Sprintf("lead_lambda=%.3f,embed_model=%s", leadBiasLambda, embedModel)
 	report := eval.Report{
 		Metric:     "lgs",
 		Norm:       norm,
@@ -183,58 +169,6 @@ func filteredSplit(text string, minLen int) []string {
 		if len([]rune(s)) >= minLen {
 			out = append(out, s)
 		}
-	}
-	return out
-}
-
-// applyDocSplit slices the loaded sample list into a document-level
-// development or test half. SummEval has 16 candidates per article so
-// the boundary always lands cleanly between articles. The split is by
-// dataset order, which matches eval.NewDataset's JSONL emission order
-// (deterministic across runs).
-func applyDocSplit(samples []eval.Sample, split string) []eval.Sample {
-	if split == "all" {
-		return samples
-	}
-	docs := uniqueDocsInOrder(samples)
-	if len(docs) < 100 {
-		log.Fatalf("doc-split %q expects ≥100 documents, got %d", split, len(docs))
-	}
-	var keep map[string]struct{}
-	switch split {
-	case "first50":
-		keep = setOf(docs[:50])
-	case "last50":
-		keep = setOf(docs[len(docs)-50:])
-	default:
-		log.Fatalf("invalid doc-split: %s", split)
-	}
-	out := samples[:0]
-	for _, s := range samples {
-		if _, ok := keep[s.DocumentID]; ok {
-			out = append(out, s)
-		}
-	}
-	return out
-}
-
-func uniqueDocsInOrder(samples []eval.Sample) []string {
-	seen := make(map[string]struct{})
-	var docs []string
-	for _, s := range samples {
-		if _, ok := seen[s.DocumentID]; ok {
-			continue
-		}
-		seen[s.DocumentID] = struct{}{}
-		docs = append(docs, s.DocumentID)
-	}
-	return docs
-}
-
-func setOf(ids []string) map[string]struct{} {
-	out := make(map[string]struct{}, len(ids))
-	for _, id := range ids {
-		out[id] = struct{}{}
 	}
 	return out
 }

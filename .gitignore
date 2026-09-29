@@ -13,3 +13,6 @@ paper/*.fls
 paper/*.fdb_latexmk
 paper/*.blg
 paper/*.synctex.gz
+
+# Python bytecode
+__pycache__/

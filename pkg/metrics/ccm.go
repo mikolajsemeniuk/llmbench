@@ -270,50 +270,11 @@ func (r CCMResult) LogPPerToken() float64 {
 	return r.Cond / float64(r.Tokens)
 }
 
-// ── Per-dimension scores (CCM-D) ───────────────────────────────────────
-//
-// The single margin above turned out NOT to be copy-invariant (an LM
-// that has the source in context predicts copied spans near-certainly,
-// so perturbing a copied span costs more than perturbing a paraphrase).
-// CCM-D instead assigns each SummEval dimension one signal from the
-// SAME forward passes. The assignment was selected on the development
-// half (first 50 articles) from a fixed pool of seven signals by the
-// copy-partialled Spearman rho of that dimension, and verified on the
-// held-out last 50 (see README, "CCM-D"):
-//
-//	coherence   z-normalised margin over all perturbation families
-//	consistency log P(y|x) / |y|
-//	fluency     log P(y|x)
-//	relevance   log P(y|x)/|y| / σ₁ + margin(order) / σ₂
-//
-// σ₁, σ₂ are the development-split standard deviations of the two
-// relevance signals; they only fix the relative weight of the sum.
-const (
-	ccmdRelSigmaLogP  = 0.4684
-	ccmdRelSigmaOrder = 6.5140
-)
-
 // OrderMargin is the margin against sentence-swap perturbations only;
 // 0 (no evidence) for single-sentence candidates.
 func (r CCMResult) OrderMargin() float64 {
 	m, _ := r.FamilyMargin(CCMOrder)
 	return m
-}
-
-// CoherenceScore is the z-normalised margin; 0 (no evidence) when fewer
-// than two perturbations exist (15 of 1600 SummEval candidates), which
-// is the definition the dev selection was run with.
-func (r CCMResult) CoherenceScore() float64 {
-	if len(r.PertCond) < 2 {
-		return 0
-	}
-	return r.ZMargin()
-}
-
-func (r CCMResult) ConsistencyScore() float64 { return r.LogPPerToken() }
-func (r CCMResult) FluencyScore() float64     { return r.Cond }
-func (r CCMResult) RelevanceScore() float64 {
-	return r.LogPPerToken()/ccmdRelSigmaLogP + r.OrderMargin()/ccmdRelSigmaOrder
 }
 
 func mean(xs []float64) float64 {

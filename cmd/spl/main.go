@@ -6,11 +6,11 @@
 //
 // Outputs:
 //
-//	output/spl.json          canonical: mean log P(splice word | x, prefix)
-//	ablation/spl_pmi.json    mean [log P(w|x,·) − log P(w|·)] at splices
-//	ablation/spl_min.json    worst splice
-//	ablation/spl_inside.json mean over words INSIDE copied fragments (control)
-//	ablation/spl_raw.json    per-word evidence for every candidate
+//	output/<dataset>/spl.json          canonical: mean log P(splice word | x, prefix)
+//	ablation/<dataset>/spl_pmi.json    mean [log P(w|x,·) − log P(w|·)] at splices
+//	ablation/<dataset>/spl_min.json    worst splice
+//	ablation/<dataset>/spl_inside.json mean over words INSIDE copied fragments (control)
+//	ablation/<dataset>/spl_raw.json    per-word evidence for every candidate
 package main
 
 import (
@@ -30,16 +30,14 @@ import (
 )
 
 var (
-	output      string
-	ablationDir string
+	datasetName string
 	host        string
 	n           int
 	bootstrap   int
 )
 
 func main() {
-	flag.StringVar(&output, "output", "output/spl.json", "canonical report")
-	flag.StringVar(&ablationDir, "ablation-dir", "ablation", "directory for ablation variants and the raw dump (empty = skip)")
+	flag.StringVar(&datasetName, "dataset", dataset.Default, "embedded corpus in pkg/dataset: summeval|frank_cnndm|frank_xsum|rose_cnndm")
 	flag.StringVar(&host, "host", "http://localhost:9200", "model server host")
 	flag.IntVar(&n, "n", 0, "entries limit (0 = all)")
 	flag.IntVar(&bootstrap, "bootstrap", 1000, "bootstrap resamples for 95%% CI (0 = disabled)")
@@ -48,7 +46,7 @@ func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
 
-	samples, err := eval.NewDataset(dataset.Summeval, dataset.SummevalDefaultPath, n)
+	samples, err := eval.LoadDataset(datasetName, n)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -116,10 +114,8 @@ func main() {
 		}
 	}
 
-	write(output, "spl", metrics.SPLResult.Score)
-	if ablationDir == "" {
-		return
-	}
+	write(filepath.Join(eval.OutputDir(datasetName), "spl.json"), "spl", metrics.SPLResult.Score)
+	ablationDir := eval.AblationDir(datasetName)
 	write(filepath.Join(ablationDir, "spl_pmi.json"), "spl_pmi", metrics.SPLResult.PMIScore)
 	write(filepath.Join(ablationDir, "spl_min.json"), "spl_min", metrics.SPLResult.MinScore)
 	write(filepath.Join(ablationDir, "spl_inside.json"), "spl_inside", metrics.SPLResult.InsideScore)

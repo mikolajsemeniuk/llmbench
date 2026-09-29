@@ -870,7 +870,6 @@ orthogonal angle of which 50 articles are used at all, and it argues
 against reading $\lambda^*$ as a property of the metric rather than of
 one particular partition of SummEval.
 
-\input{splitrobust.gen.tex}
 
 \subsection{Selection criterion and verification}
 We sweep $\lambda \in \{0, 0.25, 0.5, 1.0, 2.0\}$ on the development
@@ -1170,7 +1169,6 @@ cost 6 to 22 times below the contextual-embedding band
 tokenisation), and a mean $\rho$ ($\sim$.28) above every metric in
 that band.
 
-\input{frontier.gen.tex}
 
 \subsection{Pareto analysis}
 \label{sec:pareto}
@@ -1384,7 +1382,6 @@ The discussion below is therefore phrased in terms of $\rho$ alone
 (Section~\ref{sec:methodology-corr}).
 
 \input{summary.gen.tex}
-\input{comparisons.gen.tex}
 \input{system.gen.tex}
 
 \subsection{Headline findings}
@@ -1501,7 +1498,6 @@ hurts when it functionally truncates the article. The mid-range
 $\lambda \in [0.4, 0.6]$ is the operationally useful window,
 and the calibration sweep is what locates it.
 
-\input{ablation.gen.tex}
 
 The sweep above selects a single $\lambda^{\star}$ by the mean
 Spearman $\rho$ across all four dimensions, but the optimum is not the
@@ -1518,7 +1514,6 @@ this table rather than the aggregate $\lambda^{\star}$, and should
 treat the relevance row as a caution about reading any single-dimension
 argmax off a 50-article sweep without its own held-out verification.
 
-\input{lambdadim.gen.tex}
 
 \begin{figure}[t]
 \centering
@@ -1652,7 +1647,6 @@ Table~\ref{tab:lambda_selection_ci} reports it. Because the per-sample
 scores for each $\lambda$ are already stored, the measurement requires
 no additional embedder passes.
 
-\input{lambdaci.gen.tex}
 
 \paragraph{Switching the prior on is reproducible}
 The no-prior setting $\lambda{=}0$ is selected in $0.7\%$ of
@@ -1749,7 +1743,6 @@ backbone-conditional, not as universal properties of LGS. The
 mean-Spearman ordering of metric families is stable across backbones;
 the per-dimension ordering is not.
 
-\input{embedders.gen.tex}
 
 \subsection{Cross-backbone calibration of the prior}
 \label{sec:ablation-lead-bge}

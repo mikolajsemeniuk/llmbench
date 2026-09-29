@@ -21,17 +21,17 @@ var validDimensions = map[string]bool{
 }
 
 var (
-	input     string
-	output    string
-	server    string
-	dimension string
-	n         int
-	bootstrap int
+	datasetName string
+	output      string
+	server      string
+	dimension   string
+	n           int
+	bootstrap   int
 )
 
 func main() {
-	flag.StringVar(&input, "input", "", "path to dataset JSON/JSONL file")
-	flag.StringVar(&output, "output", "", "write results to file (default: output/unieval_<dim>.json)")
+	flag.StringVar(&datasetName, "dataset", dataset.Default, "embedded corpus in pkg/dataset: summeval|frank_cnndm|frank_xsum|rose_cnndm")
+	flag.StringVar(&output, "output", "", "write results to file (default: output/<dataset>/unieval_<dim>.json)")
 	flag.StringVar(&server, "server", "http://localhost:9200", "model server host")
 	flag.StringVar(&dimension, "dimension", "coherence", "SummEval dimension: coherence|consistency|fluency|relevance")
 	flag.IntVar(&n, "n", 0, "entries limit (0 = all)")
@@ -42,21 +42,14 @@ func main() {
 		log.Fatalf("unknown dimension %q (available: coherence, consistency, fluency, relevance)", dimension)
 	}
 	if output == "" {
-		output = fmt.Sprintf("output/unieval_%s.json", dimension)
+		output = filepath.Join(eval.OutputDir(datasetName), fmt.Sprintf("unieval_%s.json", dimension))
 	}
 
 	ctx := context.Background()
 	ctx, cancel := signal.NotifyContext(ctx, os.Interrupt)
 	defer cancel()
 
-	fsys := os.DirFS(filepath.Dir(input))
-	path := filepath.Base(input)
-	if input == "" {
-		fsys = dataset.Summeval
-		path = dataset.SummevalDefaultPath
-	}
-
-	samples, err := eval.NewDataset(fsys, path, n)
+	samples, err := eval.LoadDataset(datasetName, n)
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -38,7 +38,6 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"io/fs"
 	"log"
 	"math"
 	"math/rand/v2"
@@ -52,14 +51,13 @@ import (
 )
 
 var (
-	costDir     string
 	inputDir    string
 	outputTex   string
 	ngram       int
 	bootstrap   int
 	seed        uint64
 	oursLabel   string
-	datasetPath string
+	datasetName string
 	dimsFlag    string
 )
 
@@ -69,27 +67,25 @@ var allDimensions = []string{"coherence", "consistency", "fluency", "relevance"}
 var dimensions = allDimensions
 
 func main() {
-	flag.StringVar(&inputDir, "input", "output", "directory containing metric JSON reports")
-	flag.StringVar(&costDir, "cost-dir", "", "optional directory of reports re-timed on other hardware (e.g. gb10); their ms/sample replaces the runtime of the same metric")
+	flag.StringVar(&inputDir, "input", "", "directory containing metric JSON reports (default: output/<dataset>)")
 	flag.StringVar(&outputTex, "output", "paper/confound.gen.tex", "path to write LaTeX table (- for stdout)")
 	flag.IntVar(&ngram, "ngram", 2, "n-gram order for the copy rate (1 = unigram, 2 = bigram)")
 	flag.IntVar(&bootstrap, "bootstrap", 2000, "cluster-bootstrap resamples over articles (0 = point estimates only)")
 	flag.Uint64Var(&seed, "seed", 42, "random seed")
 	flag.StringVar(&oursLabel, "ours", "lgs", "metric base name to mark as ours")
-	flag.StringVar(&datasetPath, "dataset", "", "path to a dataset JSONL in SummEval layout (default: embedded SummEval)")
+	flag.StringVar(&datasetName, "dataset", dataset.Default, "embedded corpus in pkg/dataset: summeval|frank_cnndm|frank_xsum|rose_cnndm")
 	flag.StringVar(&dimsFlag, "dims", strings.Join(allDimensions, ","), "comma-separated dimensions to evaluate (a transfer corpus annotates only one)")
 	flag.Parse()
 	dimensions = strings.Split(dimsFlag, ",")
+	if inputDir == "" {
+		inputDir = eval.OutputDir(datasetName)
+	}
 
 	if ngram < 1 {
 		log.Fatalf("-ngram must be ≥ 1, got %d", ngram)
 	}
 
-	fsys, path := fs.FS(dataset.Summeval), dataset.SummevalDefaultPath
-	if datasetPath != "" {
-		fsys, path = os.DirFS(filepath.Dir(datasetPath)), filepath.Base(datasetPath)
-	}
-	samples, err := eval.NewDataset(fsys, path, 0)
+	samples, err := eval.LoadDataset(datasetName, 0)
 	if err != nil {
 		log.Fatalf("load dataset: %v", err)
 	}
@@ -100,11 +96,6 @@ func main() {
 	metrics, err := loadMetrics(inputDir, samples)
 	if err != nil {
 		log.Fatal(err)
-	}
-	if costDir != "" {
-		if err := overrideCosts(metrics, costDir); err != nil {
-			log.Fatal(err)
-		}
 	}
 	if len(metrics) == 0 {
 		log.Fatalf("no usable reports in %s", inputDir)
@@ -467,6 +458,8 @@ var displayNames = map[string]string{
 	"gptscore": "GPTScore", "unieval": "UniEval", "geval": "G-Eval",
 	"lgs": "LGS", "lead3sent": "Lead-3 (mean-of-max)",
 	"lead5sent": "Lead-5 (mean-of-max)", "lead3whole": "Lead-3 (whole block)",
+	"lnc": "LNC", "alignscore": "AlignScore", "nlig": "NLIG", "ccm": "CCM",
+	"psc": "PSC", "spl": "SPL",
 }
 
 func displayName(base string) string {
@@ -512,8 +505,13 @@ func renderLatex(rows []row) string {
 	var b strings.Builder
 	fmt.Fprintln(&b, `\begin{table*}[t]`)
 	fmt.Fprintln(&b, `\centering`)
-	fmt.Fprintf(&b, `\caption{Extractiveness confound on \textsc{SummEval}. The copy rate of a candidate is the fraction of its token %d-grams that occur in the source; it requires no model, no reference and no hyperparameter. $\bar{\rho}$ is the mean summary-level Spearman correlation with human ratings across the four dimensions, $\bar{\rho}_{\mathrm{part}}$ the same quantity with the copy rate partialled out of both sides, and $\rho_{\mathrm{copy}}$ the correlation between the metric and the copy rate. Brackets give the 95\%% cluster-bootstrap interval over articles. The final row is the copy rate scored as if it were a metric: on the raw axis it outranks most of the pool. Pareto status is given on both axes.}`+"\n", ngram)
-	fmt.Fprintln(&b, `\label{tab:confound}`)
+	dims := "averaged across the four dimensions"
+	if len(dimensions) == 1 {
+		dims = "on the " + dimensions[0] + " dimension"
+	}
+	fmt.Fprintf(&b, `\caption{Extractiveness confound on %s. The copy rate of a candidate is the fraction of its token %d-grams that occur in the source; it requires no model, no reference and no hyperparameter. $\bar{\rho}$ is the summary-level Spearman correlation with human ratings %s, $\bar{\rho}_{\mathrm{part}}$ the same quantity with the copy rate partialled out of both sides, and $\rho_{\mathrm{copy}}$ the correlation between the metric and the copy rate. Brackets give the 95\%% cluster-bootstrap interval over articles. The final row is the copy rate scored as if it were a metric. Pareto status is given on both axes.}`+"\n", dataset.Titles[datasetName], ngram, dims)
+	// One label per output file, so several tables can share a manuscript.
+	fmt.Fprintf(&b, "\\label{tab:%s}\n", strings.TrimSuffix(filepath.Base(outputTex), ".gen.tex"))
 	fmt.Fprintln(&b, `\small`)
 	fmt.Fprintln(&b, `\linespread{1}\selectfont`)
 	fmt.Fprintln(&b, `\setlength{\tabcolsep}{4pt}`)
@@ -582,38 +580,4 @@ func writeFile(path, content string) error {
 	}
 	_, err := io.WriteString(w, content)
 	return err
-}
-
-// overrideCosts replaces each metric's ms/sample with the one measured in
-// dir (summed over dimension files, like loadMetrics), so that every row
-// of the table can be timed on the same hardware. Reports in dir may
-// cover only a subset of samples (e.g. G-Eval timed on 48 per
-// dimension); only their runtime is used, never their scores.
-func overrideCosts(ms []metricScores, dir string) error {
-	paths, err := filepath.Glob(filepath.Join(dir, "*.json"))
-	if err != nil {
-		return err
-	}
-	cost := map[string]float64{}
-	for _, p := range paths {
-		raw, err := os.ReadFile(p)
-		if err != nil {
-			return err
-		}
-		var r eval.Report
-		if err := json.Unmarshal(raw, &r); err != nil {
-			return fmt.Errorf("decode %s: %w", p, err)
-		}
-		if r.Samples == 0 {
-			continue
-		}
-		base, _ := splitDimensional(r.Metric)
-		cost[base] += 1000.0 * r.RuntimeSec / float64(r.Samples)
-	}
-	for i := range ms {
-		if c, ok := cost[ms[i].name]; ok {
-			ms[i].runtimeMs = c
-		}
-	}
-	return nil
 }

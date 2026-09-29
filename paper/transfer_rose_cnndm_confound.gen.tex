@@ -1,7 +1,7 @@
 \begin{table*}[t]
 \centering
-\caption{Extractiveness confound on \textsc{SummEval}. The copy rate of a candidate is the fraction of its token 2-grams that occur in the source; it requires no model, no reference and no hyperparameter. $\bar{\rho}$ is the mean summary-level Spearman correlation with human ratings across the four dimensions, $\bar{\rho}_{\mathrm{part}}$ the same quantity with the copy rate partialled out of both sides, and $\rho_{\mathrm{copy}}$ the correlation between the metric and the copy rate. Brackets give the 95\% cluster-bootstrap interval over articles. The final row is the copy rate scored as if it were a metric: on the raw axis it outranks most of the pool. Pareto status is given on both axes.}
-\label{tab:confound}
+\caption{Extractiveness confound on RoSE (CNN/DM). The copy rate of a candidate is the fraction of its token 2-grams that occur in the source; it requires no model, no reference and no hyperparameter. $\bar{\rho}$ is the summary-level Spearman correlation with human ratings on the relevance dimension, $\bar{\rho}_{\mathrm{part}}$ the same quantity with the copy rate partialled out of both sides, and $\rho_{\mathrm{copy}}$ the correlation between the metric and the copy rate. Brackets give the 95\% cluster-bootstrap interval over articles. The final row is the copy rate scored as if it were a metric. Pareto status is given on both axes.}
+\label{tab:transfer_rose_cnndm_confound}
 \small
 \linespread{1}\selectfont
 \setlength{\tabcolsep}{4pt}
@@ -9,14 +9,14 @@
 \toprule
 Metric & ms/sample & $\bar{\rho}$ & $\bar{\rho}_{\mathrm{part}}$ & $\rho_{\mathrm{copy}}$ & Pareto \\
 \midrule
-UniEval & 47.73 & .217 & .245 {\scriptsize [.206, .284]} & -.160 & raw, partial \\
-G-Eval & 2135.50 & .230 & .238 {\scriptsize [.192, .281]} & -.040 & raw \\
+UniEval & 47.40 & .217 & .245 {\scriptsize [.206, .284]} & -.160 & raw, partial \\
+G-Eval & 2070.24 & .230 & .238 {\scriptsize [.192, .281]} & -.040 & raw \\
 Lead-3 (mean-of-max) & 0.05 & .201 & .151 {\scriptsize [.096, .206]} & .532 & raw, partial \\
-\textbf{lncf} & 214.21 & .182 & .148 {\scriptsize [.106, .191]} & .301 & --- \\
-Lead-5 (mean-of-max) & 0.08 & .195 & .138 {\scriptsize [.086, .189]} & .655 & --- \\
-alignscore & 292.32 & .055 & .025 {\scriptsize [-.020, .070]} & .222 & --- \\
-LGS & 155.99 & .124 & .022 {\scriptsize [-.023, .070]} & .786 & --- \\
-nlig & 1078.21 & .057 & .017 {\scriptsize [-.023, .056]} & .285 & --- \\
+\textbf{LNC} & 215.04 & .182 & .148 {\scriptsize [.106, .191]} & .301 & --- \\
+Lead-5 (mean-of-max) & 0.07 & .195 & .138 {\scriptsize [.086, .189]} & .655 & --- \\
+AlignScore & 279.14 & .055 & .025 {\scriptsize [-.020, .070]} & .222 & --- \\
+LGS & 153.72 & .124 & .022 {\scriptsize [-.023, .070]} & .786 & --- \\
+NLIG & 1068.59 & .057 & .017 {\scriptsize [-.023, .056]} & .285 & --- \\
 \midrule
 Copy rate (no metric) & 0.00 & .141 & .000 & 1.000 & \emph{diagnostic} \\
 \bottomrule

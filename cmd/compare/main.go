@@ -15,7 +15,6 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"io/fs"
 	"log"
 	"os"
 	"path/filepath"
@@ -39,7 +38,7 @@ var (
 	seed        uint64
 	fdrAlpha    float64
 	docSplit    string
-	datasetPath string
+	datasetName string
 	dimsFlag    string
 	partial     bool
 )
@@ -68,6 +67,11 @@ var metricDisplayName = map[string]string{
 	"unieval":     "UniEval",
 	"geval":       "G-Eval",
 	"lgs":         "LGS",
+	"lnc":         "LNC",
+	"alignscore":  "AlignScore",
+	"nlig":        "NLIG",
+	"lead3sent":   "Lead-3",
+	"lead5sent":   "Lead-5",
 }
 
 // ── Domain types ───────────────────────────────────────────────────────
@@ -99,7 +103,7 @@ type comparisonCell struct {
 }
 
 func main() {
-	flag.StringVar(&inputDir, "input", "output", "directory containing metric JSON reports")
+	flag.StringVar(&inputDir, "input", "", "directory containing metric JSON reports (default: output/<dataset>)")
 	flag.StringVar(&output, "output", "paper/comparisons.gen.tex",
 		"path to write LaTeX table (- for stdout, empty to skip)")
 	flag.StringVar(&target, "metric", "",
@@ -114,11 +118,14 @@ func main() {
 		"Benjamini-Hochberg false-discovery rate for the family of (baseline, dimension) tests")
 	flag.StringVar(&docSplit, "doc-split", "all",
 		"compare on all|first50|last50 articles (dataset order); use last50 for a metric calibrated on first50")
-	flag.StringVar(&datasetPath, "dataset", "", "path to a dataset JSONL in SummEval layout (default: embedded SummEval)")
+	flag.StringVar(&datasetName, "dataset", dataset.Default, "embedded corpus in pkg/dataset: summeval|frank_cnndm|frank_xsum|rose_cnndm")
 	flag.StringVar(&dimsFlag, "dims", strings.Join(dimensions, ","), "comma-separated dimensions to evaluate (a transfer corpus annotates only one)")
 	flag.BoolVar(&partial, "partial", false, "compare copy-partialled Spearman (bigram copy rate, as in cmd/confound) instead of raw")
 	flag.Parse()
 	dimensions = splitCSV(dimsFlag)
+	if inputDir == "" {
+		inputDir = eval.OutputDir(datasetName)
+	}
 
 	if target == "" {
 		log.Fatal("--metric is required (e.g. -metric mymetric)")
@@ -135,17 +142,13 @@ func main() {
 		log.Fatal("no baselines specified")
 	}
 
-	fsys, path := fs.FS(dataset.Summeval), dataset.SummevalDefaultPath
-	if datasetPath != "" {
-		fsys, path = os.DirFS(filepath.Dir(datasetPath)), filepath.Base(datasetPath)
-	}
-	samples, err := eval.NewDataset(fsys, path, 0)
+	samples, err := eval.LoadDataset(datasetName, 0)
 	if err != nil {
 		log.Fatalf("load dataset: %v", err)
 	}
 	samples = splitDocs(samples, docSplit)
 
-	// The target may itself be dimensional (e.g. ccmd_<dim>.json): it
+	// The target may itself be dimensional (e.g. lnc_<dim>.json): it
 	// then contributes its matching-dimension scorer to each cell.
 	targetByDim, err := loadBaseline(samples, inputDir, target)
 	if err != nil {
@@ -470,16 +473,24 @@ func renderLatex(target string, baselines []baselineEntry, cells []comparisonCel
 	if level == "system" {
 		levelLabel = "system-level"
 	}
+	scope := dataset.Titles[datasetName]
+	switch docSplit {
+	case "first50":
+		scope += ", first 50 articles"
+	case "last50":
+		scope += ", held-out last 50 articles"
+	}
 	fmt.Fprintf(&b,
-		"\\caption{Paired bootstrap comparison of %s against baselines on %s "+
+		"\\caption{Paired bootstrap comparison of %s against baselines on %s, %s "+
 			"Spearman correlations. Each cell reports $\\Delta\\rho$ "+
 			"(ours minus baseline) with 95\\%% CI in brackets, the raw "+
 			"two-sided $p$-value, and $q$, the Benjamini-Hochberg adjusted "+
 			"$p$-value over all %d (baseline, dimension) cells of this table. "+
 			"Bold marks improvements that survive the correction "+
 			"($q<%.2f$ and CI excludes 0).}\n",
-		display(target), levelLabel, len(cells), fdrAlpha)
-	fmt.Fprintf(&b, "\\label{tab:compare_%s_%s}\n", target, level)
+		display(target), scope, levelLabel, len(cells), fdrAlpha)
+	// One label per output file, so several tables can share a manuscript.
+	fmt.Fprintf(&b, "\\label{tab:%s}\n", strings.TrimSuffix(filepath.Base(output), ".gen.tex"))
 	fmt.Fprintln(&b, `\small`)
 	// Tables stay single-spaced even when the manuscript is compiled
 	// with the double-spaced elsarticle `review` option.

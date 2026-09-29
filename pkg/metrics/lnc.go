@@ -11,10 +11,11 @@ import (
 // scorer built from the signals of three earlier experiments, all
 // computed with small open models:
 //
-//	CCM  (Qwen2.5-1.5B, source in context, K=8 perturbations)
+//	CCM  (Qwen2.5-1.5B in bf16, source in context, K=4 perturbations)
 //	     logp_tok, logp_sum, ulogp_tok, order margin, negation margin,
 //	     z-margin
-//	NLIG (DeBERTa-v3-large NLI, SummaC-ZS construction)
+//	NLIG (DeBERTa-v3-large NLI, SummaC-ZS construction against each
+//	     summary sentence's 4 highest-overlap source windows)
 //	     mean and min over summary sentences of max_w P(e) − P(c)
 //	SPL  (same LM, per-token)
 //	     mean log-prob at copy splice points and inside copied spans
@@ -52,8 +53,13 @@ func LNCFeatureVector(c CCMResult, n NLIResult, s SPLResult) []float64 {
 	if c.Tokens > 0 {
 		ulogp = c.Uncond / float64(c.Tokens)
 	}
+	// z-margin, 0 (no evidence) with fewer than two perturbations.
+	zmargin := 0.0
+	if len(c.PertCond) >= 2 {
+		zmargin = c.ZMargin()
+	}
 	return []float64{
-		c.LogPPerToken(), c.Cond, ulogp, c.OrderMargin(), neg, c.CoherenceScore(),
+		c.LogPPerToken(), c.Cond, ulogp, c.OrderMargin(), neg, zmargin,
 		n.Score(), n.MinScore(), s.Score(), s.InsideScore(),
 	}
 }
@@ -66,9 +72,6 @@ type LNCCalibration struct {
 	Alpha    float64              `json:"alpha"`
 	Weights  map[string][]float64 `json:"weights"` // dimension → per-feature weight
 	FitOn    string               `json:"fit_on"`
-	// Debiased marks a fit whose ridge target was the human-score rank
-	// with the copy-rate rank projected out (see FitLNC).
-	Debiased bool `json:"debiased"`
 }
 
 // Score applies the calibration for one dimension.
@@ -88,12 +91,9 @@ func (cal *LNCCalibration) Score(dim string, f []float64) (float64, error) {
 }
 
 // FitLNC fits the calibration on development rows: X[i] is the feature
-// vector of sample i, human[dim][i] its rating. When copyRate is non-nil
-// the ridge target is the standardised human rank with the standardised
-// copy-rate rank projected out, so the weights reward what the humans
-// see beyond extractiveness; copy rate is used ONLY in fitting, never as
-// a feature, so scoring new data needs nothing extra.
-func FitLNC(X [][]float64, human map[string][]float64, copyRate []float64, alpha float64, fitOn string) (*LNCCalibration, error) {
+// vector of sample i, human[dim][i] its rating; the ridge target is the
+// standardised rank of the rating.
+func FitLNC(X [][]float64, human map[string][]float64, alpha float64, fitOn string) (*LNCCalibration, error) {
 	if len(X) == 0 {
 		return nil, fmt.Errorf("lnc: no development rows")
 	}
@@ -101,16 +101,11 @@ func FitLNC(X [][]float64, human map[string][]float64, copyRate []float64, alpha
 	cal := &LNCCalibration{
 		Mu: make([]float64, p), Sigma: make([]float64, p),
 		Alpha: alpha, Weights: map[string][]float64{}, FitOn: fitOn,
-		Debiased: copyRate != nil,
 	}
 	// FitLNC also fits control composites over other signals
 	// (cmd/lncrobust); only an LNC fit carries the LNC feature names.
 	if p == len(LNCFeatures) {
 		cal.Features = LNCFeatures
-	}
-	var q []float64
-	if copyRate != nil {
-		q = standardise(averageRanks(copyRate))
 	}
 	n := float64(len(X))
 	for j := 0; j < p; j++ {
@@ -135,16 +130,6 @@ func FitLNC(X [][]float64, human map[string][]float64, copyRate []float64, alpha
 	}
 	for dim, h := range human {
 		y := standardise(averageRanks(h))
-		if q != nil {
-			var yq, qq float64
-			for i := range y {
-				yq += y[i] * q[i]
-				qq += q[i] * q[i]
-			}
-			for i := range y {
-				y[i] -= yq / qq * q[i]
-			}
-		}
 		// (ZᵀZ + αI) w = Zᵀy
 		A := make([][]float64, p)
 		b := make([]float64, p)
@@ -248,7 +233,8 @@ func solveLinear(A [][]float64, b []float64) ([]float64, error) {
 
 // CopyRate is the fraction of the candidate's token bigrams that occur
 // in the source, tokenised exactly like cmd/confound (lowercase,
-// . , ! ? ; : ( ) " ' split off). Used only to fit a debiased LNC.
+// . , ! ? ; : ( ) " ' split off): the covariate partialled out by
+// cmd/compare -partial and cmd/lncrobust.
 func CopyRate(source, candidate string) float64 {
 	tok := func(s string) []string {
 		s = strings.ToLower(s)

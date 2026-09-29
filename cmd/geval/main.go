@@ -17,7 +17,7 @@ import (
 )
 
 var (
-	input       string
+	datasetName string
 	output      string
 	host        string
 	model       string
@@ -30,8 +30,8 @@ var (
 )
 
 func main() {
-	flag.StringVar(&input, "input", "", "path to dataset JSON/JSONL file")
-	flag.StringVar(&output, "output", "", "write results to file (default: output/geval_<dim>.json)")
+	flag.StringVar(&datasetName, "dataset", dataset.Default, "embedded corpus in pkg/dataset: summeval|frank_cnndm|frank_xsum|rose_cnndm")
+	flag.StringVar(&output, "output", "", "write results to file (default: output/<dataset>/geval_<dim>.json)")
 	flag.StringVar(&host, "host", "http://localhost:11434", "Ollama host URL")
 	flag.StringVar(&model, "model", "qwen2.5:7b-instruct-q4_K_M", "judge model for G-Eval")
 	flag.StringVar(&dimension, "dimension", "coherence", "SummEval dimension: coherence|consistency|fluency|relevance")
@@ -50,21 +50,14 @@ func main() {
 		log.Fatalf("unknown dimension %q (available: coherence, consistency, fluency, relevance)", dimension)
 	}
 	if output == "" {
-		output = fmt.Sprintf("output/geval_%s.json", dimension)
+		output = filepath.Join(eval.OutputDir(datasetName), fmt.Sprintf("geval_%s.json", dimension))
 	}
 
 	ctx := context.Background()
 	ctx, cancel := signal.NotifyContext(ctx, os.Interrupt)
 	defer cancel()
 
-	fsys := os.DirFS(filepath.Dir(input))
-	path := filepath.Base(input)
-	if input == "" {
-		fsys = dataset.Summeval
-		path = dataset.SummevalDefaultPath
-	}
-
-	samples, err := eval.NewDataset(fsys, path, n)
+	samples, err := eval.LoadDataset(datasetName, n)
 	if err != nil {
 		log.Fatal(err)
 	}

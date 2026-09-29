@@ -1,11 +1,11 @@
-// SummEval dataset loader. Reads a JSONL file (default: the embedded
-// SummEval release, see pkg/dataset/summeval.go) and decodes each
-// line into a Sample carrying the source article, the candidate
-// summary, the SystemID and DocumentID needed for cluster-bootstrap
-// and system-level aggregation, and the four expert human ratings
-// (coherence, consistency, fluency, relevance). The Sample struct is
-// the contract every cmd/<metric> binary consumes; nothing else in
-// pkg/eval depends on the JSON wire format directly.
+// Dataset loader. Reads a corpus in the SummEval JSONL layout (the
+// embedded corpora in pkg/dataset) and decodes each line into a Sample
+// carrying the source article, the candidate summary, the SystemID and
+// DocumentID needed for cluster-bootstrap and system-level aggregation,
+// and the four human ratings (coherence, consistency, fluency,
+// relevance). The Sample struct is the contract every cmd/<metric>
+// binary consumes; nothing else in pkg/eval depends on the JSON wire
+// format directly.
 package eval
 
 import (
@@ -13,6 +13,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/fs"
+	"path/filepath"
+
+	"github.com/mikolajsemeniuk/llmbench/pkg/dataset"
 )
 
 type RawSample struct {
@@ -38,6 +41,20 @@ type Sample struct {
 	Fluency     float64
 	Relevance   float64
 }
+
+// LoadDataset decodes one of the corpora embedded in pkg/dataset by name
+// (e.g. "summeval", "frank_cnndm").
+func LoadDataset(name string, limit int) ([]Sample, error) {
+	return NewDataset(dataset.FS, name+".jsonl", limit)
+}
+
+// OutputDir is where every tool writes its reports for a corpus
+// (<metric>.json, or <metric>_<dimension>.json for per-dimension scorers).
+func OutputDir(dataset string) string { return filepath.Join("output", dataset) }
+
+// AblationDir is where ablation variants, raw dumps, feature dumps and
+// calibrations for a corpus go.
+func AblationDir(dataset string) string { return filepath.Join("ablation", dataset) }
 
 func NewDataset(fsys fs.FS, path string, limit int) ([]Sample, error) {
 	data, err := fs.ReadFile(fsys, path)

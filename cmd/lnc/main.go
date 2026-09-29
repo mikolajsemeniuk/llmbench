@@ -1,26 +1,26 @@
-// cmd/lnc runs LNC (Likelihood–NLI Composite, pkg/metrics/lnc.go) on
-// SummEval end to end: for every article it computes the CCM signals
-// (source-conditioned likelihood + K perturbations), the NLIG signals
-// (sentence-level NLI grounding) and the SPL signals (splice-point
-// likelihood), then applies a per-dimension ridge calibration.
+// cmd/lnc runs LNC (Likelihood–NLI Composite, pkg/metrics/lnc.go) end to
+// end: for every article it computes the CCM signals (source-conditioned
+// likelihood + K perturbations), the NLIG signals (sentence-level NLI
+// grounding) and the SPL signals (splice-point likelihood), then applies
+// a per-dimension ridge calibration.
 //
-// With -fit (default) the calibration is fitted on the development half
-// ONLY (first 50 articles in dataset order), written to -calibration,
-// and applied to all 1600 samples; the last 50 articles are the held-out
-// test. With -fit=false an existing calibration is loaded and applied
-// unchanged — how LNC is meant to be used on new data.
+// The calibration is part of the metric's definition: on SummEval it is
+// fitted on the development half ONLY (first 50 articles in dataset
+// order) and applied to all 1600 samples, the last 50 articles being the
+// held-out test; on any other corpus the frozen SummEval calibration is
+// applied unchanged.
+//
+// Cost cuts fixed a priori: the model server runs the LM in bf16, K=4
+// perturbations, and NLI only against each summary sentence's 4
+// highest-overlap source windows.
 //
 // Outputs:
 //
-//	output/lnc_<dim>.json        per-dimension reports (each carries a
-//	                             quarter of the shared wall-clock)
-//	ablation/lnc_calibration.json the frozen μ, σ, ridge weights
-//	ablation/<name>_features.json per-sample feature vectors
-//
-// LNC-fast (make benchmark-lncf) is the same pipeline with cost cuts
-// fixed a priori: the model server runs the CCM LM in bf16
-// (CCM_DTYPE=bfloat16), K=4 perturbations, and NLI only against each
-// summary sentence's 4 highest-overlap source windows (-nli-topk 4).
+//	output/<dataset>/lnc_<dim>.json        per-dimension reports (each
+//	                                       carries a quarter of the
+//	                                       shared wall-clock)
+//	ablation/<dataset>/lnc_features.json   per-sample feature vectors
+//	ablation/summeval/lnc_calibration.json the frozen μ, σ, ridge weights
 package main
 
 import (
@@ -43,49 +43,33 @@ import (
 )
 
 var (
-	input        string
-	outputDimDir string
-	ablationDir  string
-	calPath      string
-	host         string
-	fit          bool
-	alpha        float64
-	k            int
-	seed         uint64
-	bootstrap    int
-	debias       bool
-	featuresIn   string
-	name         string
-	nliTopK      int
+	datasetName string
+	host        string
+	alpha       float64
+	k           int
+	seed        uint64
+	bootstrap   int
+	reuse       bool
+	nliTopK     int
 )
 
 var dims = []string{"coherence", "consistency", "fluency", "relevance"}
 
 func main() {
-	flag.StringVar(&input, "input", "", "path to a dataset JSONL in SummEval layout (default: embedded SummEval)")
-	flag.StringVar(&outputDimDir, "output-dim-dir", "output", "directory for lnc_<dim>.json")
-	flag.StringVar(&ablationDir, "ablation-dir", "ablation", "directory for the feature dump")
-	flag.StringVar(&calPath, "calibration", "ablation/lnc_calibration.json", "calibration file (written with -fit, read without)")
+	flag.StringVar(&datasetName, "dataset", dataset.Default, "embedded corpus in pkg/dataset: summeval|frank_cnndm|frank_xsum|rose_cnndm")
 	flag.StringVar(&host, "host", "http://localhost:9200", "model server host")
-	flag.BoolVar(&fit, "fit", true, "fit the calibration on the development half (first 50 articles)")
 	flag.Float64Var(&alpha, "alpha", 10, "ridge penalty (fixed a priori)")
-	flag.IntVar(&k, "k", 8, "CCM perturbations per candidate")
+	flag.IntVar(&k, "k", 4, "CCM perturbations per candidate")
 	flag.Uint64Var(&seed, "seed", 42, "CCM perturbation seed")
 	flag.IntVar(&bootstrap, "bootstrap", 1000, "bootstrap resamples for 95%% CI (0 = disabled)")
-	flag.BoolVar(&debias, "debias", false, "fit on human ranks with the copy-rate rank projected out (copy rate used only for fitting)")
-	flag.StringVar(&featuresIn, "features-in", "", "reuse a feature dump written by an earlier run instead of calling the model server")
-	flag.StringVar(&name, "name", "lnc", "report prefix: output/<name>_<dim>.json")
-	flag.IntVar(&nliTopK, "nli-topk", 0, "score each summary sentence against only its K highest-overlap source windows (0 = all)")
+	flag.BoolVar(&reuse, "reuse-features", false, "read ablation/<dataset>/lnc_features.json from an earlier run instead of calling the model server")
+	flag.IntVar(&nliTopK, "nli-topk", 4, "score each summary sentence against only its K highest-overlap source windows (0 = all)")
 	flag.Parse()
 
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
 
-	fsys, path := fs.FS(dataset.Summeval), dataset.SummevalDefaultPath
-	if input != "" {
-		fsys, path = os.DirFS(filepath.Dir(input)), filepath.Base(input)
-	}
-	samples, err := eval.NewDataset(fsys, path, 0)
+	samples, err := eval.LoadDataset(datasetName, 0)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -97,43 +81,41 @@ func main() {
 		}
 	}
 
+	featuresPath := filepath.Join(eval.AblationDir(datasetName), "lnc_features.json")
+	calPath := filepath.Join(eval.AblationDir(dataset.Default), "lnc_calibration.json")
+
 	var X [][]float64
 	var msPerSample float64
-	if featuresIn != "" {
-		X, msPerSample, err = readFeatures(featuresIn, samples)
+	if reuse {
+		X, msPerSample, err = readFeatures(featuresPath, samples)
 		if err != nil {
 			log.Fatal(err)
 		}
-		log.Printf("LNC: reusing features from %s (%.1f ms/sample when computed)", featuresIn, msPerSample)
+		log.Printf("LNC: reusing features from %s (%.1f ms/sample when computed)", featuresPath, msPerSample)
 	} else {
 		X, msPerSample = computeFeatures(ctx, samples)
 	}
 	elapsed := time.Duration(msPerSample * float64(len(samples)) * float64(time.Millisecond))
 
 	var cal *metrics.LNCCalibration
-	if fit {
+	if datasetName == dataset.Default {
 		dev := map[string]bool{}
 		for _, d := range docs[:50] {
 			dev[d] = true
 		}
 		var Xd [][]float64
-		var copyRate []float64
 		human := map[string][]float64{}
 		for i, s := range samples {
 			if !dev[s.DocumentID] {
 				continue
 			}
 			Xd = append(Xd, X[i])
-			copyRate = append(copyRate, metrics.CopyRate(s.Document, s.Candidate))
 			human["coherence"] = append(human["coherence"], s.Coherence)
 			human["consistency"] = append(human["consistency"], s.Consistency)
 			human["fluency"] = append(human["fluency"], s.Fluency)
 			human["relevance"] = append(human["relevance"], s.Relevance)
 		}
-		if !debias {
-			copyRate = nil
-		}
-		cal, err = metrics.FitLNC(Xd, human, copyRate, alpha, "SummEval first 50 articles (dataset order)")
+		cal, err = metrics.FitLNC(Xd, human, alpha, "SummEval first 50 articles (dataset order)")
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -148,7 +130,7 @@ func main() {
 		}
 	}
 
-	norm := fmt.Sprintf("alpha=%g,debiased=%v,k=%d,seed=%d,nli_topk=%d,calibration=%s", cal.Alpha, cal.Debiased, k, seed, nliTopK, cal.FitOn)
+	norm := fmt.Sprintf("alpha=%g,k=%d,seed=%d,nli_topk=%d,calibration=%s", cal.Alpha, k, seed, nliTopK, cal.FitOn)
 	for _, dim := range dims {
 		scores := make([]float64, len(samples))
 		entries := make([]eval.Score, len(samples))
@@ -161,7 +143,7 @@ func main() {
 			entries[i] = eval.Score{SampleID: samples[i].ID, Value: v}
 		}
 		report := eval.Report{
-			Metric: name + "_" + dim, Norm: norm, Samples: len(samples),
+			Metric: "lnc_" + dim, Norm: norm, Samples: len(samples),
 			// Four reports from ONE run: cost-aware tools sum a
 			// dimensional metric's reports, so each carries a quarter.
 			RuntimeSec: elapsed.Seconds() / 4,
@@ -174,19 +156,19 @@ func main() {
 				Bootstrap: bootstrap, Level: "system",
 			}),
 		}
-		if err := eval.NewReport(filepath.Join(outputDimDir, name+"_"+dim+".json"), report); err != nil {
+		if err := eval.NewReport(filepath.Join(eval.OutputDir(datasetName), "lnc_"+dim+".json"), report); err != nil {
 			log.Fatal(err)
 		}
 	}
 
-	if featuresIn != "" {
+	if reuse {
 		return
 	}
 	rows := make([]featureRow, len(samples))
 	for i := range samples {
 		rows[i] = featureRow{samples[i].ID, X[i]}
 	}
-	if err := writeJSON(filepath.Join(ablationDir, name+"_features.json"), featureDump{
+	if err := writeJSON(featuresPath, featureDump{
 		Features: metrics.LNCFeatures, MsPerSample: msPerSample, Rows: rows,
 	}); err != nil {
 		log.Fatal(err)
@@ -240,7 +222,7 @@ func writeJSON(path string, v any) error {
 func readCalibration(path string) (*metrics.LNCCalibration, error) {
 	b, err := os.ReadFile(path)
 	if errors.Is(err, fs.ErrNotExist) {
-		return nil, fmt.Errorf("calibration %s not found; run with -fit first", path)
+		return nil, fmt.Errorf("calibration %s not found; run cmd/lnc on summeval first", path)
 	}
 	if err != nil {
 		return nil, err

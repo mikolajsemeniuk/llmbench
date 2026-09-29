@@ -16,24 +16,27 @@ import (
 )
 
 var (
-	input     string
-	output    string
-	host      string
-	model     string
-	n         int
-	norm      string
-	bootstrap int
+	datasetName string
+	output      string
+	host        string
+	model       string
+	n           int
+	norm        string
+	bootstrap   int
 )
 
 func main() {
-	flag.StringVar(&input, "input", "", "path to dataset JSON/JSONL file")
-	flag.StringVar(&output, "output", "output/embedscorer.json", "write results to file instead of stdout")
+	flag.StringVar(&datasetName, "dataset", dataset.Default, "embedded corpus in pkg/dataset: summeval|frank_cnndm|frank_xsum|rose_cnndm")
+	flag.StringVar(&output, "output", "", "report path (default: output/<dataset>/embedscorer.json)")
 	flag.StringVar(&host, "host", "http://localhost:11434", "Ollama host URL (port 11434)")
 	flag.StringVar(&model, "model", "nomic-embed-text", "embedding model")
 	flag.StringVar(&norm, "norm", eval.DefaultNormName, "reference aggregation: max|mean")
 	flag.IntVar(&n, "n", 0, "entries limit (0 = all)")
 	flag.IntVar(&bootstrap, "bootstrap", 1000, "bootstrap resamples for 95% CI (0 = disabled)")
 	flag.Parse()
+	if output == "" {
+		output = filepath.Join(eval.OutputDir(datasetName), "embedscorer.json")
+	}
 
 	ctx := context.Background()
 	ctx, cancel := signal.NotifyContext(ctx, os.Interrupt)
@@ -44,14 +47,7 @@ func main() {
 		fn = eval.DefaultNorm
 	}
 
-	fsys := os.DirFS(filepath.Dir(input))
-	path := filepath.Base(input)
-	if input == "" {
-		fsys = dataset.Summeval
-		path = dataset.SummevalDefaultPath
-	}
-
-	samples, err := eval.NewDataset(fsys, path, n)
+	samples, err := eval.LoadDataset(datasetName, n)
 	if err != nil {
 		log.Fatal(err)
 	}

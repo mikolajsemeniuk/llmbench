@@ -4,19 +4,17 @@
 // instruction model. Perturbations, seed and LM are identical to
 // cmd/ccm, so PSC vs CCM differs ONLY in the conditioning text.
 //
-// Paraphrases are cached in -paraphrases (JSON, keyed by document ID,
+// Paraphrases are cached (JSON, keyed by document ID,
 // with the generation wall-clock per article) so a rerun scores the
 // exact same x̃; the cached generation time is still charged to the
 // reported runtime.
 //
-// Outputs:
+// Outputs (compare with cmd/ccm's ccm.json and ccm_logp.json):
 //
-//	output/pscd_<dim>.json   CCM-D recipe (pkg/metrics/ccm.go) under x̃ —
-//	                         the pre-registered primary metric; each
-//	                         report carries a quarter of the wall-clock
-//	ablation/psc_logp.json    log P(y|x̃)/|y|
-//	ablation/psc_margin.json  log P(y|x̃) − mean_k log P(y'_k|x̃)
-//	ablation/psc_raw.json     per-sample dump (same layout as ccm_raw.json)
+//	output/<dataset>/psc.json              log P(y|x̃) − mean_k log P(y'_k|x̃)
+//	ablation/<dataset>/psc_logp.json       log P(y|x̃)/|y|
+//	ablation/<dataset>/psc_raw.json        per-sample dump (layout of ccm_raw.json)
+//	ablation/<dataset>/psc_paraphrases.json the cached x̃ per article
 package main
 
 import (
@@ -39,17 +37,14 @@ import (
 )
 
 var (
-	input        string
-	outputDimDir string
-	ablationDir  string
-	paraFile     string
-	host         string
-	ollamaHost   string
-	paraModel    string
-	k            int
-	seed         uint64
-	n            int
-	bootstrap    int
+	datasetName string
+	host        string
+	ollamaHost  string
+	paraModel   string
+	k           int
+	seed        uint64
+	n           int
+	bootstrap   int
 )
 
 type paraEntry struct {
@@ -74,10 +69,7 @@ type rawSample struct {
 }
 
 func main() {
-	flag.StringVar(&input, "input", "", "path to dataset JSON/JSONL file")
-	flag.StringVar(&outputDimDir, "output-dim-dir", "output", "directory for pscd_<dim>.json")
-	flag.StringVar(&ablationDir, "ablation-dir", "ablation", "directory for ablation variants and the raw dump (empty = skip)")
-	flag.StringVar(&paraFile, "paraphrases", "ablation/psc_paraphrases.json", "paraphrase cache")
+	flag.StringVar(&datasetName, "dataset", dataset.Default, "embedded corpus in pkg/dataset: summeval|frank_cnndm|frank_xsum|rose_cnndm")
 	flag.StringVar(&host, "host", "http://localhost:9200", "model server host (scoring LM)")
 	flag.StringVar(&ollamaHost, "ollama-host", "http://localhost:11434", "Ollama host (paraphraser)")
 	flag.StringVar(&paraModel, "paraphrase-model", "qwen2.5:7b-instruct-q4_K_M", "Ollama model that writes x̃")
@@ -90,17 +82,13 @@ func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
 
-	fsys := os.DirFS(filepath.Dir(input))
-	path := filepath.Base(input)
-	if input == "" {
-		fsys = dataset.Summeval
-		path = dataset.SummevalDefaultPath
-	}
-	samples, err := eval.NewDataset(fsys, path, n)
+	samples, err := eval.LoadDataset(datasetName, n)
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	ablationDir := eval.AblationDir(datasetName)
+	paraFile := filepath.Join(ablationDir, "psc_paraphrases.json")
 	cache, err := loadCache(paraFile)
 	if err != nil {
 		log.Fatal(err)
@@ -182,7 +170,7 @@ func main() {
 		paraTime.Seconds(), scoreTime.Seconds(), 1000*elapsed.Seconds()/N, overlap/float64(len(docs)))
 
 	norm := fmt.Sprintf("paraphraser=%s,k=%d,seed=%d", paraModel, k, seed)
-	write := func(out, metric string, f func(metrics.CCMResult) float64, share float64) {
+	write := func(out, metric string, f func(metrics.CCMResult) float64) {
 		scores := make([]float64, len(samples))
 		entries := make([]eval.Score, len(samples))
 		for i, r := range results {
@@ -193,7 +181,7 @@ func main() {
 			Metric:     metric,
 			Norm:       norm,
 			Samples:    len(samples),
-			RuntimeSec: share * elapsed.Seconds(),
+			RuntimeSec: elapsed.Seconds(),
 			Timestamp:  time.Now().UTC().Format(time.RFC3339),
 			Scores:     entries,
 			SummaryLevel: eval.NewCorrelation(samples, scores, eval.CorrelationOptions{
@@ -208,25 +196,8 @@ func main() {
 		}
 	}
 
-	// The four pscd reports come from ONE run; cost-aware tools sum a
-	// dimensional metric's reports, so each carries a quarter.
-	for _, d := range []struct {
-		dim string
-		f   func(metrics.CCMResult) float64
-	}{
-		{"coherence", metrics.CCMResult.CoherenceScore},
-		{"consistency", metrics.CCMResult.ConsistencyScore},
-		{"fluency", metrics.CCMResult.FluencyScore},
-		{"relevance", metrics.CCMResult.RelevanceScore},
-	} {
-		write(filepath.Join(outputDimDir, "pscd_"+d.dim+".json"), "pscd_"+d.dim, d.f, 0.25)
-	}
-
-	if ablationDir == "" {
-		return
-	}
-	write(filepath.Join(ablationDir, "psc_logp.json"), "psc_logp", metrics.CCMResult.LogPPerToken, 1)
-	write(filepath.Join(ablationDir, "psc_margin.json"), "psc_margin", metrics.CCMResult.Margin, 1)
+	write(filepath.Join(eval.OutputDir(datasetName), "psc.json"), "psc", metrics.CCMResult.Margin)
+	write(filepath.Join(ablationDir, "psc_logp.json"), "psc_logp", metrics.CCMResult.LogPPerToken)
 
 	raw := make([]rawSample, len(samples))
 	for i, r := range results {

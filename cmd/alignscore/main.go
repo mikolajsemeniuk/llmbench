@@ -6,7 +6,6 @@ package main
 import (
 	"context"
 	"flag"
-	"io/fs"
 	"log"
 	"os"
 	"os/signal"
@@ -20,27 +19,26 @@ import (
 )
 
 var (
-	input     string
-	output    string
-	host      string
-	bootstrap int
+	datasetName string
+	output      string
+	host        string
+	bootstrap   int
 )
 
 func main() {
-	flag.StringVar(&input, "input", "", "path to a dataset JSONL in SummEval layout (default: embedded SummEval)")
-	flag.StringVar(&output, "output", "output/alignscore.json", "report path")
+	flag.StringVar(&datasetName, "dataset", dataset.Default, "embedded corpus in pkg/dataset: summeval|frank_cnndm|frank_xsum|rose_cnndm")
+	flag.StringVar(&output, "output", "", "report path (default: output/<dataset>/alignscore.json)")
 	flag.StringVar(&host, "host", "http://localhost:9200", "model server host")
 	flag.IntVar(&bootstrap, "bootstrap", 1000, "bootstrap resamples for 95%% CI (0 = disabled)")
 	flag.Parse()
+	if output == "" {
+		output = filepath.Join(eval.OutputDir(datasetName), "alignscore.json")
+	}
 
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
 
-	fsys, path := fs.FS(dataset.Summeval), dataset.SummevalDefaultPath
-	if input != "" {
-		fsys, path = os.DirFS(filepath.Dir(input)), filepath.Base(input)
-	}
-	samples, err := eval.NewDataset(fsys, path, 0)
+	samples, err := eval.LoadDataset(datasetName, 0)
 	if err != nil {
 		log.Fatal(err)
 	}
