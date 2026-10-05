@@ -1,6 +1,6 @@
 \begin{table}[t]
 \centering
-\caption{Held-out copy-partialled $\bar{\rho}$ of the LNC ridge recipe on \textsc{SummEval} over 200 random splits (mean and 2.5--97.5 percentiles). Controls apply the same ridge to existing signals. The system split fits on 8 of the 16 systems and 50 articles and tests on the other 50 articles; unseen systems score lower in 135 of 200 splits, while zero-shot UniEval does not change.}
+\caption{Held-out copy-partialled $\bar{\rho}$ of the LNC ridge recipe on SummEval over 200 random splits (mean and 2.5--97.5 percentiles). Controls apply the same ridge to existing signals; the last block refits LNC without one feature group. The system split fits on 8 of the 16 systems and 50 articles and tests on the other 50 articles; unseen systems score lower in 135 of 200 splits, while zero-shot UniEval does not change.}
 \label{tab:lnc_robust}
 \small
 \begin{tabular}{@{}lc@{}}
@@ -16,6 +16,11 @@ LNC, fit on 8 systems: same systems & .316 {\scriptsize [.195, .412]} \\
 LNC, fit on 8 systems: unseen systems & .269 {\scriptsize [.153, .350]} \\
 UniEval (zero-shot): same systems & .408 {\scriptsize [.325, .480]} \\
 UniEval (zero-shot): unseen systems & .411 {\scriptsize [.329, .490]} \\
+\midrule
+LNC without likelihood features & .305 {\scriptsize [.276, .334]} \\
+LNC without perturbation margins & .280 {\scriptsize [.248, .308]} \\
+LNC without NLI grounding & .299 {\scriptsize [.271, .328]} \\
+LNC without splice-point likelihood & .319 {\scriptsize [.291, .343]} \\
 \bottomrule
 \end{tabular}
 \end{table}

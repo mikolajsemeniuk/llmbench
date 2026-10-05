@@ -53,15 +53,19 @@ var metricDisplayName = map[string]string{
 	"lead3sent":   "Lead-3 (sent)",
 	"lead5sent":   "Lead-5 (sent)",
 	"lead3whole":  "Lead-3 (whole)",
+	"alignscore":  "AlignScore",
+	"nlig":        "NLIG",
+	"lnc":         "LNC",
 }
 
 func main() {
-	var inputDir, output, metricsCSV, target string
+	var inputDir, output, metricsCSV, target, docSplit string
 	flag.StringVar(&inputDir, "input", "output/summeval", "directory containing metric JSON reports")
 	flag.StringVar(&output, "output", "paper/friedman.gen.tex", "path to write LaTeX table (- for stdout)")
 	flag.StringVar(&metricsCSV, "metrics", "bleu,rouge,chrf,meteor,smartstring,embedscorer,bertscore,moverscore,smartmodel,bartscore,gptscore,unieval,geval,lgs",
 		"comma-separated metric keys (file basenames, or prefix for dimensional files like unieval/geval)")
 	flag.StringVar(&target, "target", "lgs", "metric to use as the reference column in pairwise post-hoc tests")
+	flag.StringVar(&docSplit, "doc-split", "all", "articles to test on: all|first50|last50 (last50 is the half LNC is not calibrated on)")
 	flag.Parse()
 
 	metrics := splitCSV(metricsCSV)
@@ -72,6 +76,9 @@ func main() {
 	samples, err := eval.LoadDataset(dataset.Default, 0)
 	if err != nil {
 		log.Fatalf("load dataset: %v", err)
+	}
+	if samples, err = eval.SplitDocs(samples, docSplit); err != nil {
+		log.Fatal(err)
 	}
 
 	scoresByMetric := make(map[string]map[string][]float64, len(metrics)) // metric -> dim -> aligned scores
@@ -127,8 +134,8 @@ func loadScores(samples []eval.Sample, dir, name string) ([]float64, error) {
 	if err := json.Unmarshal(data, &r); err != nil {
 		return nil, fmt.Errorf("decode %s: %w", path, err)
 	}
-	if len(r.Scores) != len(samples) {
-		return nil, fmt.Errorf("expected %d scores in %s, got %d", len(samples), path, len(r.Scores))
+	if len(r.Scores) < len(samples) {
+		return nil, fmt.Errorf("expected at least %d scores in %s, got %d", len(samples), path, len(r.Scores))
 	}
 	byID := make(map[string]float64, len(r.Scores))
 	for _, s := range r.Scores {
@@ -566,50 +573,67 @@ func renderConsole(results []dimResult) string {
 	return b.String()
 }
 
+// renderLatex writes one compact table: a row per metric with its
+// average Friedman rank on every dimension (higher = better), an asterisk
+// where the Holm-corrected Wilcoxon test separates it from the target,
+// and the omnibus statistics in the last rows.
 func renderLatex(results []dimResult) string {
 	var b strings.Builder
-	fmt.Fprintln(&b, `\begin{table*}[t]`)
+	r0 := results[0]
+	fmt.Fprintln(&b, `\begin{table}[t]`)
 	fmt.Fprintln(&b, `\centering`)
-	fmt.Fprintln(&b, `\caption{Friedman test (blocks = 100 \textsc{SummEval} articles, treatments = metrics, response = each metric's within-article Spearman correlation with human ratings) and Wilcoxon signed-rank post-hoc comparisons of LGS against every other metric, Holm-corrected across the family of comparisons within each dimension. $\chi^2_F$ is the Friedman statistic (df in parentheses); the omnibus test rejects the null of equal average rank across all four dimensions. The Nemenyi critical difference (CD, $\alpha=0.05$) is the minimum gap in average rank for two metrics to be called significantly different without a paired test. Wilcoxon columns report LGS's average-rank gap against the listed baseline and the Holm-adjusted $p$-value; \textbf{bold} survives $p_{\mathrm{Holm}}<0.05$.}`)
+	fmt.Fprintf(&b, "\\caption{Friedman test on SummEval: blocks are the %d articles, treatments the %d metrics, and the response is each metric's within-article Spearman correlation with the human ratings. Cells give the average rank (higher is better). An asterisk marks a metric whose Wilcoxon signed-rank comparison with %s is significant after Holm correction ($p_{\\mathrm{Holm}}<0.05$). The last rows give the Friedman statistic and the Nemenyi critical difference (CD, $\\alpha=0.05$).}\n", r0.N, r0.K, display(r0.Target))
 	fmt.Fprintln(&b, `\label{tab:friedman}`)
 	fmt.Fprintln(&b, `\small`)
-	fmt.Fprintln(&b, `\linespread{1}\selectfont`)
-	fmt.Fprintln(&b, `\setlength{\tabcolsep}{4pt}`)
-
+	fmt.Fprintln(&b, `\begin{tabular}{@{}lrrrr@{}}`)
+	fmt.Fprintln(&b, `\toprule`)
+	fmt.Fprint(&b, "Metric")
 	for _, r := range results {
-		fmt.Fprintf(&b, "\\subsubsection*{%s: $\\chi^2_F(%d){=}%.1f$, $p%s$, CD${=}%.2f$}\n",
-			strings.Title(r.Dim), r.DF, r.Chi2, pfmt(r.P), r.CD)
-		fmt.Fprintln(&b, `\begin{tabular}{@{}lrrrr@{}}`)
-		fmt.Fprintln(&b, `\toprule`)
-		fmt.Fprintln(&b, `Metric & Mean $\rho$ & Avg.\ rank & $z$ (vs LGS) & $p_{\mathrm{Holm}}$ \\`)
-		fmt.Fprintln(&b, `\midrule`)
+		fmt.Fprintf(&b, " & %s", strings.ToUpper(r.Dim[:1])+r.Dim[1:3])
+	}
+	fmt.Fprintln(&b, ` \\`)
+	fmt.Fprintln(&b, `\midrule`)
 
-		ms := append([]string(nil), r.Metrics...)
-		sort.Slice(ms, func(i, j int) bool { return r.AvgRank[ms[i]] > r.AvgRank[ms[j]] })
-		pairByMetric := make(map[string]pairResult, len(r.Pairwise))
-		for _, pr := range r.Pairwise {
-			pairByMetric[pr.Metric] = pr
+	mean := func(m string) float64 {
+		var t float64
+		for _, r := range results {
+			t += r.AvgRank[m]
 		}
-		for _, m := range ms {
-			zStr, pStr := "---", "---"
-			if pr, ok := pairByMetric[m]; ok {
-				zStr = fmt.Sprintf("%+.2f", pr.Z)
-				pStr = fmt.Sprintf("%.3f", pr.PHolm)
-				if pr.Sig {
-					pStr = `\textbf{` + pStr + `}`
+		return t / float64(len(results))
+	}
+	ms := append([]string(nil), r0.Metrics...)
+	sort.Slice(ms, func(i, j int) bool { return mean(ms[i]) > mean(ms[j]) })
+	for _, m := range ms {
+		name := display(m)
+		if m == r0.Target {
+			name = `\textbf{` + name + `}`
+		}
+		fmt.Fprint(&b, name)
+		for _, r := range results {
+			mark := ""
+			for _, pr := range r.Pairwise {
+				if pr.Metric == m && pr.Sig {
+					mark = "$^{*}$"
 				}
 			}
-			name := display(m)
-			if m == r.Target {
-				name = `\textbf{` + name + `}`
-			}
-			fmt.Fprintf(&b, "%s & %.3f & %.2f & %s & %s \\\\\n", name, r.MeanRho[m], r.AvgRank[m], zStr, pStr)
+			fmt.Fprintf(&b, " & %.2f%s", r.AvgRank[m], mark)
 		}
-		fmt.Fprintln(&b, `\bottomrule`)
-		fmt.Fprintln(&b, `\end{tabular}`)
-		fmt.Fprintln(&b, `\vspace{2mm}`)
+		fmt.Fprintln(&b, ` \\`)
 	}
-	fmt.Fprintln(&b, `\end{table*}`)
+	fmt.Fprintln(&b, `\midrule`)
+	fmt.Fprint(&b, `$\chi^2_F$`)
+	for _, r := range results {
+		fmt.Fprintf(&b, " & %.1f", r.Chi2)
+	}
+	fmt.Fprintln(&b, ` \\`)
+	fmt.Fprint(&b, "CD")
+	for _, r := range results {
+		fmt.Fprintf(&b, " & %.2f", r.CD)
+	}
+	fmt.Fprintln(&b, ` \\`)
+	fmt.Fprintln(&b, `\bottomrule`)
+	fmt.Fprintln(&b, `\end{tabular}`)
+	fmt.Fprintln(&b, `\end{table}`)
 	return b.String()
 }
 

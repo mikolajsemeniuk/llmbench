@@ -1,0 +1,91 @@
+\section{LNC: a Likelihood--NLI Composite}
+\label{sec:method}
+
+LNC scores a candidate summary $y$ of a source document $x$ on each of the four SummEval dimensions. It needs no reference. It computes ten features with two small models and maps them to one score per dimension with a linear calibration. Table~\ref{tab:notation} lists the notation.
+
+\begin{table}[t]
+\centering
+\caption{Notation.}
+\label{tab:notation}
+\small
+\begin{tabular}{@{}ll@{}}
+\toprule
+Symbol & Meaning \\
+\midrule
+$x$, $y$ & source document, candidate summary \\
+$y'_k$ & $k$-th perturbation of $y$, $k=1,\dots,K$ \\
+$|y|$ & number of language-model tokens of $y$ \\
+$P(y \mid x)$ & probability of $y$ under the causal LM prompted with $x$ \\
+$P(y)$ & probability of $y$ under the same LM without the source \\
+$c_j$ & $j$-th sentence of $y$ \\
+$w$ & source window: one sentence or two adjacent sentences of $x$ \\
+$P_e$, $P_c$ & NLI probabilities of entailment and contradiction \\
+$f \in \mathbb{R}^{10}$ & feature vector of a candidate \\
+$\mu$, $\sigma$ & feature means and standard deviations on the development half \\
+$w_d$ & ridge weights for dimension $d$ \\
+$\mathrm{cr}(y,x)$ & copy rate: share of the token bigrams of $y$ that occur in $x$ \\
+$\rho$, $\rho_{\mathrm{part}}$ & Spearman correlation, raw and with $\mathrm{cr}$ partialled out \\
+$\bar\rho$, $\bar\rho_{\mathrm{part}}$ & the same, averaged over the four dimensions \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Language-model features}
+
+A causal language model (Qwen2.5-1.5B~\citep{qwen2025report}) reads the prompt ``\texttt{Article:} $x$ \texttt{Summary:}'' and assigns a log-probability to every token of $y$. The source prefix is encoded once per article and its key--value cache is reused for every candidate, so the cost of the source is shared by all summaries of an article. From these probabilities LNC takes three features: the length-normalised log-likelihood $\log P(y\mid x)/|y|$, the total $\log P(y\mid x)$, and the unconditional $\log P(y)/|y|$, computed with the prompt ``\texttt{Summary:}'' alone. The first is the source-to-summary score of BARTScore~\citep{yuan2021bartscore}; the total also reflects length, which matters for fluency; the unconditional term separates fluency from support by the source.
+
+\paragraph{Perturbation margins.} LNC generates $K=4$ local, meaning-changing edits of $y$, cycling through four families: swapping a named entity for another entity of the source, changing a number, inserting or removing a negation after an auxiliary verb, and swapping two sentences. Entities are approximated by tokens that appear capitalised inside a source sentence, so no tagger is needed. A family that does not apply to a candidate is skipped, and the random choices are seeded by the sample identifier. From the perturbed log-likelihoods LNC takes three features:
+\begin{align}
+m_{\mathrm{order}} &= \log P(y\mid x) - \operatorname{mean}_{k \in \mathrm{order}} \log P(y'_k\mid x), \\
+m_{\mathrm{neg}} &= \log P(y\mid x) - \operatorname{mean}_{k \in \mathrm{negation}} \log P(y'_k\mid x), \\
+z &= \frac{\log P(y\mid x) - \operatorname{mean}_k \log P(y'_k\mid x)}{\operatorname{std}_k \log P(y'_k\mid x) + 10^{-3}},
+\end{align}
+with a margin set to 0 when its family produced no perturbation, and $z$ set to 0 when fewer than two perturbations exist. The order margin asks whether the sentences of $y$ are in a more plausible order than a swapped version, which is a coherence signal~\citep{xie2023deltascore}; $z$ normalises the overall contrast by its spread, as DetectGPT does~\citep{mitchell2023detectgpt}.
+
+\paragraph{Splice-point likelihood.} SummEval summaries are mostly glued together from copied fragments. LNC marks a word of $y$ as a splice word if it is the first word or if the bigram it closes does not occur in the source; all other words lie inside copied fragments. Word log-probabilities are obtained by summing the log-probabilities of the LM tokens that begin inside the word. Two features are the mean log-probability of splice words and of words inside copied fragments.
+
+\subsection{NLI grounding}
+
+An NLI cross-encoder (DeBERTa-v3-large~\citep{he2023debertav3} fine-tuned on MNLI, FEVER, ANLI, LingNLI and WANLI~\citep{laurer2024less}) checks every summary sentence $c_j$ against source windows $w$ of one or two adjacent sentences. To bound the cost, each sentence is compared only with the four windows that share the most words with it. The evidence for a sentence is
+\begin{equation}
+g_j = \max_{w} \bigl( P_e(w, c_j) - P_c(w, c_j) \bigr),
+\end{equation}
+and LNC takes the mean and the minimum of $g_j$ over sentences. The mean is the zero-shot SummaC construction~\citep{laban2022summac}; the minimum captures the case where a single unsupported sentence makes a summary inconsistent. Unlike likelihood, entailment holds for paraphrase, so this group should not pay a bonus for verbatim copying.
+
+\subsection{Calibration}
+
+For each dimension $d$, LNC scores a candidate as
+\begin{equation}
+\mathrm{LNC}_d(y) = \sum_{i=1}^{10} w_{d,i} \, \frac{f_i - \mu_i}{\sigma_i}.
+\end{equation}
+The means $\mu$ and deviations $\sigma$ are computed on a development set. The weights $w_d$ are fitted by ridge regression~\citep{hoerl1970ridge} with penalty $\alpha=10$ on the standardised features, with the standardised rank of the human rating as the target. The development set is the first 50 SummEval articles in dataset order (800 summaries); the remaining 50 articles are never used for fitting. The calibration is then frozen and applied unchanged to every other corpus.
+
+Three design decisions were made on the development half only: the ridge was preferred to choosing the best single feature per dimension by article-level cross-validation inside the development half, $\alpha$ was fixed before fitting, and three cost reductions were fixed a priori: the language model runs in bfloat16, $K=4$ perturbations instead of eight, and four NLI windows per sentence instead of all of them. Table~\ref{tab:features} lists the features and the ridge weights.
+
+\begin{table}[t]
+\centering
+\caption{LNC features and their ridge weights per dimension (standardised features, fitted on the first 50 SummEval articles).}
+\label{tab:features}
+\small
+\begin{tabular}{@{}llrrrr@{}}
+\toprule
+Group & Feature & Coh & Con & Flu & Rel \\
+\midrule
+\multirow{3}{*}{Likelihood} & $\log P(y\mid x)/|y|$ & .05 & .14 & .14 & .20 \\
+ & $\log P(y\mid x)$ & .19 & .02 & .36 & $-$.10 \\
+ & $\log P(y)/|y|$ & .01 & $-$.03 & .04 & .10 \\
+\midrule
+\multirow{3}{*}{Perturbation} & order margin & .22 & .09 & .04 & .17 \\
+ & negation margin & $-$.01 & .06 & .03 & .08 \\
+ & $z$-margin & .05 & $-$.03 & $-$.05 & .01 \\
+\midrule
+\multirow{2}{*}{NLI} & mean $g_j$ & $-$.29 & .13 & $-$.05 & $-$.01 \\
+ & min $g_j$ & .26 & .26 & .09 & .07 \\
+\midrule
+\multirow{2}{*}{Splice} & splice words & .02 & .08 & .07 & .08 \\
+ & inside copied fragments & .03 & .04 & $-$.11 & .01 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The weights are readable. Fluency rests on the total log-likelihood, which also favours shorter summaries. Consistency rests on the minimum NLI evidence and the per-token likelihood. Coherence and relevance use the order margin, and coherence contrasts the minimum with the mean NLI evidence, which rewards summaries whose sentences are uniformly supported. Because the features are correlated, single weights should not be read as causal effects; Section~\ref{sec:analysis} measures the contribution of each group by removing it.

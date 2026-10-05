@@ -1,0 +1,39 @@
+\section{Related work}
+\label{sec:related}
+
+\paragraph{Reference-based metrics.} The oldest family compares a candidate with one or more human references. Lexical metrics count shared $n$-grams (BLEU~\citep{papineni2002bleu}, ROUGE~\citep{lin2004rouge}, METEOR~\citep{banerjee2005meteor}) or characters (chrF~\citep{popovic2015chrf}); SMART~\citep{amplayo2022smart} matches sentences instead of tokens. Embedding metrics replace exact matches by similarity in a contextual embedding space: BERTScore~\citep{zhang2020bertscore} aligns tokens greedily and MoverScore~\citep{zhao2019moverscore} solves a transport problem. Trained metrics such as BLEURT~\citep{sellam2020bleurt} and COMET~\citep{rei2020comet} fine-tune an encoder on human judgements. All of them need a reference, which is the resource that is missing whenever summaries are produced at scale.
+
+\paragraph{Reference-free metrics before LLM judges.} Several metrics compare the summary with the source instead. SUPERT~\citep{gao2020supert} builds a pseudo-reference from salient source sentences and scores the summary against it with contextual embeddings. BLANC~\citep{vasilyev2020blanc} measures how much a summary helps a masked language model reconstruct masked source tokens. SummaQA~\citep{scialom2019summaqa} asks questions generated from the source and checks whether a QA model can answer them from the summary; QAFactEval~\citep{fabbri2022qafacteval} refines this idea for factual consistency. ESTIME~\citep{vasilyev2021estime} counts summary tokens whose contextual embeddings are mismatched in the source. These methods are cheap and need no reference, but most of them reward overlap with the source by construction.
+
+\paragraph{Likelihood-based scoring.} A language model can score a summary by its probability. BARTScore~\citep{yuan2021bartscore} uses a sequence-to-sequence model in several directions, including source to summary; GPTScore~\citep{fu2023gptscore} prompts a causal model with an instruction. FFLM~\citep{jia2023fflm} combines probability changes with and without the source to judge faithfulness. Prism~\citep{thompson2020prism} already noted that a paraphraser scores a verbatim copy of its input highly. Perturbation contrasts compare the probability of a text with that of perturbed versions: DeltaScore~\citep{xie2023deltascore} uses a single perturbation per aspect for story evaluation, and DetectGPT~\citep{mitchell2023detectgpt} averages over many perturbations to detect machine-generated text. LNC reuses these ideas as features; it does not introduce a new likelihood primitive.
+
+\paragraph{Factual consistency.} Inconsistency with the source is the best studied error of abstractive summarisers~\citep{maynez2020faithfulness}. FactCC~\citep{kryscinski2020factcc} trains a classifier on synthetic errors. SummaC~\citep{laban2022summac} applies an off-the-shelf NLI model to every pair of source and summary sentences and aggregates the entailment scores; its zero-shot variant is one of LNC's components. AlignScore~\citep{zha2023alignscore} trains a unified alignment model on many tasks and is a strong published baseline for consistency, which is why we include it. MiniCheck~\citep{tang2024minicheck} trains small fact-checkers for grounding documents. FRANK~\citep{pagnoni2021frank} provides human factuality annotations with an error typology and is one of our transfer corpora.
+
+\paragraph{Unified evaluators and LLM judges.} UniEval~\citep{zhong2022unieval} casts every dimension as a Boolean question answered by a T5 model trained on pseudo-labelled data. G-Eval~\citep{liu2023geval} asks GPT-4 for a score with chain-of-thought instructions and averages twenty samples; the broader use of LLMs as judges is surveyed by~\citet{gu2024judgesurvey}. These evaluators correlate best with human ratings, but the strongest configurations depend on proprietary models or need a reference for some dimensions.
+
+\paragraph{Learned metric combinations.} MetaMetrics~\citep{winata2025metametrics} calibrates a combination of existing metrics to human preferences and reports runtime next to correlation. LNC belongs to this family: it is a learned combination calibrated on human ratings. It differs in that its inputs are signals from two small models rather than complete metrics, it is designed and assessed on the shortcut-controlled axis, and its calibration is frozen and tested on corpora it was not fitted on.
+
+\paragraph{Meta-evaluation methodology.} \citet{deutsch2021resampling} show that correlations on summarisation benchmarks carry wide confidence intervals and recommend resampling tests, which we use throughout. \citet{gehrmann2023cracked} survey wider problems of evaluation practice. Closest to our motivation, \citet{durmus2022spurious} show that reference-free factuality metrics are confounded with extractiveness and \citet{ladhak2022faithful} describe the trade-off between faithfulness and abstractiveness. The lead bias of news summarisation~\citep{kedzie2018content} and the extractive strategies measured by Newsroom~\citep{grusky2018newsroom} explain why the confound is so strong on CNN/DailyMail. We extend the confound analysis from consistency to all four SummEval dimensions and to the whole metric pool. RoSE~\citep{liu2023rose} replaces Likert ratings by atomic content units and is our second transfer corpus.
+
+Table~\ref{tab:families} summarises the families, their requirements and their known weaknesses.
+
+\begin{table}[t]
+\centering
+\caption{Families of summary-evaluation metrics. ``Reference'' is whether a human reference is needed; cost is per summary on one GPU.}
+\label{tab:families}
+\small
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{2.2cm}>{\raggedright\arraybackslash}p{2.5cm}>{\raggedright\arraybackslash}p{1.6cm}>{\raggedright\arraybackslash}p{1.4cm}>{\raggedright\arraybackslash}p{2.7cm}>{\raggedright\arraybackslash}p{3.1cm}@{}}
+\toprule
+Family & Examples & Reference & Cost & Strength & Weakness \\
+\midrule
+Lexical overlap & BLEU, ROUGE, METEOR, chrF & yes & $<$5\,ms & transparent, free & ignores paraphrase; weak on all dimensions \\
+Embedding similarity & BERTScore, MoverScore, SMART & yes & 0.2--1.5\,s & robust to paraphrase & needs a reference; weak on consistency \\
+Source-based, pre-LLM & SUPERT, BLANC, SummaQA, ESTIME & no & moderate & no reference & reward overlap with the source \\
+Likelihood & BARTScore, GPTScore, FFLM & optional & 30--300\,ms & cheap, graded & reward copying when conditioned on the source \\
+NLI / alignment & SummaC, Align\-Score, Mini\-Check & no & 0.1--0.8\,s & targets consistency & little signal for the other dimensions \\
+Unified evaluator & UniEval & for relevance & 0.3\,s & strong on all dimensions & trained on a related corpus; reference for relevance \\
+LLM judge & G-Eval & no & seconds & strong, flexible & expensive; depends on the judge model \\
+Learned combination & Meta\-Metrics, LNC & no (LNC) & 0.2\,s (LNC) & combines complementary signals & needs human ratings to calibrate; may not transfer \\
+\bottomrule
+\end{tabular}
+\end{table}

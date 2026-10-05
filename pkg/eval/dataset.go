@@ -56,6 +56,46 @@ func OutputDir(dataset string) string { return filepath.Join("output", dataset) 
 // calibrations for a corpus go.
 func AblationDir(dataset string) string { return filepath.Join("ablation", dataset) }
 
+// SplitDocs keeps the articles of one half of a corpus in dataset order:
+// "first50" (the SummEval development half LNC is calibrated on),
+// "last50" (the held-out half) or "all".
+func SplitDocs(samples []Sample, split string) ([]Sample, error) {
+	if split == "all" {
+		return samples, nil
+	}
+	var docs []string
+	seen := map[string]bool{}
+	for _, s := range samples {
+		if !seen[s.DocumentID] {
+			seen[s.DocumentID] = true
+			docs = append(docs, s.DocumentID)
+		}
+	}
+	if len(docs) < 100 {
+		return nil, fmt.Errorf("doc split %q needs at least 100 articles, got %d", split, len(docs))
+	}
+	keep := map[string]bool{}
+	switch split {
+	case "first50":
+		for _, d := range docs[:50] {
+			keep[d] = true
+		}
+	case "last50":
+		for _, d := range docs[len(docs)-50:] {
+			keep[d] = true
+		}
+	default:
+		return nil, fmt.Errorf("doc split must be all|first50|last50, got %q", split)
+	}
+	var out []Sample
+	for _, s := range samples {
+		if keep[s.DocumentID] {
+			out = append(out, s)
+		}
+	}
+	return out, nil
+}
+
 func NewDataset(fsys fs.FS, path string, limit int) ([]Sample, error) {
 	data, err := fs.ReadFile(fsys, path)
 	if err != nil {

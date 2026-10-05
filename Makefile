@@ -131,17 +131,20 @@ transfer-%:
 .PHONY: paper
 paper: paper-summary paper-system paper-comparisons paper-confound paper-friedman paper-lncrobust paper-transfer
 
+# Every SummEval table is computed on the held-out last 50 articles, the
+# half LNC is not calibrated on, for every metric alike.
+#
 # Each correlation table carries a bootstrap CI per cell, so Spearman and
 # Kendall are separate tables (side by side they overflow the page).
 .PHONY: paper-summary
 paper-summary:
-	go run ./cmd/paper -ci -level summary -coeffs spearman -output paper/summary.gen.tex
-	go run ./cmd/paper -ci -level summary -coeffs kendall -label tab:correlations_summary_kendall -output paper/summary_kendall.gen.tex
+	go run ./cmd/paper -doc-split last50 -ci -level summary -coeffs spearman -output paper/summary.gen.tex
+	go run ./cmd/paper -doc-split last50 -ci -level summary -coeffs kendall -label tab:correlations_summary_kendall -output paper/summary_kendall.gen.tex
 
 .PHONY: paper-system
 paper-system:
-	go run ./cmd/paper -ci -level system -coeffs spearman -output paper/system.gen.tex
-	go run ./cmd/paper -ci -level system -coeffs kendall -label tab:correlations_system_kendall -output paper/system_kendall.gen.tex
+	go run ./cmd/paper -doc-split last50 -ci -level system -coeffs spearman -output paper/system.gen.tex
+	go run ./cmd/paper -doc-split last50 -ci -level system -coeffs kendall -label tab:correlations_system_kendall -output paper/system_kendall.gen.tex
 
 # LNC is calibrated on the first 50 articles, so its paired comparisons
 # run on the held-out last 50, on raw and on copy-partialled Spearman.
@@ -155,13 +158,13 @@ paper-comparisons:
 # and the cost--quality Pareto frontier on the raw and partialled axes.
 .PHONY: paper-confound
 paper-confound:
-	go run ./cmd/confound -bootstrap 2000 -ours lnc -output paper/confound.gen.tex
+	go run ./cmd/confound -doc-split last50 -bootstrap 2000 -ours lnc -output paper/confound.gen.tex
 
 # Friedman test blocked by article, Wilcoxon of LNC against every other
 # metric (Holm), Nemenyi critical difference.
 .PHONY: paper-friedman
 paper-friedman:
-	go run ./cmd/friedman -target lnc \
+	go run ./cmd/friedman -doc-split last50 -target lnc \
 		-metrics bleu,rouge,chrf,meteor,smartstring,embedscorer,bertscore,moverscore,smartmodel,bartscore,gptscore,unieval,geval,alignscore,nlig,lgs,lead3sent,lead5sent,lnc \
 		-output paper/friedman.gen.tex
 
@@ -177,3 +180,9 @@ paper-transfer: $(addprefix paper-transfer-,$(CORPORA))
 paper-transfer-%:
 	go run ./cmd/compare -dataset $* -dims $(DIM_$*) -partial -metric lnc -baselines alignscore,nlig,lgs,lead3sent,lead5sent,unieval,geval -bootstrap 5000 -output paper/transfer_$*_comparisons.gen.tex
 	go run ./cmd/confound -dataset $* -dims $(DIM_$*) -bootstrap 2000 -ours lnc -output paper/transfer_$*_confound.gen.tex
+
+# The manuscript: main.tex only includes the numbered section files and
+# the rendered *.gen.tex tables.
+.PHONY: pdf
+pdf:
+	cd paper && latexmk -pdf -interaction=nonstopmode main.tex

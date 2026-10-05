@@ -1,39 +1,39 @@
 \begin{table*}[t]
 \centering
-\caption{Extractiveness confound on SummEval. The copy rate of a candidate is the fraction of its token 2-grams that occur in the source; it requires no model, no reference and no hyperparameter. $\bar{\rho}$ is the summary-level Spearman correlation with human ratings averaged across the four dimensions, $\bar{\rho}_{\mathrm{part}}$ the same quantity with the copy rate partialled out of both sides, and $\rho_{\mathrm{copy}}$ the correlation between the metric and the copy rate. Brackets give the 95\% cluster-bootstrap interval over articles. The final row is the copy rate scored as if it were a metric. Pareto status is given on both axes.}
+\caption{Correlation with human ratings beyond the extractive shortcut on SummEval, held-out last 50 articles. The copy rate of a candidate is the fraction of its token 2-grams that occur in the source; it requires no model, no reference and no hyperparameter. $\bar{\rho}$ is the summary-level Spearman correlation with human ratings averaged across the four dimensions (the last four columns give the partial value per dimension), $\bar{\rho}_{\mathrm{part}}$ the same quantity with the copy rate partialled out of both sides, and $\rho_{\mathrm{copy}}$ the correlation between the metric and the copy rate (mean over its per-dimension scorers). Brackets give the 95\% cluster-bootstrap interval over articles. The final row is the copy rate scored as if it were a metric. Pareto status is given on both axes.}
 \label{tab:confound}
 \small
 \linespread{1}\selectfont
 \setlength{\tabcolsep}{4pt}
-\begin{tabular}{@{}lrrrrl@{}}
+\begin{tabular}{@{}lrrrrrrrrl@{}}
 \toprule
-Metric & ms/sample & $\bar{\rho}$ & $\bar{\rho}_{\mathrm{part}}$ & $\rho_{\mathrm{copy}}$ & Pareto \\
+Metric & ms/sample & $\bar{\rho}$ & $\bar{\rho}_{\mathrm{part}}$ & $\rho_{\mathrm{copy}}$ & Coh & Con & Flu & Rel & Pareto \\
 \midrule
-UniEval & 343.00 & .470 & .424 {\scriptsize [.397, .451]} & .395 & raw, partial \\
-\textbf{LNC} & 216.02 & .426 & .339 {\scriptsize [.310, .368]} & .495 & raw, partial \\
-G-Eval & 17823.14 & .353 & .312 {\scriptsize [.281, .343]} & .332 & --- \\
-BERTScore & 213.89 & .250 & .241 {\scriptsize [.194, .283]} & .058 & partial \\
-NLIG & 477.80 & .256 & .189 {\scriptsize [.151, .228]} & .315 & --- \\
-EmbedScorer & 535.47 & .232 & .178 {\scriptsize [.135, .219]} & .234 & --- \\
-AlignScore & 128.09 & .249 & .167 {\scriptsize [.133, .203]} & .373 & partial \\
-GPTScore & 32.83 & .264 & .165 {\scriptsize [.124, .205]} & .433 & partial \\
-METEOR & 1.78 & .162 & .165 {\scriptsize [.123, .205]} & .013 & partial \\
-SMART-Model & 1498.21 & .206 & .159 {\scriptsize [.115, .203]} & .206 & --- \\
-LGS & 93.85 & .289 & .157 {\scriptsize [.119, .193]} & .623 & --- \\
-Lead-5 (mean-of-max) & 0.08 & .296 & .154 {\scriptsize [.115, .192]} & .684 & raw, partial \\
-Lead-3 (mean-of-max) & 0.05 & .284 & .154 {\scriptsize [.113, .195]} & .607 & raw, partial \\
-PSC & 546.93 & .225 & .152 {\scriptsize [.114, .192]} & .314 & --- \\
-Lead-3 (whole block) & 0.02 & .267 & .144 {\scriptsize [.104, .185]} & .550 & raw, partial \\
-SPL & 25.62 & .123 & .139 {\scriptsize [.105, .174]} & -.038 & --- \\
-BARTScore & 303.79 & .166 & .136 {\scriptsize [.092, .181]} & .128 & --- \\
-ChrF & 4.65 & .184 & .128 {\scriptsize [.083, .170]} & .232 & --- \\
-ROUGE-L & 0.87 & .153 & .127 {\scriptsize [.077, .172]} & .115 & --- \\
-CCM & 190.86 & .224 & .123 {\scriptsize [.083, .162]} & .429 & --- \\
-BLEU & 1.50 & .128 & .091 {\scriptsize [.044, .136]} & .149 & --- \\
-MoverScore & 406.69 & .060 & .091 {\scriptsize [.045, .137]} & -.102 & --- \\
-SMART-String & 1.38 & .084 & .081 {\scriptsize [.036, .125]} & .025 & --- \\
+UniEval & 343.00 & .473 & .424 {\scriptsize [.386, .459]} & .300 & .550 & .289 & .426 & .429 & raw, partial \\
+\textbf{LNC} & 216.02 & .433 & .350 {\scriptsize [.313, .385]} & .550 & .350 & .370 & .340 & .339 & raw, partial \\
+G-Eval & 17823.14 & .327 & .291 {\scriptsize [.251, .333]} & .229 & .315 & .408 & .149 & .292 & --- \\
+BERTScore & 213.89 & .269 & .269 {\scriptsize [.214, .319]} & .027 & .425 & .105 & .128 & .420 & partial \\
+NLIG & 477.80 & .274 & .224 {\scriptsize [.174, .275]} & .255 & .134 & .413 & .224 & .124 & --- \\
+AlignScore & 128.09 & .282 & .200 {\scriptsize [.156, .246]} & .399 & .118 & .318 & .295 & .069 & partial \\
+GPTScore & 32.83 & .290 & .194 {\scriptsize [.140, .246]} & .448 & .360 & .063 & .060 & .294 & partial \\
+EmbedScorer & 535.47 & .222 & .175 {\scriptsize [.118, .228]} & .207 & .184 & .086 & .104 & .325 & --- \\
+LGS & 93.85 & .299 & .167 {\scriptsize [.112, .224]} & .654 & .210 & .146 & .091 & .220 & raw \\
+PSC & 546.93 & .236 & .159 {\scriptsize [.103, .215]} & .339 & .211 & .144 & .121 & .160 & --- \\
+METEOR & 1.78 & .125 & .156 {\scriptsize [.097, .215]} & -.091 & .202 & .125 & .113 & .181 & partial \\
+Lead-5 (mean-of-max) & 0.08 & .292 & .147 {\scriptsize [.091, .209]} & .708 & .190 & .135 & .062 & .202 & raw, partial \\
+CCM & 190.86 & .248 & .142 {\scriptsize [.090, .198]} & .473 & .171 & .167 & .117 & .115 & --- \\
+Lead-3 (whole block) & 0.02 & .261 & .139 {\scriptsize [.083, .197]} & .549 & .165 & .097 & .080 & .215 & raw, partial \\
+Lead-3 (mean-of-max) & 0.05 & .270 & .137 {\scriptsize [.081, .195]} & .611 & .174 & .118 & .080 & .173 & raw \\
+SMART-Model & 1498.21 & .173 & .136 {\scriptsize [.077, .199]} & .158 & .126 & .097 & .093 & .228 & --- \\
+MoverScore & 406.69 & .089 & .129 {\scriptsize [.066, .183]} & -.129 & .223 & .036 & .055 & .201 & --- \\
+ROUGE-L & 0.87 & .140 & .127 {\scriptsize [.060, .190]} & .066 & .128 & .113 & .099 & .167 & --- \\
+SPL & 25.62 & .092 & .120 {\scriptsize [.071, .168]} & -.088 & .145 & .067 & .176 & .093 & --- \\
+ChrF & 4.65 & .164 & .117 {\scriptsize [.056, .175]} & .195 & .091 & .064 & .072 & .241 & --- \\
+BARTScore & 303.79 & .116 & .100 {\scriptsize [.034, .166]} & .071 & .080 & .019 & .111 & .188 & --- \\
+BLEU & 1.50 & .117 & .087 {\scriptsize [.026, .141]} & .126 & .053 & .072 & .019 & .203 & --- \\
+SMART-String & 1.38 & .056 & .074 {\scriptsize [.014, .126]} & -.051 & -.024 & .097 & .120 & .102 & --- \\
 \midrule
-Copy rate (no metric) & 0.00 & .275 & .000 & 1.000 & \emph{diagnostic} \\
+Copy rate (no metric) & 0.00 & .271 & .000 & 1.000 & .000 & .000 & .000 & .000 & \emph{diagnostic} \\
 \bottomrule
 \end{tabular}
 \end{table*}

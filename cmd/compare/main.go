@@ -146,7 +146,10 @@ func main() {
 	if err != nil {
 		log.Fatalf("load dataset: %v", err)
 	}
-	samples = splitDocs(samples, docSplit)
+	samples, err = eval.SplitDocs(samples, docSplit)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	// The target may itself be dimensional (e.g. lnc_<dim>.json): it
 	// then contributes its matching-dimension scorer to each cell.
@@ -493,7 +496,7 @@ func renderLatex(target string, baselines []baselineEntry, cells []comparisonCel
 	fmt.Fprintf(&b, "\\label{tab:%s}\n", strings.TrimSuffix(filepath.Base(output), ".gen.tex"))
 	fmt.Fprintln(&b, `\small`)
 	// Tables stay single-spaced even when the manuscript is compiled
-	// with the double-spaced elsarticle `review` option.
+	// with a double-spaced (review) layout.
 	fmt.Fprintln(&b, `\linespread{1}\selectfont`)
 	fmt.Fprintln(&b, `\setlength{\tabcolsep}{4pt}`)
 	fmt.Fprintf(&b, "\\begin{tabular}{%s}\n", colSpec)
@@ -541,7 +544,7 @@ func fmtLatexCell(c comparisonCell) string {
 		stripLeadingZero(c.comp.DeltaCI.High))
 
 	// Stack delta / CI / p / q vertically inside the cell. On one line
-	// the five-column table is roughly 1.75x wider than the elsarticle
+	// the five-column table is roughly 1.75x wider than the
 	// text block; stacked, it fits without scaling or rotation.
 	if significant(c) {
 		delta = `\textbf{` + delta + `}`
@@ -607,40 +610,4 @@ func writeFile(path, content string) error {
 	defer f.Close()
 	_, err = io.WriteString(f, content)
 	return err
-}
-
-// splitDocs keeps the first or last 50 articles in dataset order (the
-// development/test halves every calibrated metric in this repo uses).
-func splitDocs(samples []eval.Sample, split string) []eval.Sample {
-	if split == "all" {
-		return samples
-	}
-	var docs []string
-	seen := map[string]bool{}
-	for _, s := range samples {
-		if !seen[s.DocumentID] {
-			seen[s.DocumentID] = true
-			docs = append(docs, s.DocumentID)
-		}
-	}
-	keep := map[string]bool{}
-	switch split {
-	case "first50":
-		for _, d := range docs[:50] {
-			keep[d] = true
-		}
-	case "last50":
-		for _, d := range docs[len(docs)-50:] {
-			keep[d] = true
-		}
-	default:
-		log.Fatalf("-doc-split must be all|first50|last50, got %q", split)
-	}
-	var out []eval.Sample
-	for _, s := range samples {
-		if keep[s.DocumentID] {
-			out = append(out, s)
-		}
-	}
-	return out
 }

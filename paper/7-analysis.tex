@@ -1,0 +1,55 @@
+\section{Analysis}
+\label{sec:analysis}
+
+\subsection{How robust is the in-domain result?}
+
+Table~\ref{tab:lnc_robust} refits the LNC calibration on 200 random 50/50 splits of the SummEval articles and evaluates each fit on the held-out half.
+
+\paragraph{The canonical split is favourable.} Over random splits LNC reaches a partial $\bar\rho$ of .322 (2.5--97.5 percentiles .295--.344), against .350 on the split in dataset order. The dataset-order split is therefore on the favourable side of the distribution, and .322 is the better estimate of LNC's in-domain accuracy. It remains above every reference-free metric in Table~\ref{tab:confound} and below UniEval.
+
+\paragraph{The same ridge over existing metrics.} A calibrated combination needs a calibrated control. Fitting the same ridge to cheap reference-free signals (copy rate, length, Lead-5, LGS and NLIG) gives .222, so LNC's own signals add about .10. Fitting it to existing metrics that include reference-based ones (BERTScore, GPTScore and BARTScore, besides copy rate, length, LGS and NLIG) gives .322, the same as LNC, and fitting it to UniEval's four scorers gives .421. A learned combination of metrics that read the reference therefore matches LNC in domain; what LNC contributes is the same level without a reference, from one pair of small models.
+
+\paragraph{Unseen systems.} The 16 SummEval systems occur in both halves of every article split, so the evaluation above holds out articles but not systems. To test generalisation to new systems, we fitted LNC on 8 randomly chosen systems in 50 articles and evaluated it on the other 50 articles, once on the same 8 systems and once on the other 8. On the same systems LNC reaches .316, on unseen systems .269, and it is lower on unseen systems in 135 of 200 splits. UniEval, which is not fitted on SummEval, reaches .408 and .411 on the same subsets, so the drop is not caused by the unseen systems being harder to rank. Part of LNC's calibration is specific to the systems it was fitted on. The transfer results of Section~\ref{sec:transfer} show the same limitation from a different direction.
+
+\paragraph{Feature groups.} Removing one group of features and refitting shows what each group contributes. Without the perturbation margins the partial $\bar\rho$ falls from .322 to .280, without NLI to .299, without the likelihood features to .305, and without the splice features to .319. The perturbation margins are the most valuable group although, as the next subsection shows, they failed as a metric on their own. The splice features add almost nothing.
+
+\subsection{Why removing the shortcut from likelihood fails}
+
+LNC was not the first design we tried. Three earlier metrics aimed to remove the extractive shortcut from a source-conditioned language model directly, by cancelling the likelihood bonus that copied text receives. All three failed, and they failed in an instructive way. Table~\ref{tab:negative} summarises them over all 100 SummEval articles, since none of these signals is fitted on human ratings.
+
+\begin{table}[t]
+\centering
+\caption{Source-conditioned likelihood signals on all 100 SummEval articles: mean raw and partial Spearman correlation over the four dimensions, and correlation with the copy rate. $\tilde x$ is a paraphrase of the source written by an instruction-tuned LLM.}
+\label{tab:negative}
+\small
+\begin{tabular}{@{}llrrr@{}}
+\toprule
+Metric & Signal & $\bar\rho$ & $\bar\rho_{\mathrm{part}}$ & $\rho_{\mathrm{copy}}$ \\
+\midrule
+Likelihood & $\log P(y\mid x)/|y|$ & .353 & .233 & .741 \\
+CCM & $\log P(y\mid x) - \operatorname{mean}_k \log P(y'_k\mid x)$ & .224 & .123 & .429 \\
+CCM, normalised & $z$-margin & .221 & .172 & .208 \\
+\midrule
+PSC likelihood & $\log P(y\mid \tilde x)/|y|$ & .260 & .223 & .179 \\
+PSC & $\log P(y\mid \tilde x) - \operatorname{mean}_k \log P(y'_k\mid \tilde x)$ & .225 & .152 & .314 \\
+Copy advantage & $\bigl(\log P(y\mid x) - \log P(y\mid \tilde x)\bigr)/|y|$ & .151 & $-$.007 & .571 \\
+\midrule
+SPL & mean $\log P$ of splice words & .123 & .139 & $-$.038 \\
+SPL, control & mean $\log P$ inside copied fragments & .302 & .193 & .527 \\
+\midrule
+NLIG & mean NLI evidence & .256 & .189 & .315 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Perturbation margins (CCM).} The idea was that a perturbation of a summary copies the source as much as the summary itself, so the copy bonus should cancel in the difference of their log-likelihoods. It does not. The margin keeps a correlation of .429 with the copy rate and its partial $\bar\rho$ is only .123, below the plain likelihood. With the source in context, the language model predicts copied spans almost deterministically, so perturbing a copied span costs much more likelihood than perturbing a paraphrased one, and the margin rewards copying. The families differ: entity swaps and number changes carry almost no partial signal for consistency (.096 and .070), which they were meant to detect, while sentence swaps carry a clear signal for coherence (.281) and relevance (.265). This is why the order margin, not the overall margin, became an LNC feature.
+
+\paragraph{Paraphrased-source conditioning (PSC).} If the copy bonus comes from verbatim overlap with the conditioning text, conditioning on a paraphrase $\tilde x$ of the source should remove it. We had an instruction-tuned LLM rewrite each source in chunks of three sentences while keeping every fact; the paraphrase shares 21\% of its bigrams with the source. The mechanism is confirmed: the correlation of the likelihood with the copy rate falls from .741 to .179, and the copy advantage, the per-token difference between conditioning on $x$ and on $\tilde x$, correlates .571 with the copy rate and has no partial correlation with the human ratings at all ($-.007$). The likelihood with a paraphrased source is therefore much less of a copy detector. But it is not a better metric: its partial $\bar\rho$ falls slightly, from .233 to .223, because the paraphrase also removes useful signal and occasionally adds content of its own. Removing copying from a signal removes copying, not the confound.
+
+\paragraph{Splice-point likelihood (SPL).} The median SummEval summary copies 92\% of its bigrams, so we hypothesised that quality is decided where a summary departs from verbatim copying: at the splice points between copied fragments. Scoring only those words removes the copy correlation entirely ($-.038$), but the partial correlation is low (.139). The words inside copied fragments, the control, carry more signal (.193). We verified that the per-word log-probabilities sum back to the sequence log-likelihood, so this is not an implementation artefact.
+
+Together these results explain LNC's design. Every attempt to make a likelihood signal blind to copying also made it blind to part of what humans reward. LNC instead keeps the copy-sensitive likelihood features, adds signals of a different kind, the order margin and NLI entailment, and lets the calibration weigh them per dimension. Its held-out partial correlation (.350) is higher than that of any single signal in Table~\ref{tab:negative}, while its correlation with the copy rate (.550) remains high.
+
+\subsection{Sensitivity of embedding metrics to the platform}
+
+The scores of all metrics in this paper were computed on one machine. An earlier run of the baselines on an Apple-silicon machine, preserved in the history of our repository, allows a check of how portable the scores are. The lexical metrics, BERTScore, MoverScore, BARTScore, GPTScore and UniEval agreed to within $5\cdot10^{-6}$ between the two platforms, and G-Eval, which samples at temperature 0.7, reached nearly the same correlations with different samples. The three metrics that use \texttt{nomic-embed-text} through Ollama did not: the Spearman correlation between their scores on the two platforms was .69 for LGS, .45 for SMART-Model and .41 for EmbedScorer, and the full-set partial $\bar\rho$ of LGS moved from .198 to .157. On each platform the embeddings were deterministic and semantically sensible, so the difference comes from the runtime and its version rather than from a bug. Embedding metrics served through a local LLM runtime should be reported with the runtime version and hardware, and comparisons between them across platforms should be avoided.

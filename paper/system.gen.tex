@@ -1,6 +1,6 @@
 \begin{table*}[t]
 \centering
-\caption{System-level correlations with human judgment on SummEval. $\rho$ = Spearman. Brackets give the 95\% cluster-bootstrap confidence interval over articles.}
+\caption{System-level correlations with human judgment on SummEval (held-out last 50 articles). $\rho$ = Spearman. Brackets give the 95\% bootstrap confidence interval over systems.}
 \label{tab:correlations_system}
 \small
 \linespread{1}\selectfont
@@ -9,29 +9,29 @@
 \toprule
 Metric & \multicolumn{1}{c}{Coh} & \multicolumn{1}{c}{Con} & \multicolumn{1}{c}{Flu} & \multicolumn{1}{c}{Rel} \\
 \midrule
-BLEU & .276 {\scriptsize [-.361, .720]} & .024 {\scriptsize [-.589, .543]} & .415 {\scriptsize [-.223, .818]} & .506 {\scriptsize [-.134, .844]} \\
-ROUGE-L & .312 {\scriptsize [-.324, .734]} & -.018 {\scriptsize [-.607, .526]} & .365 {\scriptsize [-.243, .771]} & .482 {\scriptsize [-.139, .851]} \\
-ChrF & .526 {\scriptsize [.022, .831]} & .794 {\scriptsize [.505, .944]} & .832 {\scriptsize [.555, .940]} & .803 {\scriptsize [.498, .917]} \\
-METEOR & .094 {\scriptsize [-.547, .582]} & -.318 {\scriptsize [-.728, .229]} & .041 {\scriptsize [-.538, .631]} & .179 {\scriptsize [-.487, .641]} \\
-SMART-String & -.029 {\scriptsize [-.777, .511]} & -.197 {\scriptsize [-.656, .330]} & .171 {\scriptsize [-.402, .679]} & .256 {\scriptsize [-.468, .735]} \\
-EmbedScorer & .438 {\scriptsize [-.057, .757]} & .856 {\scriptsize [.604, .958]} & .774 {\scriptsize [.334, .920]} & .712 {\scriptsize [.274, .869]} \\
-BERTScore & .768 {\scriptsize [.406, .955]} & -.029 {\scriptsize [-.590, .537]} & .324 {\scriptsize [-.294, .818]} & .482 {\scriptsize [-.071, .897]} \\
-MoverScore & .109 {\scriptsize [-.532, .665]} & -.612 {\scriptsize [-.874, -.050]} & -.329 {\scriptsize [-.836, .277]} & -.115 {\scriptsize [-.726, .543]} \\
-SMART-Model & .441 {\scriptsize [-.106, .832]} & .806 {\scriptsize [.436, .946]} & .756 {\scriptsize [.250, .937]} & .706 {\scriptsize [.192, .937]} \\
-BARTScore & .503 {\scriptsize [-.006, .839]} & .812 {\scriptsize [.517, .950]} & .785 {\scriptsize [.484, .893]} & .776 {\scriptsize [.471, .927]} \\
-GPTScore & .612 {\scriptsize [.028, .955]} & .538 {\scriptsize [-.015, .890]} & .379 {\scriptsize [-.281, .858]} & .374 {\scriptsize [-.259, .895]} \\
-UniEval & .791 {\scriptsize [.407, .970]} & .444 {\scriptsize [-.153, .863]} & .762 {\scriptsize [.359, .928]} & .815 {\scriptsize [.439, .949]} \\
-G-Eval & .571 {\scriptsize [.113, .892]} & .941 {\scriptsize [.775, .985]} & .338 {\scriptsize [-.274, .812]} & .785 {\scriptsize [.375, .970]} \\
-AlignScore & .256 {\scriptsize [-.331, .746]} & .474 {\scriptsize [-.127, .848]} & .606 {\scriptsize [.070, .901]} & .524 {\scriptsize [-.054, .866]} \\
-NLIG & .129 {\scriptsize [-.457, .622]} & .797 {\scriptsize [.406, .929]} & .526 {\scriptsize [-.140, .876]} & .418 {\scriptsize [-.259, .869]} \\
-Lead-3 & .106 {\scriptsize [-.397, .724]} & .738 {\scriptsize [.323, .910]} & .406 {\scriptsize [-.287, .887]} & .332 {\scriptsize [-.279, .958]} \\
-Lead-5 & .176 {\scriptsize [-.342, .758]} & .776 {\scriptsize [.391, .920]} & .474 {\scriptsize [-.206, .890]} & .409 {\scriptsize [-.216, .958]} \\
-LGS & .132 {\scriptsize [-.410, .740]} & .765 {\scriptsize [.357, .926]} & .450 {\scriptsize [-.238, .903]} & .379 {\scriptsize [-.264, .973]} \\
-CCM & .197 {\scriptsize [-.429, .766]} & .785 {\scriptsize [.391, .955]} & .468 {\scriptsize [-.205, .859]} & .391 {\scriptsize [-.309, .875]} \\
-PSC & .494 {\scriptsize [-.039, .937]} & .724 {\scriptsize [.320, .944]} & .615 {\scriptsize [.043, .929]} & .629 {\scriptsize [.103, .937]} \\
-SPL & .632 {\scriptsize [.129, .821]} & .156 {\scriptsize [-.443, .662]} & .215 {\scriptsize [-.388, .734]} & .385 {\scriptsize [-.260, .804]} \\
-LNC & .456 {\scriptsize [-.156, .856]} & .874 {\scriptsize [.538, .988]} & .491 {\scriptsize [-.189, .846]} & .644 {\scriptsize [.097, .919]} \\
-lead3whole & .062 {\scriptsize [-.449, .694]} & .753 {\scriptsize [.284, .920]} & .391 {\scriptsize [-.275, .899]} & .288 {\scriptsize [-.356, .943]} \\
+BLEU & -.071 {\scriptsize [-.702, .520]} & -.074 {\scriptsize [-.596, .468]} & .053 {\scriptsize [-.543, .596]} & .206 {\scriptsize [-.484, .679]} \\
+ROUGE-L & .174 {\scriptsize [-.486, .698]} & -.024 {\scriptsize [-.618, .499]} & .359 {\scriptsize [-.244, .763]} & .447 {\scriptsize [-.208, .833]} \\
+ChrF & .259 {\scriptsize [-.283, .719]} & .737 {\scriptsize [.335, .912]} & .449 {\scriptsize [-.120, .799]} & .521 {\scriptsize [.096, .792]} \\
+METEOR & -.047 {\scriptsize [-.629, .580]} & -.383 {\scriptsize [-.805, .227]} & .056 {\scriptsize [-.454, .617]} & .115 {\scriptsize [-.482, .687]} \\
+SMART-String & -.129 {\scriptsize [-.827, .488]} & -.265 {\scriptsize [-.749, .294]} & .082 {\scriptsize [-.513, .617]} & .159 {\scriptsize [-.528, .680]} \\
+EmbedScorer & .368 {\scriptsize [-.139, .717]} & .864 {\scriptsize [.565, .956]} & .572 {\scriptsize [.066, .824]} & .647 {\scriptsize [.292, .798]} \\
+BERTScore & .615 {\scriptsize [.051, .879]} & -.086 {\scriptsize [-.629, .489]} & .372 {\scriptsize [-.203, .814]} & .362 {\scriptsize [-.321, .830]} \\
+MoverScore & .121 {\scriptsize [-.506, .686]} & -.649 {\scriptsize [-.873, -.201]} & -.287 {\scriptsize [-.757, .309]} & -.076 {\scriptsize [-.681, .560]} \\
+SMART-Model & .138 {\scriptsize [-.373, .639]} & .770 {\scriptsize [.458, .917]} & .574 {\scriptsize [.068, .844]} & .444 {\scriptsize [-.093, .808]} \\
+BARTScore & .294 {\scriptsize [-.277, .734]} & .681 {\scriptsize [.277, .898]} & .375 {\scriptsize [-.209, .763]} & .526 {\scriptsize [.091, .821]} \\
+GPTScore & .624 {\scriptsize [.036, .943]} & .457 {\scriptsize [-.107, .907]} & .372 {\scriptsize [-.291, .833]} & .350 {\scriptsize [-.291, .869]} \\
+UniEval & .815 {\scriptsize [.454, .979]} & .440 {\scriptsize [-.195, .850]} & .705 {\scriptsize [.258, .939]} & .803 {\scriptsize [.434, .935]} \\
+G-Eval & .565 {\scriptsize [.010, .895]} & .970 {\scriptsize [.836, .998]} & .348 {\scriptsize [-.195, .830]} & .751 {\scriptsize [.295, .954]} \\
+AlignScore & .379 {\scriptsize [-.191, .792]} & .558 {\scriptsize [-.058, .896]} & .655 {\scriptsize [.070, .882]} & .618 {\scriptsize [.076, .892]} \\
+NLIG & .226 {\scriptsize [-.354, .698]} & .873 {\scriptsize [.562, .986]} & .505 {\scriptsize [-.084, .832]} & .456 {\scriptsize [-.207, .902]} \\
+Lead-3 & .159 {\scriptsize [-.405, .743]} & .785 {\scriptsize [.406, .956]} & .422 {\scriptsize [-.252, .847]} & .341 {\scriptsize [-.366, .925]} \\
+Lead-5 & .124 {\scriptsize [-.450, .750]} & .767 {\scriptsize [.375, .952]} & .414 {\scriptsize [-.254, .857]} & .306 {\scriptsize [-.410, .919]} \\
+Lead-3 (whole) & .185 {\scriptsize [-.355, .757]} & .764 {\scriptsize [.355, .946]} & .452 {\scriptsize [-.159, .874]} & .344 {\scriptsize [-.357, .943]} \\
+LGS & .079 {\scriptsize [-.488, .707]} & .764 {\scriptsize [.368, .955]} & .369 {\scriptsize [-.309, .812]} & .282 {\scriptsize [-.424, .934]} \\
+CCM & .271 {\scriptsize [-.364, .805]} & .779 {\scriptsize [.415, .928]} & .419 {\scriptsize [-.252, .839]} & .447 {\scriptsize [-.233, .910]} \\
+PSC & .385 {\scriptsize [-.211, .885]} & .758 {\scriptsize [.407, .929]} & .528 {\scriptsize [-.084, .902]} & .544 {\scriptsize [-.036, .938]} \\
+SPL & .676 {\scriptsize [.312, .845]} & .180 {\scriptsize [-.382, .696]} & .293 {\scriptsize [-.279, .797]} & .415 {\scriptsize [-.139, .848]} \\
+LNC & .532 {\scriptsize [-.048, .893]} & .870 {\scriptsize [.545, .964]} & .550 {\scriptsize [-.090, .905]} & .641 {\scriptsize [.152, .916]} \\
 \bottomrule
 \end{tabular}
 \end{table*}

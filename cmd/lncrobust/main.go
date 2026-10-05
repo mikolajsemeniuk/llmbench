@@ -11,6 +11,7 @@
 //	                separates a harder subset from a system-specific fit.
 //	controls        the same ridge over existing metrics' scores instead
 //	                of the LNC features
+//	feature groups  the LNC ridge refitted without one group of features
 //
 // Reads the feature dump and output/*.json only; no model calls.
 package main
@@ -41,6 +42,18 @@ var (
 )
 
 var dims = []string{"coherence", "consistency", "fluency", "relevance"}
+
+// groups are LNC's feature groups (indices into metrics.LNCFeatures),
+// each dropped in turn to measure what it contributes.
+var groups = []struct {
+	name string
+	cols []int
+}{
+	{"likelihood features", []int{0, 1, 2}},
+	{"perturbation margins", []int{3, 4, 5}},
+	{"NLI grounding", []int{6, 7}},
+	{"splice-point likelihood", []int{8, 9}},
+}
 
 // controls are composites fitted with the LNC protocol over signals that
 // already exist. "copy" and "len" are the copy rate and word count.
@@ -90,6 +103,10 @@ func main() {
 			log.Fatal(err)
 		}
 	}
+	without := make([][][]float64, len(groups))
+	for g, gr := range groups {
+		without[g] = dropCols(lnc, gr.cols)
+	}
 	uni := make(map[string][]float64, len(dims))
 	for _, d := range dims {
 		if uni[d], err = loadScores(samples, "unieval_"+d); err != nil {
@@ -130,6 +147,7 @@ func main() {
 	rng := rand.New(rand.NewPCG(seed, seed^0x5eed))
 	var rnd []float64
 	ctrlRnd := make([][]float64, len(controls))
+	grpRnd := make([][]float64, len(groups))
 	var seen, unseen, uSeen, uUnseen []float64
 	for b := 0; b < splits; b++ {
 		inTrain := map[string]bool{}
@@ -157,6 +175,9 @@ func main() {
 		for c := range controls {
 			ctrlRnd[c] = append(ctrlRnd[c], heldOut(ctrl[c], train, test))
 		}
+		for g := range groups {
+			grpRnd[g] = append(grpRnd[g], heldOut(without[g], train, test))
+		}
 		seen = append(seen, heldOut(lnc, trainA, testA))
 		unseen = append(unseen, heldOut(lnc, trainA, testB))
 		uSeen, uUnseen = append(uSeen, zeroShot(testA)), append(uUnseen, zeroShot(testB))
@@ -183,6 +204,9 @@ func main() {
 		line{"UniEval (zero-shot): same systems", uSeen},
 		line{"UniEval (zero-shot): unseen systems", uUnseen},
 	)
+	for g, gr := range groups {
+		lines = append(lines, line{"LNC without " + gr.name, grpRnd[g]})
+	}
 
 	fmt.Printf("Held-out copy-partialled rho (mean over 4 dims), %d splits, features %s\n\n", splits, featuresPath)
 	for _, l := range lines {
@@ -194,7 +218,7 @@ func main() {
 	var b strings.Builder
 	fmt.Fprintln(&b, `\begin{table}[t]`)
 	fmt.Fprintln(&b, `\centering`)
-	fmt.Fprintf(&b, "\\caption{Held-out copy-partialled $\\bar{\\rho}$ of the LNC ridge recipe on \\textsc{SummEval} over %d random splits (mean and 2.5--97.5 percentiles). Controls apply the same ridge to existing signals. The system split fits on 8 of the 16 systems and 50 articles and tests on the other 50 articles; unseen systems score lower in %d of %d splits, while zero-shot UniEval does not change.}\n", splits, worse, splits)
+	fmt.Fprintf(&b, "\\caption{Held-out copy-partialled $\\bar{\\rho}$ of the LNC ridge recipe on SummEval over %d random splits (mean and 2.5--97.5 percentiles). Controls apply the same ridge to existing signals; the last block refits LNC without one feature group. The system split fits on 8 of the 16 systems and 50 articles and tests on the other 50 articles; unseen systems score lower in %d of %d splits, while zero-shot UniEval does not change.}\n", splits, worse, splits)
 	fmt.Fprintln(&b, `\label{tab:lnc_robust}`)
 	fmt.Fprintln(&b, `\small`)
 	fmt.Fprintln(&b, `\begin{tabular}{@{}lc@{}}`)
@@ -202,7 +226,7 @@ func main() {
 	fmt.Fprintln(&b, `Configuration & $\bar{\rho}_{\mathrm{part}}$ \\`)
 	fmt.Fprintln(&b, `\midrule`)
 	for i, l := range lines {
-		if i == 1+len(controls) {
+		if i == 1+len(controls) || i == 5+len(controls) {
 			fmt.Fprintln(&b, `\midrule`)
 		}
 		m, lo, hi := summarise(l.vals)
@@ -218,6 +242,22 @@ func main() {
 	if err := os.WriteFile(output, []byte(b.String()), 0o644); err != nil {
 		log.Fatal(err)
 	}
+}
+
+func dropCols(X [][]float64, cols []int) [][]float64 {
+	skip := map[int]bool{}
+	for _, c := range cols {
+		skip[c] = true
+	}
+	out := make([][]float64, len(X))
+	for i, r := range X {
+		for j, v := range r {
+			if !skip[j] {
+				out[i] = append(out[i], v)
+			}
+		}
+	}
+	return out
 }
 
 func summarise(v []float64) (mean, lo, hi float64) {

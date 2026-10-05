@@ -11,6 +11,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/mikolajsemeniuk/llmbench/pkg/dataset"
 	"github.com/mikolajsemeniuk/llmbench/pkg/eval"
 )
 
@@ -21,6 +22,7 @@ var (
 	withCI       bool
 	coefficients string
 	label        string
+	docSplit     string
 )
 
 var dimensions = []string{"coherence", "consistency", "fluency", "relevance"}
@@ -37,7 +39,7 @@ var metricOrder = []string{
 	"embedscorer",
 	"bertscore", "moverscore", "smartmodel",
 	"bartscore", "gptscore", "unieval", "geval",
-	"alignscore", "nlig", "lead3sent", "lead5sent",
+	"alignscore", "nlig", "lead3sent", "lead5sent", "lead3whole",
 	"lgs", "ccm", "psc", "spl", "lnc",
 }
 
@@ -60,6 +62,7 @@ var metricDisplayName = map[string]string{
 	"nlig":        "NLIG",
 	"lead3sent":   "Lead-3",
 	"lead5sent":   "Lead-5",
+	"lead3whole":  "Lead-3 (whole)",
 	"ccm":         "CCM",
 	"psc":         "PSC",
 	"spl":         "SPL",
@@ -111,6 +114,7 @@ func main() {
 		"comma-separated coefficients to display: spearman, pearson, kendall")
 	flag.StringVar(&label, "label", "",
 		"LaTeX label for the table (default: tab:correlations_<level>)")
+	flag.StringVar(&docSplit, "doc-split", "all", "SummEval articles to correlate on: all|first50|last50 (recomputes every correlation from the per-sample scores)")
 	flag.Parse()
 
 	if level != "summary" && level != "system" {
@@ -129,6 +133,11 @@ func main() {
 	if len(reports) == 0 {
 		log.Fatalf("no reports found in %s", input)
 	}
+	if docSplit != "all" {
+		if reports, err = recompute(reports, docSplit); err != nil {
+			log.Fatal(err)
+		}
+	}
 
 	if label == "" {
 		label = fmt.Sprintf("tab:correlations_%s", level)
@@ -140,6 +149,40 @@ func main() {
 	if err := write(output, table); err != nil {
 		log.Fatal(err)
 	}
+}
+
+// recompute replaces every report's correlations by those over one
+// SummEval split, recomputed from its per-sample scores (with the same
+// 1000-resample bootstrap CIs the metric commands write).
+func recompute(reports []eval.Report, split string) ([]eval.Report, error) {
+	samples, err := eval.LoadDataset(dataset.Default, 0)
+	if err != nil {
+		return nil, err
+	}
+	if samples, err = eval.SplitDocs(samples, split); err != nil {
+		return nil, err
+	}
+	out := reports[:0]
+	for _, r := range reports {
+		byID := make(map[string]float64, len(r.Scores))
+		for _, s := range r.Scores {
+			byID[s.SampleID] = s.Value
+		}
+		scores := make([]float64, len(samples))
+		complete := true
+		for i, s := range samples {
+			v, ok := byID[s.ID]
+			scores[i], complete = v, complete && ok
+		}
+		if !complete {
+			log.Printf("skipping %s: no scores for the %s split", r.Metric, split)
+			continue
+		}
+		r.SummaryLevel = eval.NewCorrelation(samples, scores, eval.CorrelationOptions{Bootstrap: 1000, Level: "summary"})
+		r.SystemLevel = eval.NewCorrelation(samples, scores, eval.CorrelationOptions{Bootstrap: 1000, Level: "system"})
+		out = append(out, r)
+	}
+	return out, nil
 }
 
 func parseCoefficients(spec string) ([]coefficient, error) {
@@ -326,7 +369,7 @@ func renderLatex(rows []Row, level string, coeffs []coefficient, withCI bool, la
 	nCoeff := len(coeffs)
 	// @{} trims the outer column padding; every point counts, because the
 	// bracketed confidence intervals make these tables the widest in the
-	// paper and they must fit the elsarticle text block without scaling.
+	// paper and they must fit the text block without scaling.
 	colSpec := "@{}l" + strings.Repeat(strings.Repeat("r", nCoeff), len(dimensions)) + "@{}"
 
 	fmt.Fprintln(&b, `\begin{table*}[t]`)
@@ -337,18 +380,29 @@ func renderLatex(rows []Row, level string, coeffs []coefficient, withCI bool, la
 		levelLabel = "System-level"
 	}
 
-	caption := fmt.Sprintf("%s correlations with human judgment on SummEval. %s. "+
-		"Brackets give the 95\\%% cluster-bootstrap confidence interval over articles.",
-		levelLabel, coeffLegend(coeffs))
+	scope := "SummEval"
+	switch docSplit {
+	case "first50":
+		scope += " (first 50 articles)"
+	case "last50":
+		scope += " (held-out last 50 articles)"
+	}
+	unit := "articles"
+	if level == "system" {
+		unit = "systems"
+	}
+	caption := fmt.Sprintf("%s correlations with human judgment on %s. %s. "+
+		"Brackets give the 95\\%% bootstrap confidence interval over %s.",
+		levelLabel, scope, coeffLegend(coeffs), unit)
 	if !withCI {
-		caption = fmt.Sprintf("%s correlations with human judgment on SummEval. %s.",
-			levelLabel, coeffLegend(coeffs))
+		caption = fmt.Sprintf("%s correlations with human judgment on %s. %s.",
+			levelLabel, scope, coeffLegend(coeffs))
 	}
 	fmt.Fprintf(&b, "\\caption{%s}\n", caption)
 	fmt.Fprintf(&b, "\\label{%s}\n", label)
 	fmt.Fprintln(&b, `\small`)
 	// Tables stay single-spaced even when the manuscript is compiled
-	// with the double-spaced elsarticle `review` option.
+	// with a double-spaced (review) layout.
 	fmt.Fprintln(&b, `\linespread{1}\selectfont`)
 	fmt.Fprintln(&b, `\setlength{\tabcolsep}{4pt}`)
 	fmt.Fprintf(&b, "\\begin{tabular}{%s}\n", colSpec)

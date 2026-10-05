@@ -1,0 +1,81 @@
+\section{Experimental setup}
+\label{sec:setup}
+
+\subsection{Corpora}
+
+Table~\ref{tab:corpora} lists the four human-rated corpora. SummEval~\citep{fabbri2021summeval} is the development and in-domain test corpus. Its 100 CNN/DailyMail articles are split in dataset order: LNC is calibrated on the first 50, and every SummEval number in this paper is computed on the last 50, for all metrics alike. The split is fixed by the order of the public release, and Section~\ref{sec:analysis} repeats the calibration on 200 random article splits.
+
+FRANK~\citep{pagnoni2021frank} and RoSE~\citep{liu2023rose} are the transfer corpora. FRANK annotates factual errors in summaries of CNN/DailyMail and XSum~\citep{narayan2018xsum} articles; its factuality score is the share of summary sentences without an error, and we treat it as consistency. We report its two parts separately, because XSum summaries are single, highly abstractive sentences. RoSE annotates whether each atomic content unit of a reference is present in a summary; its ACU score measures content coverage, and we treat it as relevance. We use the CNN/DailyMail test set of RoSE. Articles that also occur in SummEval (3 in FRANK, 5 in RoSE) are removed, and so is RoSE's \texttt{gold} system, whose output is the reference that UniEval compares against. Summaries are lowercased and tokenised like SummEval's; a script rebuilds all four files byte for byte from their public sources.
+
+\begin{table}[t]
+\centering
+\caption{Human-rated corpora. Copy rate is the median share of summary bigrams that occur in the source.}
+\label{tab:corpora}
+\small
+\begin{tabular}{@{}lrr>{\raggedright\arraybackslash}p{3.4cm}>{\raggedright\arraybackslash}p{3.6cm}r@{}}
+\toprule
+Corpus & Articles & Systems & Human score & Used as & Copy rate \\
+\midrule
+SummEval & 100 & 16 & 1--5 Likert, 4 dimensions & dev (1--50) / test (51--100) & .92 \\
+FRANK CNN/DM & 247 & 5 & share of error-free sentences & consistency & .90 \\
+FRANK XSum & 249 & 4 & share of error-free sentences & consistency & .21 \\
+RoSE CNN/DM & 495 & 11 & ACU recall & relevance & .91 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Metrics}
+
+The pool has 23 metrics and controls (Table~\ref{tab:metrics}). Reference-based metrics compare the candidate with each of the 11 SummEval references and keep the maximum. UniEval, G-Eval and LNC produce one score per dimension; every other metric produces a single score that is correlated with all four dimensions.
+
+Several baselines run in configurations smaller than in their original papers, because every metric runs on one machine. G-Eval uses a quantised 7B open model (Qwen2.5-7B-Instruct, 4-bit) with three samples at temperature 0.7 instead of GPT-4 with twenty samples; its results characterise a local LLM judge, not G-Eval with a frontier model. GPTScore uses GPT-2 small (124M parameters) instead of a large GPT-3 model. Our UniEval implementation reads the probability of ``Yes'' once for the whole summary, without the sentence-level aggregation that the original uses for consistency. NLIG reimplements the zero-shot SummaC construction with a stronger NLI model than the original. AlignScore uses the official AlignScore-large weights and inference procedure, with our own sentence splitter.
+
+\begin{table}[t]
+\centering
+\caption{Metric pool. ``Ref'' marks metrics that need a human reference. Parameters count the neural models used; ``---'' marks metrics without one.}
+\label{tab:metrics}
+\small
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{3.0cm}>{\raggedright\arraybackslash}p{3.5cm}rc>{\raggedright\arraybackslash}p{4.4cm}@{}}
+\toprule
+Metric & Model & Params & Ref & Score \\
+\midrule
+BLEU, ROUGE-L, chrF, METEOR & --- & --- & yes & $n$-gram or character overlap with the reference \\
+SMART-String & --- & --- & yes & sentence-matched ROUGE \\
+SMART-Model & nomic-embed-text~\citep{nussbaum2024nomic} & 137M & yes & sentence-matched embedding cosine \\
+EmbedScorer & nomic-embed-text & 137M & yes & cosine of whole-text embeddings \\
+BERTScore & RoBERTa-large~\citep{liu2019roberta} & 355M & yes & token-alignment F1 \\
+MoverScore & RoBERTa-large & 355M & yes & transport distance of token embeddings \\
+BARTScore & BART-large-CNN~\citep{lewis2020bart} & 406M & yes & $\log P(\text{ref}\mid y)$ per token \\
+GPTScore & GPT-2 small~\citep{radford2019gpt2} & 124M & yes & $\log P(y\mid\text{ref})$ per token \\
+UniEval & T5-large~\citep{raffel2020t5} & 780M & relevance & $P(\text{Yes})$ to a dimension question \\
+G-Eval & Qwen2.5-7B-Instruct, 4-bit & 7.6B & no & judge score, 3 samples \\
+AlignScore & RoBERTa-large & 355M & no & alignment probability, chunked source \\
+NLIG (SummaC-ZS) & DeBERTa-v3-large & 435M & no & mean NLI evidence over all windows \\
+LGS & nomic-embed-text & 137M & no & lead-weighted sentence grounding, $\lambda=0.5$ \\
+Lead-3, Lead-5 & --- & --- & no & ROUGE-L against the first $k$ source sentences \\
+Lead-3 (whole) & --- & --- & no & ROUGE-L against the first 3 sentences as one block \\
+CCM & Qwen2.5-1.5B & 1.5B & no & perturbation margin, $K=8$ \\
+PSC & Qwen2.5-1.5B + 7B paraphraser & 1.5B + 7.6B & no & CCM margin conditioned on a paraphrased source \\
+SPL & Qwen2.5-1.5B & 1.5B & no & likelihood of splice words \\
+\textbf{LNC} & Qwen2.5-1.5B + DeBERTa-v3-large & 1.9B & no & calibrated composite of ten features \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+LGS is the lead-biased embedding grounding score of our earlier, unpublished study, kept as a data point for its signal class. CCM, PSC and SPL are three reference-free metrics we built while searching for a signal that is not a copy detector; they failed as metrics and are analysed in Section~\ref{sec:analysis}. Their signals, together with NLIG, are the components of LNC.
+
+\subsection{Evaluation protocol}
+
+\paragraph{Correlation.} The summary-level correlation of a metric with a human dimension is the Spearman correlation between metric scores and human ratings over all summaries of the evaluation set. Pooling summaries across articles is common practice; per-article correlations are used in the Friedman test below. $\bar\rho$ averages the four SummEval dimensions.
+
+\paragraph{The shortcut-controlled axis.} The copy rate $\mathrm{cr}(y,x)$ is the share of the candidate's token bigrams that occur in the source after lowercasing and splitting off punctuation. The partial correlation removes the rank correlation that both the metric $m$ and the human rating $h$ share with the copy rate:
+\begin{equation}
+\rho_{\mathrm{part}}(m,h) = \frac{\rho(m,h) - \rho(m,\mathrm{cr})\,\rho(h,\mathrm{cr})}{\sqrt{\bigl(1-\rho(m,\mathrm{cr})^2\bigr)\bigl(1-\rho(h,\mathrm{cr})^2\bigr)}}.
+\end{equation}
+$\rho_{\mathrm{copy}}$ is the correlation of the metric with the copy rate. We use bigrams because unigram overlap is saturated by function words. The partial axis does not claim that copying is bad; it asks which part of a metric's agreement with humans is not explained by copying, the cheapest signal there is.
+
+\paragraph{Significance.} Confidence intervals and paired comparisons use the cluster bootstrap over articles~\citep{efron1993bootstrap,deutsch2021resampling}, because the summaries of one article share a source. A paired comparison resamples articles 5{,}000 times, recomputes both correlations on each resample, and reports the mean difference, its 95\% interval and a two-sided $p$-value; on the partial axis the copy rate is partialled out on every resample. $p$-values are adjusted with the Benjamini--Hochberg procedure~\citep{benjamini1995fdr} over all cells of a table, and a difference is called significant when $q<0.05$ and the interval excludes zero. Across the whole pool we run a Friedman test~\citep{friedman1937ranks,demsar2006statistical} with articles as blocks and per-article Spearman correlations as responses, followed by Wilcoxon signed-rank tests~\citep{wilcoxon1945individual} of LNC against every other metric with Holm correction~\citep{holm1979simple}.
+
+\paragraph{Cost.} All metrics run on one ASUS Ascent GX10 workstation with an NVIDIA GB10 (Blackwell) and 128\,GB of unified memory: the neural metrics on its GPU through a single Python model server, the lexical metrics on its CPU, and G-Eval and the embedding metrics through Ollama~\citep{ollama2024}. Every model is loaded before timing starts. Cost is wall-clock time per summary over the whole corpus, including all model calls; for per-dimension metrics it is the sum over dimensions. Wall-clock time depends on the hardware, but the comparisons we draw involve differences of one to four orders of magnitude.
+
+\paragraph{Pre-registration.} The transfer protocol of Section~\ref{sec:transfer}, including the corpora, the baselines, the primary axis and the success criterion, was written into the project documentation on 26 September 2026, before any metric was run on FRANK or RoSE. It was committed to the public repository together with the results, so the order is documented by our records rather than by an external registry; later edits of that text only renamed files and commands, and AlignScore, added afterwards, is reported outside the criterion.

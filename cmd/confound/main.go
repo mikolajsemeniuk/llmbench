@@ -59,6 +59,7 @@ var (
 	oursLabel   string
 	datasetName string
 	dimsFlag    string
+	docSplit    string
 )
 
 var allDimensions = []string{"coherence", "consistency", "fluency", "relevance"}
@@ -75,6 +76,7 @@ func main() {
 	flag.StringVar(&oursLabel, "ours", "lgs", "metric base name to mark as ours")
 	flag.StringVar(&datasetName, "dataset", dataset.Default, "embedded corpus in pkg/dataset: summeval|frank_cnndm|frank_xsum|rose_cnndm")
 	flag.StringVar(&dimsFlag, "dims", strings.Join(allDimensions, ","), "comma-separated dimensions to evaluate (a transfer corpus annotates only one)")
+	flag.StringVar(&docSplit, "doc-split", "all", "articles to evaluate: all|first50|last50 (last50 is the half LNC is not calibrated on)")
 	flag.Parse()
 	dimensions = strings.Split(dimsFlag, ",")
 	if inputDir == "" {
@@ -88,6 +90,9 @@ func main() {
 	samples, err := eval.LoadDataset(datasetName, 0)
 	if err != nil {
 		log.Fatalf("load dataset: %v", err)
+	}
+	if samples, err = eval.SplitDocs(samples, docSplit); err != nil {
+		log.Fatal(err)
 	}
 
 	copyRate := copyRates(samples, ngram)
@@ -226,7 +231,7 @@ func loadMetrics(dir string, samples []eval.Sample) ([]metricScores, error) {
 		if err := json.Unmarshal(raw, &r); err != nil {
 			return nil, fmt.Errorf("decode %s: %w", p, err)
 		}
-		if r.Samples == 0 || len(r.Scores) != len(samples) {
+		if r.Samples == 0 || len(r.Scores) < len(samples) {
 			log.Printf("skipping %s (%d scores, expected %d)", filepath.Base(p), len(r.Scores), len(samples))
 			continue
 		}
@@ -364,7 +369,9 @@ func analyse(m metricScores, human map[string][]float64, copyRate []float64, sam
 		r.RawMean += raw / float64(len(dimensions))
 		r.PartialMean += par / float64(len(dimensions))
 	}
-	r.RhoCopy = eval.Spearman(m.perDim[dimensions[0]], copyRate)
+	for _, d := range dimensions {
+		r.RhoCopy += eval.Spearman(m.perDim[d], copyRate) / float64(len(dimensions))
+	}
 
 	if bootstrap > 0 {
 		r.PartialCI = bootstrapPartial(m, human, copyRate, samples)
@@ -505,19 +512,34 @@ func renderLatex(rows []row) string {
 	var b strings.Builder
 	fmt.Fprintln(&b, `\begin{table*}[t]`)
 	fmt.Fprintln(&b, `\centering`)
-	dims := "averaged across the four dimensions"
+	dims := "averaged across the four dimensions (the last four columns give the partial value per dimension)"
 	if len(dimensions) == 1 {
 		dims = "on the " + dimensions[0] + " dimension"
 	}
-	fmt.Fprintf(&b, `\caption{Extractiveness confound on %s. The copy rate of a candidate is the fraction of its token %d-grams that occur in the source; it requires no model, no reference and no hyperparameter. $\bar{\rho}$ is the summary-level Spearman correlation with human ratings %s, $\bar{\rho}_{\mathrm{part}}$ the same quantity with the copy rate partialled out of both sides, and $\rho_{\mathrm{copy}}$ the correlation between the metric and the copy rate. Brackets give the 95\%% cluster-bootstrap interval over articles. The final row is the copy rate scored as if it were a metric. Pareto status is given on both axes.}`+"\n", dataset.Titles[datasetName], ngram, dims)
+	scope := dataset.Titles[datasetName]
+	switch docSplit {
+	case "first50":
+		scope += ", first 50 articles"
+	case "last50":
+		scope += ", held-out last 50 articles"
+	}
+	fmt.Fprintf(&b, `\caption{Correlation with human ratings beyond the extractive shortcut on %s. The copy rate of a candidate is the fraction of its token %d-grams that occur in the source; it requires no model, no reference and no hyperparameter. $\bar{\rho}$ is the summary-level Spearman correlation with human ratings %s, $\bar{\rho}_{\mathrm{part}}$ the same quantity with the copy rate partialled out of both sides, and $\rho_{\mathrm{copy}}$ the correlation between the metric and the copy rate (mean over its per-dimension scorers). Brackets give the 95\%% cluster-bootstrap interval over articles. The final row is the copy rate scored as if it were a metric. Pareto status is given on both axes.}`+"\n", scope, ngram, dims)
 	// One label per output file, so several tables can share a manuscript.
 	fmt.Fprintf(&b, "\\label{tab:%s}\n", strings.TrimSuffix(filepath.Base(outputTex), ".gen.tex"))
 	fmt.Fprintln(&b, `\small`)
 	fmt.Fprintln(&b, `\linespread{1}\selectfont`)
 	fmt.Fprintln(&b, `\setlength{\tabcolsep}{4pt}`)
-	fmt.Fprintln(&b, `\begin{tabular}{@{}lrrrrl@{}}`)
+	perDim := len(dimensions) > 1
+	head, cols := "", ""
+	if perDim {
+		for _, d := range dimensions {
+			head += " & " + strings.ToUpper(d[:1]) + d[1:3]
+			cols += "r"
+		}
+	}
+	fmt.Fprintf(&b, "\\begin{tabular}{@{}lrrrr%sl@{}}\n", cols)
 	fmt.Fprintln(&b, `\toprule`)
-	fmt.Fprintln(&b, `Metric & ms/sample & $\bar{\rho}$ & $\bar{\rho}_{\mathrm{part}}$ & $\rho_{\mathrm{copy}}$ & Pareto \\`)
+	fmt.Fprintf(&b, "Metric & ms/sample & $\\bar{\\rho}$ & $\\bar{\\rho}_{\\mathrm{part}}$ & $\\rho_{\\mathrm{copy}}$%s & Pareto \\\\\n", head)
 	fmt.Fprintln(&b, `\midrule`)
 	for _, r := range rows {
 		if r.IsConfound {
@@ -543,8 +565,14 @@ func renderLatex(rows []row) string {
 		if r.PartialCI.High != 0 || r.PartialCI.Low != 0 {
 			ci = fmt.Sprintf(` {\scriptsize [%s, %s]}`, num(r.PartialCI.Low), num(r.PartialCI.High))
 		}
-		fmt.Fprintf(&b, "%s & %.2f & %s & %s%s & %s & %s \\\\\n",
-			label, r.RuntimeMs, num(r.RawMean), num(r.PartialMean), ci, num(r.RhoCopy), status)
+		cells := ""
+		if perDim {
+			for _, v := range r.PartPerDim {
+				cells += " & " + num(v)
+			}
+		}
+		fmt.Fprintf(&b, "%s & %.2f & %s & %s%s & %s%s & %s \\\\\n",
+			label, r.RuntimeMs, num(r.RawMean), num(r.PartialMean), ci, num(r.RhoCopy), cells, status)
 	}
 	fmt.Fprintln(&b, `\bottomrule`)
 	fmt.Fprintln(&b, `\end{tabular}`)

@@ -1,0 +1,22 @@
+\section{Pre-registered transfer to FRANK and RoSE}
+\label{sec:transfer}
+
+A metric calibrated on one benchmark may only have learned that benchmark: its systems, its annotators and its rating scale. We therefore tested whether the SummEval calibration of LNC transfers to two corpora with different systems and annotation schemes. The protocol below was fixed before any metric was run on them.
+
+\subsection{Protocol}
+
+LNC is applied with the frozen SummEval calibration, without refitting and without changing any feature. On FRANK its consistency scorer is correlated with the factuality score, and on RoSE its relevance scorer with the ACU score. The primary axis is the summary-level Spearman correlation with the copy rate partialled out; the raw correlation is secondary. The baselines are the cheap reference-free metrics NLIG, LGS, Lead-3 and Lead-5, together with UniEval and G-Eval for the matching dimension. G-Eval runs once with greedy decoding to fit the compute budget. The success criterion was stated as follows: LNC transfers if, on both FRANK CNN/DM and RoSE, (i) its partial correlation is significantly higher than that of the best cheap reference-free baseline in a paired bootstrap over articles, with Benjamini--Hochberg correction within the table of each corpus, and (ii) it is not significantly worse than G-Eval. FRANK XSum was declared an out-of-domain stress test outside the criterion, because its single-sentence summaries leave the order margin, LNC's most important perturbation feature, at zero.
+
+AlignScore was added after the pre-registered run, as the strongest published consistency baseline we could run. It is reported in the tables but plays no role in the criterion. With it in the family of tests, the BH-adjusted $q$-values change slightly; none of the conclusions below depends on it.
+
+\subsection{Results}
+
+Tables~\ref{tab:transfer_frank_cnndm_confound}--\ref{tab:transfer_rose_cnndm_confound} give the raw and partial correlations on the three transfer sets, and Tables~\ref{tab:transfer_frank_cnndm_comparisons} and~\ref{tab:transfer_rose_cnndm_comparisons} the paired comparisons on the partial axis.
+
+\paragraph{FRANK CNN/DM.} LNC reaches a partial correlation of .516 with the factuality score (raw .622), the highest of all metrics. It is significantly better than UniEval ($+.071$) and G-Eval ($+.070$), and far better than LGS and the lead controls. Its advantage over NLIG, the best cheap reference-free baseline, is $+.028$ with a 95\% interval of $[-.005, +.062]$ and is not significant ($q=.106$ in the pre-registered family, $q=.124$ with AlignScore added). It is also tied with AlignScore ($+.015$). Condition (ii) holds, but condition (i) fails.
+
+\paragraph{FRANK XSum.} On the abstractive XSum summaries the copy rate carries almost no signal (raw correlation with factuality .063), so raw and partial correlations coincide. LNC reaches .280 and ties NLIG (.255), UniEval (.264), G-Eval (.264) and AlignScore (.293). It remains far ahead of LGS and the lead controls, which depend on copying.
+
+\paragraph{RoSE.} On content coverage LNC transfers poorly. Its partial correlation of .148 ties Lead-3 (.151) and Lead-5 (.138) and is significantly lower than that of UniEval ($-.096$) and G-Eval ($-.089$). It is still significantly better than NLIG, AlignScore and LGS, whose correlation with the ACU score is close to zero once copying is controlled for. Both conditions fail.
+
+\paragraph{Verdict.} By the pre-registered criterion, LNC does not transfer. The result is nevertheless informative, because the two calibrated scorers behave differently. The consistency scorer, fitted on SummEval's Likert ratings, ranks FRANK summaries better than UniEval and the local G-Eval judge and as well as AlignScore, a model trained specifically for factual alignment; most of this comes from its NLI features, since NLIG alone reaches .488. The relevance scorer does not carry over from SummEval's relevance ratings to RoSE's atomic content units: on RoSE, a lead-sentence heuristic does as well. Relevance in SummEval is judged against the source by annotators who read it, whereas the ACU score measures coverage of a reference; a reference-free metric calibrated on the former has no access to the latter, while UniEval reads the reference for relevance and G-Eval reads the full source with a much larger model. FRANK and RoSE have now served as test sets; any change to LNC prompted by these results would have to be validated on a further corpus.

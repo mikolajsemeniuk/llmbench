@@ -1,0 +1,6 @@
+\section{Additional tables}
+\label{app:tables}
+
+This appendix gives the remaining tables rendered by the analysis scripts. Table~\ref{tab:correlations_summary} lists the raw summary-level Spearman correlation of every metric with every dimension on the held-out SummEval articles, with 95\% bootstrap intervals over articles. Table~\ref{tab:correlations_system} gives the system-level correlations on the same articles, computed from the mean score of each of the 16 systems; with 16 systems their intervals are wide. Table~\ref{tab:transfer_frank_xsum_comparisons} gives the paired comparisons on FRANK XSum.
+
+\paragraph{Reproduction.} Every table in this paper is written by a command of the released code: \texttt{make paper} renders all of them from the stored per-sample scores without any model, and \texttt{make reproduce} recomputes the scores first (about 16 hours on the machine described in Section~\ref{sec:setup}, half of it for G-Eval).
